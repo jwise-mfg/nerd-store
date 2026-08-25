@@ -1,0 +1,29 @@
+{
+  "name": "@store/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./db": "./src/db/index.ts",
+    "./schema": "./src/db/schema.ts",
+    "./tenant": "./src/tenant/index.ts"
+  },
+  "scripts": {
+    "db:generate": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node --env-file=../../.env src/db/migrate.ts",
+    "db:studio": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs studio",
+    "seed": "node --env-file=../../.env src/db/seed.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.38.2",
+    "stripe": "^17.5.0",
+    "zod": "^3.24.1",
+    "better-sqlite3": "^11.7.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.1",
+    "@types/node": "^22.10.2",
+    "@types/better-sqlite3": "^7.6.12"
+  }
+}

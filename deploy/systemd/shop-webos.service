@@ -1,0 +1,46 @@
+[Unit]
+Description=shop.webosarchive.org storefront
+Documentation=file:///srv/nerd-store/docs/SEPARATION.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nerdstore
+Group=nerdstore
+WorkingDirectory=/srv/nerd-store
+
+# TENANT selects which build this unit serves. It must match the dist
+# directory below; the app also cross-checks the Host header at request time.
+Environment=TENANT=webos
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=4322
+# Absolute, so the database can never be created relative to a stray cwd.
+Environment=DATA_DIR=/var/lib/nerd-store
+# Secrets (Stripe keys) live here, root-owned, chmod 600.
+EnvironmentFile=/etc/nerd-store/webos.env
+
+ExecStart=/usr/bin/node /srv/nerd-store/apps/storefront/dist-webos/server/entry.mjs
+Restart=on-failure
+RestartSec=3
+
+# --- hardening -------------------------------------------------------------
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+# The ONLY writable path. Both units share this directory but touch different
+# files in it -- i3x.db and webos.db never overlap.
+ReadWritePaths=/var/lib/nerd-store
+
+[Install]
+WantedBy=multi-user.target

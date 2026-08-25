@@ -1,0 +1,14 @@
+[Unit]
+Description=Release expired stock reservations
+
+[Service]
+Type=oneshot
+User=nerdstore
+Group=nerdstore
+WorkingDirectory=/srv/nerd-store
+Environment=DATA_DIR=/var/lib/nerd-store
+ExecStart=/usr/bin/node /srv/nerd-store/scripts/sweep-reservations.ts
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/nerd-store

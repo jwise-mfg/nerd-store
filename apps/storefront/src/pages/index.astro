@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro'
+import ProductCard from '../components/ProductCard.astro'
+import { TENANT } from '../lib/tenant.ts'
+import { listProducts } from '@store/core'
+
+const t = TENANT
+const featured = listProducts(t).slice(0, 6)
+---
+<Base>
+  <section class="hero">
+    <p class="tagline">{t.copy.tagline}</p>
+    <h1>{t.copy.heroTitle}</h1>
+    <p>{t.copy.heroBody}</p>
+    <p><a class="btn" href="/shop">{t.copy.heroCta}</a></p>
+  </section>
+
+  {featured.length > 0 && (
+    <section>
+      <h2>{t.copy.catalogTitle}</h2>
+      <div class="grid">
+        {featured.map((p) => <ProductCard product={p} />)}
+      </div>
+    </section>
+  )}
+</Base>

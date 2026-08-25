@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Refuse to commit secrets.
+#
+# .env is gitignored, but an ignore rule only protects you until someone runs
+# `git add -f`, renames a file, or pastes a key into a source file. This hook
+# checks the actual staged content, which is the thing that gets published.
+#
+# Enable once:  git config core.hooksPath .githooks
+set -uo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+fail=0
+
+note() { echo "  ✗ $1"; fail=1; }
+
+# 1. Files that must never be tracked, whatever they are called.
+while IFS= read -r f; do
+  case "$f" in
+    .env|.env.local|.env.production|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
+      note "$f — secrets and databases do not belong in the repository" ;;
+  esac
+done <<< "$staged"
+
+# 2. Real credentials in staged content. Deliberately does NOT match the
+#    documentation placeholders (sk_test_..., sk_live_..., REPLACE_ME).
+patterns='sk_(live|test)_[A-Za-z0-9]{16,}|pk_live_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}'
+hits=$(git diff --cached -U0 | grep -E '^\+' | grep -vE 'REPLACE_ME' | grep -nE "$patterns" || true)
+if [ -n "$hits" ]; then
+  note "a live-looking credential is staged:"
+  echo "$hits" | head -5 | sed 's/^/      /'
+fi
+
+# 3. The example config must stay stubbed -- it is committed, so anything in
+#    it is public. Every secret-ish key must be empty or end in REPLACE_ME.
+if grep -qx '.env.example' <<< "$staged"; then
+  bad=$(grep -E '^(STRIPE|MAIL)[A-Z_]*=.+' .env.example | grep -v 'REPLACE_ME' || true)
+  if [ -n "$bad" ]; then
+    note ".env.example holds a non-stub value:"
+    echo "$bad" | sed 's/^/      /'
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  cat <<'MSG'
+
+  Commit blocked.
+
+  Secrets live in .env, which is gitignored. Copy .env.example to .env and put
+  real values there. To override this check for a specific commit that you are
+  certain about:  git commit --no-verify
+
+MSG
+  exit 1
+fi
+exit 0

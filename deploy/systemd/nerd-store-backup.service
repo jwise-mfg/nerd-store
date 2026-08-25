@@ -1,0 +1,15 @@
+[Unit]
+Description=Back up the tenant databases
+
+[Service]
+Type=oneshot
+User=nerdstore
+Group=nerdstore
+WorkingDirectory=/srv/nerd-store
+Environment=DATA_DIR=/var/lib/nerd-store
+Environment=BACKUP_DIR=/var/backups/nerd-store
+ExecStart=/srv/nerd-store/scripts/backup.sh
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/nerd-store /var/backups/nerd-store

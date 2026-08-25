@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro'
+import { TENANT } from '../../lib/tenant.ts'
+const t = TENANT
+---
+<Base title="Privacy">
+  <h1>Privacy</h1>
+  <p>{t.storeName} collects only what is needed to take an order and ship it: your email
+     address, shipping address, and the contents of your order.</p>
+  <p><strong>Payments.</strong> Card details are entered directly into a payment form hosted by
+     Stripe, our payment processor. {t.storeName} never receives or stores your card number.</p>
+  <p><strong>Email.</strong> Your address is used to send order confirmation and shipping
+     notification. We do not send marketing email and we do not sell or share your details.</p>
+  <p><strong>Cookies.</strong> One cookie, <code>{t.cartCookie}</code>, remembers your cart.
+     It contains a random identifier and nothing else.
+     {t.analytics.provider === 'none'
+       ? ' This site runs no analytics or tracking scripts.'
+       : ' Aggregate, cookie-free traffic statistics are collected for this site only.'}</p>
+  <p>To have your order data deleted, email
+     <a href={`mailto:${t.support.email}`}>{t.support.email}</a>. We retain order records for as
+     long as tax law requires and no longer.</p>
+</Base>

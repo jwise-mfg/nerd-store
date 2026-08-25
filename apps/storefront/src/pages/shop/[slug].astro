@@ -1,0 +1,69 @@
+---
+import Base from '../../layouts/Base.astro'
+import AddToCart from '../../components/AddToCart.tsx'
+import { TENANT } from '../../lib/tenant.ts'
+import { marked } from 'marked'
+
+export async function getStaticPaths() {
+  const { TENANT } = await import('../../lib/tenant.ts')
+  const { listProducts } = await import('@store/core')
+  const products = listProducts(TENANT)
+  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }))
+}
+
+const t = TENANT
+const { product } = Astro.props
+const body = marked.parse(product.descriptionMd)
+const gallery = [...product.images, ...product.variants.flatMap((v) => v.unitImages)]
+
+// Only stores selling used goods render condition detail. Declared by the
+// tenant, not inferred from the product -- the same schema fields are simply
+// left unused on the merch side.
+const showCondition = t.catalog.showConditionDetail
+---
+<Base title={product.title} description={product.subtitle ?? product.title}>
+  <div class="pdp">
+    <div>
+      {gallery.map((img) => (
+        <img src={img.url} alt={img.alt} width="800" height="800"
+             style="margin-bottom: calc(var(--s)*2); border-radius: var(--r-md);" />
+      ))}
+    </div>
+
+    <div>
+      <h1>{product.title}</h1>
+      {product.subtitle && <p class="muted" style="font-size:1.1rem;">{product.subtitle}</p>}
+
+      {/* The island owns price, availability, and the buy button. */}
+      <AddToCart
+        client:load
+        product={product}
+        tenant={{
+          currency: t.currency,
+          catalog: t.catalog,
+          copy: { soldOut: t.copy.soldOut, lastOne: t.copy.lastOne },
+        }}
+      />
+
+      {showCondition && product.variants.some((v) => v.condition) && (
+        <section style="margin-top: calc(var(--s)*4); border-top:1px solid var(--c-line); padding-top: calc(var(--s)*3);">
+          <h2 style="font-size:1.1rem;">Condition</h2>
+          {product.variants.filter((v) => v.condition).map((v) => (
+            <div style="margin-bottom: calc(var(--s)*2);">
+              <span class="chip grade">{v.condition!.replace(/_/g, ' ')}</span>
+              {v.serial && (
+                <span class="muted" style="margin-left:8px;font-family:var(--f-mono);font-size:.85rem;">
+                  S/N {v.serial}
+                </span>
+              )}
+              {v.conditionNotes && <p class="muted" style="margin:6px 0 0;">{v.conditionNotes}</p>}
+            </div>
+          ))}
+          <p class="muted" style="font-size:.9rem;">Photographs show the actual unit you will receive.</p>
+        </section>
+      )}
+
+      <div set:html={body} style="margin-top: calc(var(--s)*4);"></div>
+    </div>
+  </div>
+</Base>

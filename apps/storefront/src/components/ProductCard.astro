@@ -1,0 +1,38 @@
+---
+import { TENANT } from '../lib/tenant.ts'
+import { formatMoney, type CatalogProduct } from '@store/core'
+
+interface Props { product: CatalogProduct }
+const { product } = Astro.props
+const t = TENANT
+const img = product.images[0] ?? product.variants[0]?.unitImages[0] ?? null
+
+// Facet values for this card, keyed the way the tenant declared them. Serialised
+// into the DOM so the static catalogue page can filter without a round trip.
+const facets: Record<string, string[]> = {}
+for (const key of t.catalog.facets) {
+  const vals = new Set<string>()
+  for (const v of product.variants) {
+    const val = key === 'kind' ? product.kind : v.attributes[key] ?? (key === 'condition' ? v.condition ?? '' : '')
+    if (val) vals.add(val)
+  }
+  if (vals.size) facets[key] = [...vals]
+}
+
+const totalStock = product.variants.reduce((n, v) => n + v.stockAtBuild, 0)
+---
+<a class="product-card" href={`/shop/${product.slug}`} data-facets={JSON.stringify(facets)}>
+  {img && <img src={img.url} alt={img.alt} loading="lazy" width="480" height="480" />}
+  <div class="body">
+    <h3>{product.title}</h3>
+    {product.subtitle && <p class="muted" style="margin:0 0 8px;font-size:.9rem;">{product.subtitle}</p>}
+    <p class="price">
+      {product.variants.length > 1 ? 'From ' : ''}{formatMoney(product.fromPriceCents, t.currency)}
+    </p>
+    {/* Build-time stock is a hint only; the product page refreshes it live. */}
+    {totalStock === 0 && <span class="chip chip-out">{t.copy.soldOut}</span>}
+    {totalStock > 0 && totalStock <= t.catalog.scarcityThreshold && (
+      <span class="chip chip-scarce">{totalStock === 1 ? t.copy.lastOne : `${totalStock} left`}</span>
+    )}
+  </div>
+</a>

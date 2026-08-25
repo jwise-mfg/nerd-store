@@ -1,0 +1,24 @@
+{
+  "name": "@store/storefront",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.0.0",
+    "@astrojs/preact": "^4.0.1",
+    "@store/core": "*",
+    "@stripe/stripe-js": "^5.4.0",
+    "astro": "^5.1.1",
+    "marked": "^15.0.4",
+    "preact": "^10.25.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
+  }
+}

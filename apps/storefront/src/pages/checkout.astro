@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro'
+import Checkout from '../components/Checkout.tsx'
+import { TENANT } from '../lib/tenant.ts'
+
+// The checkout shell is prerendered; only the island talks to the server.
+const t = TENANT
+const c = t.theme.color
+const pk = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''
+---
+<Base title={t.copy.checkoutTitle}>
+  <h1>{t.copy.checkoutTitle}</h1>
+  {pk
+    ? <Checkout
+        client:load
+        publishableKey={pk}
+        tenant={{
+          currency: t.currency,
+          storeName: t.storeName,
+          copy: { checkoutReassurance: t.copy.checkoutReassurance },
+          appearance: {
+            bg: c.bg, bgElevated: c.bgElevated, ink: c.ink, inkMuted: c.inkMuted,
+            accent: c.accent, line: c.line, danger: c.danger,
+            font: t.theme.font.sans, radius: t.theme.radius.sm,
+          },
+        }}
+      />
+    : <p class="notice">PUBLIC_STRIPE_PUBLISHABLE_KEY is not set for this build.</p>}
+</Base>

@@ -1,0 +1,62 @@
+---
+import { TENANT } from '../lib/tenant.ts'
+import { themeCss } from '../lib/theme.ts'
+import '../styles/app.css'
+
+interface Props { title?: string; description?: string }
+const { title, description } = Astro.props
+const t = TENANT
+const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${t.copy.tagline}`
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description ?? t.copy.heroBody} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, t.origin).href} />
+    {t.theme.font.googleFontsHref && (
+      <>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href={t.theme.font.googleFontsHref} />
+      </>
+    )}
+    <style set:html={themeCss(t)}></style>
+    {/* No cross-store links, no shared analytics, no shared asset host. */}
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="wrap masthead-inner">
+        <a class="brand" href="/">{t.storeName}</a>
+        <nav class="nav">
+          {t.copy.nav.map((n) => <a href={n.href}>{n.label}</a>)}
+          <a class="cart-link" href="/cart" data-cart-link>Cart</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap"><slot /></main>
+    <footer>
+      <div class="wrap">
+        <p>{t.copy.footerBlurb}</p>
+        <p>
+          <a href="/policies/returns">Returns</a> ·
+          <a href="/policies/privacy">Privacy</a> ·
+          <a href={`mailto:${t.support.email}`}>{t.support.email}</a>
+        </p>
+      </div>
+    </footer>
+    <script>
+      // Cart count badge. Kept tiny and dependency-free so the static pages
+      // stay static; the number is the only thing that needs to be live.
+      fetch('/api/cart', { headers: { accept: 'application/json' } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((c) => {
+          const el = document.querySelector('[data-cart-link]')
+          if (el && c && c.itemCount > 0) el.textContent = `Cart (${c.itemCount})`
+        })
+        .catch(() => {})
+    </script>
+  </body>
+</html>

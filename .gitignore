@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# build output — deploy.sh builds on the server, never committed
+dist/
+apps/*/dist/
+apps/*/dist-*/
+.astro/
+apps/*/.astro/
+
+# secrets and local state
+.env
+.env.*
+!.env.example
+
+# tenant databases — one file per store, never in version control
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# misc
+*.log
+.DS_Store
+
+# operator notes — deliberately not published
+private/

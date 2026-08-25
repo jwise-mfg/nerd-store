@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro'
+import { TENANT } from '../../lib/tenant.ts'
+import { getOrder, formatMoney } from '@store/core'
+
+// Server-rendered: an order confirmation is per-customer and must never be
+// prerendered or cached.
+export const prerender = false
+
+const t = TENANT
+const { orderNumber } = Astro.params
+const found = orderNumber ? getOrder(t, orderNumber) : null
+Astro.response.headers.set('cache-control', 'no-store')
+Astro.response.headers.set('x-robots-tag', 'noindex')
+---
+<Base title={`Order ${orderNumber}`}>
+  {!found ? (
+    <>
+      <h1>We couldn’t find that order</h1>
+      <p class="muted">Check the link in your confirmation email, or contact <a href={`mailto:${t.support.email}`}>{t.support.email}</a>.</p>
+    </>
+  ) : (
+    <>
+      <h1>{t.copy.orderConfirmedTitle}</h1>
+      <p>{t.copy.orderConfirmedBody}</p>
+      <p class="muted">
+        Order <strong style="font-family:var(--f-mono);">{found.order.orderNumber}</strong>
+        {found.order.status === 'pending' && ' — payment is still confirming; this page will update shortly.'}
+      </p>
+
+      <table class="table" style="margin-top:calc(var(--s)*4);">
+        <tbody>
+          {found.items.map((i) => (
+            <tr>
+              <td>
+                {i.titleSnapshot}
+                {i.serialSnapshot && <div class="muted" style="font-family:var(--f-mono);font-size:.85rem;">S/N {i.serialSnapshot}</div>}
+              </td>
+              <td style="text-align:right;width:60px;">×{i.qty}</td>
+              <td style="text-align:right;width:100px;" class="price">{formatMoney(i.qty * i.unitPriceCents, found.order.currency)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div class="totals">
+        <div><span>Subtotal</span><span>{formatMoney(found.order.subtotalCents, found.order.currency)}</span></div>
+        <div><span>Shipping</span><span>{formatMoney(found.order.shippingCents, found.order.currency)}</span></div>
+        <div class="grand"><span>Total</span><span>{formatMoney(found.order.totalCents, found.order.currency)}</span></div>
+      </div>
+
+      <p class="muted" style="margin-top:calc(var(--s)*4);font-size:.9rem;">
+        Your card statement will show “{t.statementDescriptorSuffix}”.
+      </p>
+    </>
+  )}
+</Base>

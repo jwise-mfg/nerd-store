@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro'
+import CartTable from '../components/CartTable.tsx'
+import { TENANT } from '../lib/tenant.ts'
+const t = TENANT
+---
+<Base title={t.copy.cartTitle}>
+  <h1>{t.copy.cartTitle}</h1>
+  <CartTable client:load tenant={{ currency: t.currency, copy: { cartEmpty: t.copy.cartEmpty } }} />
+</Base>
