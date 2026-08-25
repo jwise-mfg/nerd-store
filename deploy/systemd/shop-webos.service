@@ -16,10 +16,11 @@ Environment=TENANT=webos
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=4322
-# Absolute, so the database can never be created relative to a stray cwd.
-Environment=DATA_DIR=/var/lib/nerd-store
-# Secrets (Stripe keys) live here, root-owned, chmod 600.
-EnvironmentFile=/etc/nerd-store/webos.env
+# All configuration -- Stripe keys, mail, database location -- lives in this
+# one file, root-owned and chmod 640. Both units read the same file: they bill
+# through the same Stripe account, so separate copies would only be two places
+# to update the same key.
+Environment=CONFIG_PATH=/etc/nerd-store/config.json
 
 ExecStart=/usr/bin/node /srv/nerd-store/apps/storefront/dist-webos/server/entry.mjs
 Restart=on-failure

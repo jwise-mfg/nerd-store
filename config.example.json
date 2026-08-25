@@ -1,0 +1,48 @@
+// ─────────────────────────────────────────────────────────────────────────
+//  Copy this file to config.json and replace the REPLACE_ME values.
+//
+//      cp config.example.json config.json
+//
+//  config.json is gitignored and is the only place secrets belong.
+//  This file is committed, so never put a real key in it.
+//
+//  Comments are allowed here and in config.json, the way tsconfig.json
+//  allows them. Point CONFIG_PATH at a different file to override the
+//  location (systemd uses /etc/nerd-store/config.json).
+// ─────────────────────────────────────────────────────────────────────────
+{
+  "stripe": {
+    // Test keys: https://dashboard.stripe.com/test/apikeys
+    // Server-side only; never reaches the browser.
+    "secretKey": "sk_test_REPLACE_ME",
+
+    // Inlined into the checkout page at build time. Safe to expose.
+    "publishableKey": "pk_test_REPLACE_ME",
+
+    // From the webhook endpoint you register, or from `stripe listen`.
+    //   Endpoint: https://<your-store>/api/webhook/stripe
+    //   Events:   payment_intent.succeeded
+    //             payment_intent.payment_failed
+    //             payment_intent.canceled
+    "webhookSecret": "whsec_REPLACE_ME"
+  },
+
+  "mail": {
+    // Where receipt emails are POSTed. null logs them to stdout instead,
+    // which is what you want in development.
+    "webhookUrl": null
+  },
+
+  "storage": {
+    // Directory holding one SQLite file per store. A relative path is
+    // resolved against the repository root, not the working directory.
+    // systemd sets this to /var/lib/nerd-store.
+    "dataDir": "./data",
+
+    // Optional per-store overrides, e.g. to put one on a separate volume.
+    "databasePaths": {
+      // "i3x": "/var/lib/nerd-store/i3x.db",
+      // "webos": "/mnt/data/webos.db"
+    }
+  }
+}

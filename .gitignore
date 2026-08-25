@@ -8,10 +8,13 @@ apps/*/dist-*/
 .astro/
 apps/*/.astro/
 
-# secrets and local state
+# configuration — copy config.example.json to config.json.
+# config.json holds real keys and must never be committed.
+config.json
+config.*.json
+!config.example.json
 .env
 .env.*
-!.env.example
 
 # tenant databases — one file per store, never in version control
 data/
@@ -19,9 +22,9 @@ data/
 *.db-wal
 *.db-shm
 
+# operator notes
+private/
+
 # misc
 *.log
 .DS_Store
-
-# operator notes — deliberately not published
-private/

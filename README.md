@@ -21,16 +21,26 @@ No database server, no containers. SQLite files under `data/`.
 **1. Create your config.** Copy the example and replace the stub values:
 
 ```bash
-cp .env.example .env
+cp config.example.json config.json
 ```
 
-`.env` is gitignored and is the only place secrets belong. `.env.example` is
-committed, so everything in it is public — it holds stubs (`sk_test_REPLACE_ME`)
-and never real values. Every variable the app reads is listed and commented
-there; the ones you must fill in are the three Stripe keys.
+`config.json` is gitignored and is the only place secrets belong.
+`config.example.json` is committed — everything in it is public, so it holds
+stubs (`REPLACE_ME`) and never real values. It is fully commented, and
+comments are allowed in `config.json` too, the way `tsconfig.json` allows
+them. The only values you must fill in are the three Stripe keys.
 
-**2. Turn on the commit hook.** It blocks staged secrets, `.env` files, and
-database files, and fails a commit that puts a real key in `.env.example`:
+The loader validates the file on startup and names every problem at once:
+a missing file, malformed JSON, a missing key, or a copy you forgot to edit
+each produce a specific message rather than a failure later inside Stripe.
+
+Only genuinely process-level values stay in the environment, because systemd
+owns them: `TENANT`, `HOST`, `PORT`, and `CONFIG_PATH` (which points at this
+file — `/etc/nerd-store/config.json` in production).
+
+**2. Turn on the commit hook.** It blocks staged secrets, `config.json`, and
+database files, and fails a commit that puts a real key in
+`config.example.json`:
 
 ```bash
 git config core.hooksPath .githooks
@@ -67,7 +77,8 @@ apps/storefront/                One Astro app, built once per tenant
 deploy/systemd/                 Two hardened units, sweep + backup timers
 deploy/nginx/                   One server block per store, separate certs
 scripts/validate-tenants.mjs    Config-collision gate, run before deploy
-.env                            Secrets   (gitignored — copy .env.example)
+config.json                     Secrets + storage  (gitignored)
+config.example.json             Commented stub template  (committed)
 data/                           i3x.db, webos.db  (gitignored)
 ```
 

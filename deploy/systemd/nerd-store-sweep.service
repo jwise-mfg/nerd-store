@@ -6,7 +6,7 @@ Type=oneshot
 User=nerdstore
 Group=nerdstore
 WorkingDirectory=/srv/nerd-store
-Environment=DATA_DIR=/var/lib/nerd-store
+Environment=CONFIG_PATH=/etc/nerd-store/config.json
 ExecStart=/usr/bin/node /srv/nerd-store/scripts/sweep-reservations.ts
 NoNewPrivileges=yes
 ProtectSystem=strict

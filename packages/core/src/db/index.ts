@@ -1,7 +1,8 @@
 import Database from 'better-sqlite3'
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { mkdirSync, existsSync, readFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { mkdirSync, existsSync } from 'node:fs'
+import { dirname } from 'node:path'
+import { tenantDbPath } from '../config/index.ts'
 import * as schema from './schema.ts'
 import type { TenantId } from '../tenant/types.ts'
 
@@ -11,48 +12,9 @@ type Db = BetterSQLite3Database<typeof schema>
 
 const handles = new Map<TenantId, Db>()
 
-/**
- * Repository root, found by walking up from the working directory looking for
- * this workspace's package.json.
- *
- * Deriving it from `import.meta.url` does not survive bundling -- Vite rewrites
- * this module into the storefront's `dist-<tenant>` server chunks, four levels
- * from a completely different place. Walking up from cwd is stable in dev, in
- * a build, and under systemd.
- */
-function findRepoRoot(): string {
-  let dir = process.cwd()
-  for (let i = 0; i < 8; i++) {
-    const pkg = join(dir, 'package.json')
-    if (existsSync(pkg)) {
-      try {
-        const parsed = JSON.parse(readFileSync(pkg, 'utf8')) as { name?: string }
-        if (parsed.name === 'nerd-store') return dir
-      } catch { /* unreadable package.json; keep walking */ }
-    }
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return process.cwd()
-}
-
-const REPO_ROOT = findRepoRoot()
-
-/**
- * Where the store files live. One file per tenant, never shared.
- *
- * A relative DATA_DIR is resolved against the repository root, NOT the
- * working directory. Astro builds run from apps/storefront/, scripts run from
- * the root, and systemd runs from wherever WorkingDirectory says -- and
- * because SQLite creates a database on open, a cwd-relative path does not
- * error, it silently produces an empty catalogue. Anchoring the path removes
- * that entire class of bug.
- */
+/** Where a tenant's database lives. Resolved from config, never from cwd. */
 export function dbPath(tenant: TenantId): string {
-  const override = process.env[`DATABASE_PATH_${tenant.toUpperCase()}`]
-  const raw = override ?? join(process.env.DATA_DIR ?? './data', `${tenant}.db`)
-  return isAbsolute(raw) ? raw : resolve(REPO_ROOT, raw)
+  return tenantDbPath(tenant)
 }
 
 /**

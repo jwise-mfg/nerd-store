@@ -1,13 +1,12 @@
 import Stripe from 'stripe'
+import { config } from '../config/index.ts'
 import type { TenantConfig } from '../tenant/types.ts'
 
 let _stripe: Stripe | null = null
 
 export function stripe(): Stripe {
   if (_stripe) return _stripe
-  const key = process.env.STRIPE_SECRET_KEY
-  if (!key) throw new Error('STRIPE_SECRET_KEY is not set')
-  _stripe = new Stripe(key, { apiVersion: '2024-12-18.acacia' })
+  _stripe = new Stripe(config().stripe.secretKey, { apiVersion: '2024-12-18.acacia' })
   return _stripe
 }
 
@@ -82,7 +81,5 @@ function assertDescriptor(suffix: string): string {
 }
 
 export function verifyWebhook(payload: string, signature: string): Stripe.Event {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET
-  if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET is not set')
-  return stripe().webhooks.constructEvent(payload, signature, secret)
+  return stripe().webhooks.constructEvent(payload, signature, config().stripe.webhookSecret)
 }

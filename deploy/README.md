@@ -13,17 +13,16 @@ sudo chown -R nerdstore:nerdstore /srv/nerd-store /var/lib/nerd-store /var/backu
 # 2. Code
 sudo -u nerdstore git clone <your-repo> /srv/nerd-store
 
-# 3. Secrets — root-owned, 600. One file per store, so compromising one
-#    service's environment does not hand over the other's keys.
-#    These mirror .env.example; replace every stub.
-sudo tee /etc/nerd-store/i3x.env >/dev/null <<'ENV'
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-MAIL_WEBHOOK_URL=https://...
-ENV
-sudo cp /etc/nerd-store/i3x.env /etc/nerd-store/webos.env   # then edit if they differ
-sudo chmod 600 /etc/nerd-store/*.env
+# 3. Configuration. Copy the example and fill it in — this is the only file
+#    holding secrets. Both services read it; they share a Stripe account, so
+#    two copies would just be two places to update the same key.
+sudo cp /srv/nerd-store/config.example.json /etc/nerd-store/config.json
+sudo nano /etc/nerd-store/config.json      # replace every REPLACE_ME
+sudo chown root:nerdstore /etc/nerd-store/config.json
+sudo chmod 640 /etc/nerd-store/config.json
+
+#    Set storage.dataDir to the absolute production path:
+#      "storage": { "dataDir": "/var/lib/nerd-store" }
 
 # 4. Units and timers
 sudo cp deploy/systemd/*.service deploy/systemd/*.timer /etc/systemd/system/
@@ -47,6 +46,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ## Deploy a change
 
 ```bash
+cd /srv/nerd-store && sudo -u nerdstore git pull
 sudo -u nerdstore /srv/nerd-store/scripts/deploy.sh
 ```
 
@@ -73,6 +73,7 @@ journalctl -u shop-i3x -f                  # logs
 systemctl list-timers 'nerd-store-*'       # sweep + backup schedule
 sudo -u nerdstore ./scripts/backup.sh      # backup on demand
 ls -la /var/lib/nerd-store/                # i3x.db, webos.db
+sudo cat /etc/nerd-store/config.json       # the one file holding secrets
 ```
 
 **Restore:** stop the service, `gunzip` the backup over the file, start it.

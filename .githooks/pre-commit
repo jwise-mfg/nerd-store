@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Refuse to commit secrets.
 #
-# .env is gitignored, but an ignore rule only protects you until someone runs
-# `git add -f`, renames a file, or pastes a key into a source file. This hook
-# checks the actual staged content, which is the thing that gets published.
+# config.json is gitignored, but an ignore rule only protects you until
+# someone runs `git add -f`, renames a file, or pastes a key into a source
+# file. This hook checks the actual staged content, which is what gets
+# published.
 #
 # Enable once:  git config core.hooksPath .githooks
 set -uo pipefail
@@ -17,7 +18,7 @@ note() { echo "  ✗ $1"; fail=1; }
 # 1. Files that must never be tracked, whatever they are called.
 while IFS= read -r f; do
   case "$f" in
-    .env|.env.local|.env.production|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
+    config.json|*/config.json|.env|.env.*|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
       note "$f — secrets and databases do not belong in the repository" ;;
   esac
 done <<< "$staged"
@@ -32,11 +33,11 @@ if [ -n "$hits" ]; then
 fi
 
 # 3. The example config must stay stubbed -- it is committed, so anything in
-#    it is public. Every secret-ish key must be empty or end in REPLACE_ME.
-if grep -qx '.env.example' <<< "$staged"; then
-  bad=$(grep -E '^(STRIPE|MAIL)[A-Z_]*=.+' .env.example | grep -v 'REPLACE_ME' || true)
+#    it is public. Every stripe.* value must still say REPLACE_ME.
+if grep -qx 'config.example.json' <<< "$staged"; then
+  bad=$(grep -E '"(secretKey|publishableKey|webhookSecret)"' config.example.json | grep -v 'REPLACE_ME' || true)
   if [ -n "$bad" ]; then
-    note ".env.example holds a non-stub value:"
+    note "config.example.json holds a non-stub value:"
     echo "$bad" | sed 's/^/      /'
   fi
 fi
@@ -46,9 +47,9 @@ if [ "$fail" -ne 0 ]; then
 
   Commit blocked.
 
-  Secrets live in .env, which is gitignored. Copy .env.example to .env and put
-  real values there. To override this check for a specific commit that you are
-  certain about:  git commit --no-verify
+  Secrets live in config.json, which is gitignored. Copy config.example.json
+  to config.json and put real values there. To override this check for a
+  commit you are certain about:  git commit --no-verify
 
 MSG
   exit 1

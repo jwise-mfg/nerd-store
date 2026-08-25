@@ -7,6 +7,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/srv/nerd-store}"
+export CONFIG_PATH="${CONFIG_PATH:-/etc/nerd-store/config.json}"
 cd "$APP_DIR"
 
 echo "==> Installing dependencies"
@@ -20,7 +21,7 @@ echo "==> Validating tenant configuration"
 npm run validate:dist
 
 echo "==> Migrating tenant databases"
-DATA_DIR="${DATA_DIR:-/var/lib/nerd-store}" npm run db:migrate
+CONFIG_PATH="${CONFIG_PATH:-/etc/nerd-store/config.json}" npm run db:migrate
 
 echo "==> Restarting services"
 sudo systemctl restart shop-i3x.service

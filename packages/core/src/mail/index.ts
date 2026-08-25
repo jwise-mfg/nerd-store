@@ -1,3 +1,4 @@
+import { config } from '../config/index.ts'
 import type { TenantConfig } from '../tenant/types.ts'
 import { formatMoney } from '../util/money.ts'
 
@@ -76,14 +77,14 @@ ${tenant.mail.postalAddress}
 }
 
 /**
- * Delivery is left as an adapter. Point MAIL_TRANSPORT at your provider; the
+ * Delivery is left as an adapter. Point mail.webhookUrl at your provider; the
  * only hard requirement is that each tenant authenticates its own sending
  * domain (SPF/DKIM for i3x.dev and webosarchive.org separately). A shared
  * envelope sender or a shared DKIM d= domain is visible in every raw header.
  */
 export async function sendReceipt(tenant: TenantConfig, data: ReceiptData): Promise<void> {
   const msg = renderReceipt(tenant, data)
-  const endpoint = process.env.MAIL_WEBHOOK_URL
+  const endpoint = config().mail.webhookUrl
   if (!endpoint) {
     console.info(`[mail:${tenant.id}] would send to ${msg.to}: ${msg.subject}`)
     return

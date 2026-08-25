@@ -2,11 +2,13 @@
 import Base from '../layouts/Base.astro'
 import Checkout from '../components/Checkout.tsx'
 import { TENANT } from '../lib/tenant.ts'
+import { config } from '@store/core'
 
-// The checkout shell is prerendered; only the island talks to the server.
+// The checkout shell is prerendered, so the publishable key is read from
+// config at build time and inlined. It is designed to be public.
 const t = TENANT
 const c = t.theme.color
-const pk = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''
+const pk = config().stripe.publishableKey
 ---
 <Base title={t.copy.checkoutTitle}>
   <h1>{t.copy.checkoutTitle}</h1>
@@ -25,5 +27,5 @@ const pk = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''
           },
         }}
       />
-    : <p class="notice">PUBLIC_STRIPE_PUBLISHABLE_KEY is not set for this build.</p>}
+    : <p class="notice">stripe.publishableKey is not set in config.json.</p>}
 </Base>

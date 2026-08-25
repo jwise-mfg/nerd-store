@@ -1,3 +1,4 @@
+export * from './config/index.ts'
 export * from './tenant/index.ts'
 export * from './catalog/index.ts'
 export * from './cart/index.ts'
