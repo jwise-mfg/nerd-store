@@ -36,13 +36,16 @@ for db in "$DATA_DIR"/*.db; do
   out="$BACKUP_DIR/${name}-${STAMP}.db"
 
   # Never leave a plaintext database behind. Two runs inside the same second
-  # share a timestamp, and without this the second one aborted mid-way and
-  # left an uncompressed copy of the store sitting in the backup directory.
-  trap 'rm -f "$out"' EXIT
+  # share a timestamp, and without this the second aborted mid-way and left an
+  # uncompressed copy of the store in the backup directory. The -wal and -shm
+  # sidecars count too: they are readable database content.
+  trap 'rm -f "$out" "$out-wal" "$out-shm"' EXIT
 
   sqlite3 "$db" ".backup '$out'"
-  # Collapse the WAL into the copy so a restore needs only this one file.
-  sqlite3 "$out" "pragma wal_checkpoint(TRUNCATE); vacuum;" > /dev/null
+  # Take the copy out of WAL mode so it is a single self-contained file with
+  # no sidecars, then compact it. A restore then needs only the .gz.
+  sqlite3 "$out" "pragma journal_mode=DELETE; vacuum;" > /dev/null
+  rm -f "$out-wal" "$out-shm"
   gzip -9 -f "$out"
   trap - EXIT
   echo "  backed up $name -> $(basename "$out").gz ($(du -h "${out}.gz" | cut -f1))"
