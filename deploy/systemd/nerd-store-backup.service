@@ -6,7 +6,7 @@ Type=oneshot
 User=cesmii
 Group=cesmii
 WorkingDirectory=/home/cesmii/repos/nerd-store
-Environment=DATA_DIR=/home/cesmii/repos/nerd-store/data
+Environment=CONFIG_PATH=/home/cesmii/repos/nerd-store/config.json
 Environment=BACKUP_DIR=/home/cesmii/backups/nerd-store
 ExecStart=/home/cesmii/repos/nerd-store/scripts/backup.sh
 NoNewPrivileges=yes
