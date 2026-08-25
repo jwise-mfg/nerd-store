@@ -1,14 +1,13 @@
 [Unit]
 Description=shop.i3x.dev storefront
-Documentation=file:///srv/nerd-store/docs/SEPARATION.md
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=nerdstore
-Group=nerdstore
-WorkingDirectory=/srv/nerd-store
+User=cesmii
+Group=cesmii
+WorkingDirectory=/home/cesmii/repos/nerd-store
 
 # TENANT selects which build this unit serves. It must match the dist
 # directory below; the app also cross-checks the Host header at request time.
@@ -17,12 +16,11 @@ Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=4321
 # All configuration -- Stripe keys, mail, database location -- lives in this
-# one file, root-owned and chmod 640. Both units read the same file: they bill
-# through the same Stripe account, so separate copies would only be two places
-# to update the same key.
-Environment=CONFIG_PATH=/etc/nerd-store/config.json
+# one file. Both units read the same file: they bill through the same Stripe
+# account, so separate copies would only be two places to update one key.
+Environment=CONFIG_PATH=/home/cesmii/repos/nerd-store/config.json
 
-ExecStart=/usr/bin/node /srv/nerd-store/apps/storefront/dist-i3x/server/entry.mjs
+ExecStart=/usr/bin/node /home/cesmii/repos/nerd-store/apps/storefront/dist-i3x/server/entry.mjs
 Restart=on-failure
 RestartSec=3
 
@@ -31,17 +29,18 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
 ProtectSystem=strict
-ProtectHome=yes
+# NOT ProtectHome=yes: the application lives under /home/cesmii/repos, so
+# hiding /home would make ExecStart fail with a bare "No such file".
+ProtectHome=no
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
 RestrictAddressFamilies=AF_INET AF_INET6
 RestrictNamespaces=yes
 LockPersonality=yes
-MemoryDenyWriteExecute=no
-# The ONLY writable path. Both units share this directory but touch different
+# The only writable path. Both units share this directory but touch different
 # files in it -- i3x.db and webos.db never overlap.
-ReadWritePaths=/var/lib/nerd-store
+ReadWritePaths=/home/cesmii/repos/nerd-store/data
 
 [Install]
 WantedBy=multi-user.target

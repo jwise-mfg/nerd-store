@@ -3,13 +3,13 @@ Description=Back up the tenant databases
 
 [Service]
 Type=oneshot
-User=nerdstore
-Group=nerdstore
-WorkingDirectory=/srv/nerd-store
-Environment=DATA_DIR=/var/lib/nerd-store
-Environment=BACKUP_DIR=/var/backups/nerd-store
-ExecStart=/srv/nerd-store/scripts/backup.sh
+User=cesmii
+Group=cesmii
+WorkingDirectory=/home/cesmii/repos/nerd-store
+Environment=DATA_DIR=/home/cesmii/repos/nerd-store/data
+Environment=BACKUP_DIR=/home/cesmii/backups/nerd-store
+ExecStart=/home/cesmii/repos/nerd-store/scripts/backup.sh
 NoNewPrivileges=yes
 ProtectSystem=strict
-ProtectHome=yes
-ReadWritePaths=/var/lib/nerd-store /var/backups/nerd-store
+ProtectHome=no
+ReadWritePaths=/home/cesmii/repos/nerd-store/data /home/cesmii/backups/nerd-store

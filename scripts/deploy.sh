@@ -6,8 +6,8 @@
 # two services independently so a fault in one store does not stop the other.
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/srv/nerd-store}"
-export CONFIG_PATH="${CONFIG_PATH:-/etc/nerd-store/config.json}"
+APP_DIR="${APP_DIR:-$HOME/repos/nerd-store}"
+export CONFIG_PATH="${CONFIG_PATH:-$APP_DIR/config.json}"
 cd "$APP_DIR"
 
 echo "==> Installing dependencies"

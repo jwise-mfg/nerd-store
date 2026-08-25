@@ -5,30 +5,28 @@ Two systemd services behind nginx, two SQLite files, no database server.
 ## Provision once
 
 ```bash
-# 1. User and directories
-sudo useradd --system --home /srv/nerd-store --shell /usr/sbin/nologin nerdstore
-sudo mkdir -p /srv/nerd-store /var/lib/nerd-store /var/backups/nerd-store /etc/nerd-store
-sudo chown -R nerdstore:nerdstore /srv/nerd-store /var/lib/nerd-store /var/backups/nerd-store
+# 1. Code, in the usual place
+cd ~/repos && git clone https://github.com/jwise-mfg/nerd-store.git
+cd nerd-store && npm ci
 
-# 2. Code
-sudo -u nerdstore git clone <your-repo> /srv/nerd-store
+# 2. Backup directory
+mkdir -p ~/backups/nerd-store
 
-# 3. Configuration. Copy the example and fill it in — this is the only file
-#    holding secrets. Both services read it; they share a Stripe account, so
-#    two copies would just be two places to update the same key.
-sudo cp /srv/nerd-store/config.example.json /etc/nerd-store/config.json
-sudo nano /etc/nerd-store/config.json      # replace every REPLACE_ME
-sudo chown root:nerdstore /etc/nerd-store/config.json
-sudo chmod 640 /etc/nerd-store/config.json
-
-#    Set storage.dataDir to the absolute production path:
-#      "storage": { "dataDir": "/var/lib/nerd-store" }
+# 3. Configuration — the only file holding secrets. Both services read it;
+#    they share a Stripe account, so two copies would just be two places to
+#    update the same key.
+cp config.example.json config.json
+chmod 600 config.json
+nano config.json          # replace every REPLACE_ME with a real Stripe key
 
 # 4. Units and timers
 sudo cp deploy/systemd/*.service deploy/systemd/*.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now shop-i3x shop-webos
 sudo systemctl enable --now nerd-store-sweep.timer nerd-store-backup.timer
+
+# sqlite3 CLI is what backup.sh uses for consistent snapshots
+sudo apt-get install -y sqlite3
 
 # 5. TLS — SEPARATE certificates. Never one cert covering both names:
 #    certificate transparency logs are public and permanent, and a shared SAN
@@ -46,8 +44,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ## Deploy a change
 
 ```bash
-cd /srv/nerd-store && sudo -u nerdstore git pull
-sudo -u nerdstore /srv/nerd-store/scripts/deploy.sh
+cd ~/repos/nerd-store && git pull && ./scripts/deploy.sh
 ```
 
 Builds both storefronts, **refuses to continue if the validator finds a config
@@ -71,9 +68,9 @@ Subscribe to `payment_intent.succeeded`, `payment_intent.payment_failed`,
 ```bash
 journalctl -u shop-i3x -f                  # logs
 systemctl list-timers 'nerd-store-*'       # sweep + backup schedule
-sudo -u nerdstore ./scripts/backup.sh      # backup on demand
-ls -la /var/lib/nerd-store/                # i3x.db, webos.db
-sudo cat /etc/nerd-store/config.json       # the one file holding secrets
+./scripts/backup.sh                        # backup on demand
+ls -la ~/repos/nerd-store/data/            # i3x.db, webos.db
+cat ~/repos/nerd-store/config.json         # the one file holding secrets
 ```
 
 **Restore:** stop the service, `gunzip` the backup over the file, start it.
@@ -81,7 +78,6 @@ Each store restores independently — the other keeps trading.
 
 ```bash
 sudo systemctl stop shop-webos
-sudo -u nerdstore gunzip -c /var/backups/nerd-store/webos-<stamp>.db.gz \
-  > /var/lib/nerd-store/webos.db
+gunzip -c ~/backups/nerd-store/webos-<stamp>.db.gz > ~/repos/nerd-store/data/webos.db
 sudo systemctl start shop-webos
 ```

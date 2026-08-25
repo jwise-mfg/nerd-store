@@ -3,12 +3,12 @@ Description=Release expired stock reservations
 
 [Service]
 Type=oneshot
-User=nerdstore
-Group=nerdstore
-WorkingDirectory=/srv/nerd-store
-Environment=CONFIG_PATH=/etc/nerd-store/config.json
-ExecStart=/usr/bin/node /srv/nerd-store/scripts/sweep-reservations.ts
+User=cesmii
+Group=cesmii
+WorkingDirectory=/home/cesmii/repos/nerd-store
+Environment=CONFIG_PATH=/home/cesmii/repos/nerd-store/config.json
+ExecStart=/usr/bin/node /home/cesmii/repos/nerd-store/scripts/sweep-reservations.ts
 NoNewPrivileges=yes
 ProtectSystem=strict
-ProtectHome=yes
-ReadWritePaths=/var/lib/nerd-store
+ProtectHome=no
+ReadWritePaths=/home/cesmii/repos/nerd-store/data
