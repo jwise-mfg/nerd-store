@@ -220,6 +220,8 @@ Stripe delivers at least once.
 
 ## Status
 
+See [docs/STATUS.md](docs/STATUS.md) for what is outstanding.
+
 Working and exercised: catalogue, cart, tenant isolation, availability under
 holds, reservations under concurrency, shipping rates, order records, backup
 and restore round-trip, tenant validation, commit hook.
