@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# storemgr -- store administration
+#
+#   ./storemgr catalogue
+#   ./storemgr stock I3X-BOOK-HC +50
+#   ./storemgr orders --status paid -t webos
+#
+# Put it on your PATH so it works from anywhere:
+#   mkdir -p ~/.local/bin && ln -sf "$PWD/storemgr" ~/.local/bin/storemgr
+#
+# Then just:  storemgr catalogue
+set -euo pipefail
+
+# Resolve through symlinks, so a link on PATH still finds the repository.
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+  dir="$(cd -P "$(dirname "$src")" && pwd)"
+  src="$(readlink "$src")"
+  [[ $src != /* ]] && src="$dir/$src"
+done
+APP_DIR="$(cd -P "$(dirname "$src")" && pwd)"
+
+# The admin tool locates config.json and the databases by walking up from the
+# working directory, so run from the repository regardless of where you are.
+cd "$APP_DIR"
+
+command -v node >/dev/null || { echo "storemgr: node is not installed" >&2; exit 1; }
+exec node scripts/admin.ts "$@"

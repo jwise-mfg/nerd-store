@@ -63,6 +63,48 @@ Deploying to a VPS: see [deploy/README.md](deploy/README.md).
 
 ---
 
+## Running the shop
+
+`storemgr` manages the catalogue, stock, and orders. Authentication is SSH: if
+you can run it, you are the operator, so there is no login and no public admin
+surface on a live store.
+
+```bash
+./storemgr help
+
+./storemgr catalogue                     # listings, prices, stock, live holds
+./storemgr low                           # what needs restocking
+./storemgr stock I3X-BOOK-HC +50         # set (250) or adjust (+50 / -10)
+./storemgr price I3X-BOOK-HC 26.50       # dollars, not cents
+./storemgr orders --status paid          # awaiting shipment
+./storemgr order I3X-ABC123              # full detail incl. address
+./storemgr ship I3X-ABC123 --carrier USPS --tracking 9400...
+```
+
+Add `-t webos` to target the other store; it defaults to `i3x`.
+
+Adding something new takes two steps, because a product with no variant never
+appears in the shop:
+
+```bash
+./storemgr product-add --slug tote --title "i3X Tote" --kind apparel
+./storemgr variant-add --product tote --sku I3X-TOTE-NAT --price 18 --stock 25
+./storemgr activate tote
+```
+
+Put it on your PATH to drop the `./`:
+
+```bash
+mkdir -p ~/.local/bin && ln -sf "$PWD/storemgr" ~/.local/bin/storemgr
+```
+
+**Stock changes are live; everything else needs a rebuild.** The product page
+fetches availability on load, so stock takes effect at once. Price, title, and
+visibility are baked into prerendered HTML and need
+`./scripts/deploy.sh --no-pull`. Every command tells you which it is.
+
+---
+
 ## Layout
 
 ```
