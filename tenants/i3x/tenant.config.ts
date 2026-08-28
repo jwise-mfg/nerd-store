@@ -3,11 +3,16 @@ import type { TenantConfig } from '../../packages/core/src/tenant/types.ts'
 /**
  * shop.i3x.dev
  *
- * Palette and type lifted from www.i3x.dev: white ground, near-black ink
- * (#17171D), the deep navy #00367F as primary and #00a009 as the affirmative
- * accent, set in Lato with Work Sans for display. Light, high-contrast, and
- * deliberately plain -- it should read as an extension of a standards body,
- * not as a merch store that happens to share a logo.
+ * Taken from www.i3x.dev by the role each colour plays in its stylesheet,
+ * not by how often the hex appears:
+ *
+ *     body            background #17171d   color #eeeeee
+ *     .button         background #00a009   color #ffffff
+ *     .button:hover   background #00367f
+ *
+ * So: a near-black ground with light text, green as the primary action, and
+ * navy only as the hover state. Set in Lato with Work Sans for display, and
+ * carrying the same white wordmark the parent site uses.
  */
 export const i3x: TenantConfig = {
   id: 'i3x',
@@ -27,25 +32,20 @@ export const i3x: TenantConfig = {
 
   theme: {
     color: {
-      bg: '#ffffff',
-      bgElevated: '#f6f7f9',
-      ink: '#17171d',
-      inkMuted: '#5b5f6b',
-      accent: '#00367f',
+      bg: '#17171d',          // body background on i3x.dev
+      bgElevated: '#20202a',
+      ink: '#eeeeee',         // body colour on i3x.dev
+      inkMuted: '#9b9ca6',    // lightened from #494A52 for contrast on the dark ground
+      accent: '#00a009',      // .button background
+      accentHover: '#00367f', // .button:hover background
       accentInk: '#ffffff',
-      line: '#dfe3ea',
+      line: '#2f2f3a',
       danger: '#e14d43',
       ok: '#00a009',
     },
-    colorDark: {
-      bg: '#0f1116',
-      bgElevated: '#171a21',
-      ink: '#f4f5f7',
-      inkMuted: '#9aa1b0',
-      accent: '#5b9bf0',
-      accentInk: '#0f1116',
-      line: '#262b36',
-    },
+    // The site is dark by design, not by preference. A light-mode inversion
+    // would not look like i3x.dev, so there is nothing to swap.
+    colorDark: {},
     font: {
       sans: "Lato, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       display: "'Work Sans', Lato, -apple-system, sans-serif",
@@ -54,12 +54,15 @@ export const i3x: TenantConfig = {
         'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Work+Sans:wght@500;600;700&display=swap',
     },
     radius: { sm: '4px', md: '8px', lg: '14px', pill: '999px' },
+    logo: { src: '/brand/i3x-logo-white.png', alt: 'i3X', height: '34px' },
     space: { unit: '8px' },
     extraCss: `
-      /* Thin rule under the masthead, echoing the spec-document feel of i3x.dev */
+      /* Green rule under the masthead, as on i3x.dev. */
       .masthead { border-bottom: 2px solid var(--c-accent); }
       .product-card { transition: border-color .15s ease, transform .15s ease; }
       .product-card:hover { border-color: var(--c-accent); transform: translateY(-2px); }
+      /* Buttons shift green -> navy on hover, matching the parent site. */
+      .btn:hover:not(:disabled) { background: var(--c-accent-hover); }
     `,
   },
 

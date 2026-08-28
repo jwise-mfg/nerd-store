@@ -29,7 +29,12 @@ const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${
   <body>
     <header class="masthead">
       <div class="wrap masthead-inner">
-        <a class="brand" href="/">{t.storeName}</a>
+        <a class="brand" href="/" aria-label={t.storeName}>
+          {t.theme.logo
+            ? <img src={t.theme.logo.src} alt={t.theme.logo.alt}
+                   style={`height:${t.theme.logo.height};width:auto;display:block;`} />
+            : t.storeName}
+        </a>
         <nav class="nav">
           {t.copy.nav.map((n) => <a href={n.href}>{n.label}</a>)}
           <a class="cart-link" href="/cart" data-cart-link>Cart</a>

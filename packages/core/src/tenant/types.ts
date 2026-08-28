@@ -20,6 +20,8 @@ export interface ThemeTokens {
     ink: string
     inkMuted: string
     accent: string
+    /** Hover/active state for accent surfaces. Some brands shift hue here. */
+    accentHover: string
     accentInk: string
     line: string
     danger: string
@@ -35,6 +37,12 @@ export interface ThemeTokens {
     googleFontsHref: string | null
   }
   radius: { sm: string; md: string; lg: string; pill: string }
+  /**
+   * Brand mark for the masthead. Tokens can carry colour and type, but not a
+   * logo -- and a store with neither reads as generic no matter how correct
+   * its palette is. null falls back to the store name set in the display face.
+   */
+  logo: { src: string; alt: string; height: string } | null
   space: { unit: string }
   /** Extra raw CSS appended after tokens -- for textures, gradients, scanlines. */
   extraCss?: string

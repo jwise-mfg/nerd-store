@@ -17,6 +17,7 @@ export function themeCss(t: TenantConfig): string {
     --c-ink: ${v.ink};
     --c-ink-muted: ${v.inkMuted};
     --c-accent: ${v.accent};
+    --c-accent-hover: ${v.accentHover};
     --c-accent-ink: ${v.accentInk};
     --c-line: ${v.line};
     --c-danger: ${v.danger};
