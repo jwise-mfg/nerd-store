@@ -19,6 +19,7 @@ import { db, withWriteRetry } from '../packages/core/src/db/index.ts'
 import { products, variants, orders, orderItems, shipments } from '../packages/core/src/db/schema.ts'
 import { tenantById, allTenants } from '../packages/core/src/tenant/index.ts'
 import { formatMoney } from '../packages/core/src/util/money.ts'
+import { sendShipped, trackingUrlFor } from '../packages/core/src/mail/index.ts'
 import { availability } from '../packages/core/src/inventory/index.ts'
 
 // ---------------------------------------------------------------- args ----
@@ -375,16 +376,59 @@ async function ship() {
   if (!o) die(`No order ${num} in ${t.storeName}.`)
   if (o.status !== 'paid') die(`${o.orderNumber} is "${o.status}", not "paid". Only paid orders ship.`)
 
+  const trackingCode = flags.tracking ? String(flags.tracking) : null
+  const trackingUrl = flags.url ? String(flags.url) : null
+
   await withWriteRetry(() => db(t.id).transaction((tx) => {
-    tx.insert(shipments).values({
-      orderId: o.id, carrier,
-      trackingCode: flags.tracking ? String(flags.tracking) : null,
-      trackingUrl: flags.url ? String(flags.url) : null,
-    }).run()
+    tx.insert(shipments).values({ orderId: o.id, carrier, trackingCode, trackingUrl }).run()
     tx.update(orders).set({ status: 'fulfilled' }).where(eq(orders.id, o.id)).run()
   }, { behavior: 'immediate' }))
-  console.log(`\n  ${o.orderNumber} marked fulfilled, shipped via ${carrier}${flags.tracking ? ` (${flags.tracking})` : ''}.`)
-  console.log(`  Note: this does not email the customer -- no shipping notification is implemented yet.\n`)
+  console.log(`\n  ${o.orderNumber} marked fulfilled, shipped via ${carrier}${trackingCode ? ` (${trackingCode})` : ''}.`)
+
+  if (flags['no-email']) {
+    console.log(`  Customer not emailed (--no-email).\n`)
+    return
+  }
+
+  // The order is already fulfilled above. Mail is best-effort from here: a
+  // failed send must not leave you unsure whether the dispatch was recorded.
+  const items = db(t.id).select().from(orderItems).where(eq(orderItems.orderId, o.id)).all()
+  try {
+    await sendShipped(t, {
+      order: { orderNumber: o.orderNumber, email: o.email, shippingAddress: o.shippingAddress },
+      items: items.map((i) => ({ titleSnapshot: i.titleSnapshot, qty: i.qty, serialSnapshot: i.serialSnapshot })),
+      shipment: { carrier, trackingCode, trackingUrl },
+    })
+    const link = trackingUrl ?? trackingUrlFor(carrier, trackingCode)
+    console.log(`  Emailed ${o.email}${link ? `\n  Tracking link: ${link}` : ''}\n`)
+  } catch (e) {
+    console.log(`  BUT the shipping email failed: ${e instanceof Error ? e.message : e}`)
+    console.log(`  The order IS marked fulfilled. Re-send with: admin ship-email ${o.orderNumber} -t ${t.id}\n`)
+  }
+}
+
+/** Re-send a shipping notification for an order already marked fulfilled. */
+async function shipEmail() {
+  const [num] = positional
+  if (!num) die('usage: admin ship-email <ORDER-NUMBER> [--to someone@else] [-t store]')
+  const o = db(t.id).select().from(orders)
+    .where(and(eq(orders.tenant, t.id), eq(orders.orderNumber, num.toUpperCase()))).get()
+  if (!o) die(`No order ${num} in ${t.storeName}.`)
+  const ship = db(t.id).select().from(shipments).where(eq(shipments.orderId, o.id))
+    .orderBy(desc(shipments.shippedAt)).get()
+  if (!ship) die(`${o.orderNumber} has no recorded shipment. Use: admin ship ${o.orderNumber} --carrier USPS`)
+
+  const items = db(t.id).select().from(orderItems).where(eq(orderItems.orderId, o.id)).all()
+  await sendShipped(t, {
+    order: {
+      orderNumber: o.orderNumber,
+      email: flags.to ? String(flags.to) : o.email,
+      shippingAddress: o.shippingAddress,
+    },
+    items: items.map((i) => ({ titleSnapshot: i.titleSnapshot, qty: i.qty, serialSnapshot: i.serialSnapshot })),
+    shipment: { carrier: ship.carrier, trackingCode: ship.trackingCode, trackingUrl: ship.trackingUrl },
+  })
+  console.log(`\n  Shipping notification sent to ${flags.to ?? o.email}.\n`)
 }
 
 async function low() {
@@ -423,7 +467,11 @@ function usage() {
   Orders
     orders [--status paid] [--limit 20]
     order <ORDER-NUMBER>
-    ship <ORDER-NUMBER> --carrier USPS [--tracking 9400...] [--url ...]
+    ship <ORDER-NUMBER> --carrier USPS [--tracking 9400...] [--url ...] [--no-email]
+    ship-email <ORDER-NUMBER> [--to someone@else]    re-send the notification
+
+  USPS, UPS, FedEx and DHL get a tracking link built automatically from the
+  carrier and number; --url overrides it for anyone else.
 
   Catalogue pages are prerendered, so changes to what a page SAYS need
   ./scripts/deploy.sh --no-pull. Stock is read live and takes effect at once.
@@ -447,6 +495,7 @@ const commands: Record<string, () => Promise<void>> = {
   orders: listOrders,
   order: showOrder,
   ship,
+  'ship-email': shipEmail,
 }
 
 if (!cmd || cmd === 'help' || cmd === '--help') { usage(); process.exit(0) }

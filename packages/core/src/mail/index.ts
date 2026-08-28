@@ -76,6 +76,85 @@ ${tenant.mail.postalAddress}
   }
 }
 
+export interface ShipmentData {
+  order: {
+    orderNumber: string
+    email: string
+    shippingAddress: {
+      name: string; line1: string; line2?: string
+      city: string; state: string; postalCode: string; country: string
+    }
+  }
+  items: { titleSnapshot: string; qty: number; serialSnapshot: string | null }[]
+  shipment: { carrier: string; trackingCode: string | null; trackingUrl: string | null }
+}
+
+/**
+ * Tracking URLs for the carriers a US shop actually uses.
+ *
+ * Saves the buyer copying a number into a search box, and saves you passing
+ * --url every time. An unrecognised carrier just omits the link rather than
+ * guessing at a URL that would 404.
+ */
+const CARRIER_TRACKING: Record<string, (code: string) => string> = {
+  usps: (c) => `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(c)}`,
+  ups: (c) => `https://www.ups.com/track?tracknum=${encodeURIComponent(c)}`,
+  fedex: (c) => `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(c)}`,
+  dhl: (c) => `https://www.dhl.com/en/express/tracking.html?AWB=${encodeURIComponent(c)}`,
+}
+
+export function trackingUrlFor(carrier: string, code: string | null): string | null {
+  if (!code) return null
+  const build = CARRIER_TRACKING[carrier.trim().toLowerCase().replace(/\s+/g, '')]
+  return build ? build(code) : null
+}
+
+export function renderShipped(tenant: TenantConfig, data: ShipmentData): MailMessage {
+  const { order, items, shipment } = data
+  const a = order.shippingAddress
+  const url = shipment.trackingUrl ?? trackingUrlFor(shipment.carrier, shipment.trackingCode)
+
+  const lines = items
+    .map((i) => `  ${i.qty} x ${i.titleSnapshot}${i.serialSnapshot ? ` (S/N ${i.serialSnapshot})` : ''}`)
+    .join('\n')
+
+  const tracking = shipment.trackingCode
+    ? `Carrier: ${shipment.carrier}\nTracking: ${shipment.trackingCode}${url ? `\n${url}` : ''}`
+    : `Sent via ${shipment.carrier}. No tracking number is available for this shipment.`
+
+  return {
+    from: `${tenant.mail.fromName} <${tenant.mail.fromAddress}>`,
+    replyTo: tenant.mail.replyTo,
+    to: order.email,
+    subject: `${tenant.storeName} — order ${order.orderNumber} has shipped`,
+    text: `Your order is on its way.
+
+Order ${order.orderNumber}
+
+${lines}
+
+${tracking}
+
+Shipping to:
+  ${a.name}
+  ${a.line1}${a.line2 ? `\n  ${a.line2}` : ''}
+  ${a.city}, ${a.state} ${a.postalCode}
+  ${a.country}
+
+Tracking can take a few hours to show movement after a parcel is collected.
+
+Questions: ${tenant.support.email}
+
+${tenant.storeName}
+${tenant.mail.postalAddress}
+`,
+  }
+}
+
+export async function sendShipped(tenant: TenantConfig, data: ShipmentData): Promise<void> {
+  await sendMail(tenant.id, renderShipped(tenant, data))
+}
+
 /**
  * Send a receipt.
  *
