@@ -6,7 +6,15 @@ let _stripe: Stripe | null = null
 
 export function stripe(): Stripe {
   if (_stripe) return _stripe
-  _stripe = new Stripe(config().stripe.secretKey, { apiVersion: '2024-12-18.acacia' })
+  // Must match the version this SDK's types were generated for -- check
+  // node_modules/stripe/cjs/apiVersion.js after any `npm update stripe`.
+  // Pinning an older version than the SDK means the TypeScript types describe
+  // a response shape the API does not actually send.
+  //
+  // The webhook endpoint in the Stripe dashboard must be set to this same
+  // version, or events arrive rendered in a different shape than this code
+  // expects.
+  _stripe = new Stripe(config().stripe.secretKey, { apiVersion: '2025-02-24.acacia' })
   return _stripe
 }
 
