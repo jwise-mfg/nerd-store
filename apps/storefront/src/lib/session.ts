@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro'
-import { createCart, type TenantConfig } from '@store/core'
+import { cartExists, createCart, type TenantConfig } from '@store/core'
 
 /**
  * Cart session cookie.
@@ -15,7 +15,11 @@ export function readCartId(ctx: APIContext, t: TenantConfig): string | null {
 
 export async function ensureCartId(ctx: APIContext, t: TenantConfig): Promise<string> {
   const existing = readCartId(ctx, t)
-  if (existing) return existing
+  // A cookie can outlive its cart: the cart is deleted once its order is
+  // paid, and carts expire. Trusting the id blindly meant the next add-to-cart
+  // inserted a row against a cart that no longer exists, which the foreign key
+  // rejects -- the shopper would see "Could not add to cart" and nothing else.
+  if (existing && cartExists(t, existing)) return existing
   const id = await createCart(t)
   ctx.cookies.set(t.cartCookie, id, {
     path: '/',

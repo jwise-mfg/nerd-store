@@ -144,6 +144,28 @@ export function shipsTo(tenant: TenantConfig): string[] {
   return [...new Set(tenant.shipping.flatMap((r) => r.countries))].sort()
 }
 
+/**
+ * Discard a cart once its order is placed.
+ *
+ * Deleting the cart row cascades to its items and any remaining holds, so one
+ * statement finishes the job. Called from the webhook rather than the browser:
+ * the cart must be emptied even if the buyer closes the tab on the Stripe
+ * redirect, and only the webhook is guaranteed to run.
+ */
+export async function clearCart(tenant: TenantConfig, cartId: string): Promise<void> {
+  await withWriteRetry(() =>
+    db(tenant.id).delete(carts)
+      .where(and(eq(carts.id, cartId), eq(carts.tenant, tenant.id)))
+      .run(),
+  )
+}
+
+/** Does this cart still exist for this store? */
+export function cartExists(tenant: TenantConfig, cartId: string): boolean {
+  return db(tenant.id).select({ id: carts.id }).from(carts)
+    .where(and(eq(carts.id, cartId), eq(carts.tenant, tenant.id))).get() !== undefined
+}
+
 /** Cheapest rate that serves the destination, honouring free-shipping thresholds. */
 export function shippingFor(
   tenant: TenantConfig, country: string, subtotalCents: number,

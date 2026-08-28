@@ -3,7 +3,7 @@ import { db, withWriteRetry } from '../db/index.ts'
 import { orderItems, orders, variants, webhookEvents } from '../db/schema.ts'
 import type { Address } from '../db/schema.ts'
 import type { TenantConfig } from '../tenant/types.ts'
-import { loadCart, shippingFor } from '../cart/index.ts'
+import { clearCart, loadCart, shippingFor } from '../cart/index.ts'
 import { commitReservation, reserveForCart } from '../inventory/index.ts'
 import { createPaymentIntent } from '../payments/stripe.ts'
 import { newOrderNumber } from '../util/orderNumber.ts'
@@ -144,7 +144,12 @@ export async function markPaid(eventId: string, paymentIntentId: string, tenant:
 
   // The cart id travels on the intent metadata; holds become real decrements.
   const cartId = await cartIdForIntent(paymentIntentId)
-  if (cartId) await commitReservation(tenant, cartId)
+  if (cartId) {
+    await commitReservation(tenant, cartId)
+    // The order now owns these items; leaving them in the cart means the
+    // buyer returns to the shop and finds what they just bought still there.
+    await clearCart(tenant, cartId)
+  }
 
   // Never let mail fail the webhook. The payment is already captured and the
   // event id is already recorded, so a throw here would return 500, Stripe

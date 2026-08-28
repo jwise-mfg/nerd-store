@@ -10,6 +10,13 @@ export const prerender = false
 const t = TENANT
 const { orderNumber } = Astro.params
 const found = orderNumber ? getOrder(t, orderNumber) : null
+// Reaching a confirmation page for a real order means that cart is finished.
+// The webhook empties it server-side, but it can arrive seconds after the
+// Stripe redirect, and until then the shopper would see a stale cart badge.
+// Only when the order was actually found, so someone opening a stranger's
+// order URL does not lose their own basket.
+if (found) Astro.cookies.delete(t.cartCookie, { path: '/' })
+
 Astro.response.headers.set('cache-control', 'no-store')
 Astro.response.headers.set('x-robots-tag', 'noindex')
 ---
