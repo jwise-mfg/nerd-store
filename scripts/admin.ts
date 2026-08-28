@@ -8,7 +8,7 @@
  * running -- WAL allows a writer alongside readers. Authentication is SSH:
  * if you can run this, you are the operator.
  *
- * IMPORTANT: catalogue pages are prerendered, so anything that changes what a
+ * IMPORTANT: product pages are prerendered, so anything that changes what a
  * page SAYS needs a rebuild before shoppers see it. Stock is fetched live and
  * does not. Each command reports which it is.
  */
@@ -190,10 +190,10 @@ async function addImage() {
   console.log(`  ${url}  (${Math.round(statSync(src).size / 1024)} KB)`)
   if (!flags.alt) console.log(`  No --alt given, so alt text defaults to the product title. Set it for screen readers.`)
 
-  // The catalogue card shows image [0] and nothing else, so appending behind
+  // The shop grid shows image [0] and nothing else, so appending behind
   // a leftover placeholder looks exactly like the command did nothing.
   if (!flags.first && next[0] && /placehold\.co|placeholder/i.test(next[0].url)) {
-    console.log(`\n  NOTE: image [0] is still a placeholder, and the catalogue card shows only [0].`)
+    console.log(`\n  NOTE: image [0] is still a placeholder, and the shop grid shows only [0].`)
     console.log(`  Yours is at [${addedAt}] and will not appear on the grid until you promote it:`)
     console.log(`      storemgr image-first ${slug} ${addedAt}${sku ? ` --sku ${sku}` : ''} -t ${t.id}`)
     console.log(`  or drop the placeholder:  storemgr image-rm ${slug} 0${sku ? ` --sku ${sku}` : ''} -t ${t.id}`)
@@ -254,7 +254,7 @@ async function setAlt() {
   rebuild('Alt text')
 }
 
-/** Promote an image to the front, which is what the catalogue card shows. */
+/** Promote an image to the front, which is what the shop grid shows. */
 async function makeFirst() {
   const [slug, idxRaw] = positional
   if (!slug || idxRaw === undefined) die('usage: admin image-first <slug> <index> [--sku SKU]')
@@ -265,7 +265,7 @@ async function makeFirst() {
   if (idx === 0) { console.log(`\n  [0] is already the lead image.\n`); return }
   const next = [list[idx]!, ...list.filter((_, i) => i !== idx)]
   await saveImageList(p, v, next)
-  console.log(`\n  ${list[idx]!.url} is now the lead image — this is what the catalogue card shows.`)
+  console.log(`\n  ${list[idx]!.url} is now the lead image — this is what the shop grid shows.`)
   rebuild('Image order')
 }
 
@@ -300,7 +300,7 @@ async function removeImage() {
   rebuild('Images')
 }
 
-async function catalogue() {
+async function inventory() {
   const rows = db(t.id).select({
     slug: products.slug, title: products.title, status: products.status,
     sku: variants.sku, vTitle: variants.title, price: variants.priceCents,
@@ -541,8 +541,8 @@ function usage() {
   Store admin -- add -t <store> to target a store (default: i3x)
                  stores: ${allTenants().map((x) => x.id).join(', ')}
 
-  Catalogue
-    catalogue                          products, prices, stock, live holds
+  Inventory
+    inventory                          products, prices, stock, live holds
     low [--threshold 5]                what needs restocking
     publish                            rebuild this store's pages
     stock <sku> <qty|+n|-n>            set or adjust stock        (no publish)
@@ -554,7 +554,7 @@ function usage() {
     image-add <slug> <file.jpg> --alt "..." [--sku SKU] [--first]
     image-rm <slug> <index> [--sku SKU]
     image-alt <slug> <index> "new alt text" [--sku SKU]
-    image-first <slug> <index> [--sku SKU]   promote to the catalogue card
+    image-first <slug> <index> [--sku SKU]   promote to the shop grid
     variant-add --product <slug> --sku --title --price --stock
                 [--attr size=L] [--condition grade_a --serial X --notes "..."]
     activate <slug> / archive <slug>
@@ -583,7 +583,9 @@ async function publish() {
 
 const commands: Record<string, () => Promise<void>> = {
   publish,
-  catalogue, catalog: catalogue, ls: catalogue,
+  inventory,
+  // undocumented aliases, kept so existing habits and scripts still work
+  catalogue: inventory, catalog: inventory, ls: inventory,
   low,
   stock: setStock,
   price: setPrice,

@@ -72,7 +72,7 @@ Subscribe to `payment_intent.succeeded`, `payment_intent.payment_failed`,
 ## Operating
 
 ```bash
-./storemgr catalogue                       # stock and prices
+./storemgr inventory                        # stock and prices
 ./storemgr orders --status paid            # awaiting shipment
 journalctl -u shop-i3x -f                  # logs
 systemctl list-timers 'nerd-store-*'       # sweep + backup schedule

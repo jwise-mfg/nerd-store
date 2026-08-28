@@ -104,7 +104,7 @@ surface on a live store.
 ```bash
 ./storemgr help
 
-./storemgr catalogue                     # listings, prices, stock, live holds
+./storemgr inventory                      # listings, prices, stock, live holds
 ./storemgr low                           # what needs restocking
 ./storemgr stock I3X-BOOK-HC +50         # set (250) or adjust (+50 / -10)
 ./storemgr price I3X-BOOK-HC 26.50       # dollars, not cents
