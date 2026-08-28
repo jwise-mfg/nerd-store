@@ -28,3 +28,7 @@ private/
 # misc
 *.log
 .DS_Store
+
+# deploy bookkeeping
+.last-deploy
+.deploy.lock.d/
