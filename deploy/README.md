@@ -44,8 +44,14 @@ sudo nginx -t && sudo systemctl reload nginx
 ## Deploy a change
 
 ```bash
-cd ~/repos/nerd-store && git pull && ./scripts/deploy.sh
+~/repos/nerd-store/scripts/deploy.sh
 ```
+
+It pulls, rebuilds both storefronts, validates, migrates, restarts, and smoke
+tests. Dependencies are only reinstalled when `package-lock.json` changes, so
+a code-only deploy takes seconds rather than reinstalling ~350 packages.
+
+`--no-pull` deploys what is already checked out.
 
 Builds both storefronts, **refuses to continue if the validator finds a config
 collision or one store's assets in the other's bundle**, migrates both
