@@ -8,6 +8,7 @@ import { commitReservation, reserveForCart } from '../inventory/index.ts'
 import { createPaymentIntent } from '../payments/stripe.ts'
 import { newOrderNumber } from '../util/orderNumber.ts'
 import { sendReceipt } from '../mail/index.ts'
+import { notifyNewOrder } from '../notify/index.ts'
 
 /**
  * A problem the customer can see and fix -- an empty cart, an unavailable
@@ -154,6 +155,15 @@ export async function markPaid(eventId: string, paymentIntentId: string, tenant:
     await sendReceipt(tenant, { order, items })
   } catch (e) {
     console.error(`[mail:${tenant.id}] receipt FAILED for ${order.orderNumber} <${order.email}>:`,
+      e instanceof Error ? e.message : e)
+  }
+
+  // Same protection: an unreachable Pushover or mail relay must not cost you
+  // the sale. Worst case you learn about the order from `storemgr orders`.
+  try {
+    await notifyNewOrder(tenant, { order, items })
+  } catch (e) {
+    console.error(`[notify:${tenant.id}] FAILED for ${order.orderNumber}:`,
       e instanceof Error ? e.message : e)
   }
 }

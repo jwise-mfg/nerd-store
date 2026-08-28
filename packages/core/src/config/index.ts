@@ -46,6 +46,41 @@ const ConfigSchema = z.object({
         ctx.addIssue({ code: 'custom', path: ['webhookUrl'], message: 'transport is "webhook" but webhookUrl is null' })
       }
     }),
+  /**
+   * Where the operator is told about new orders. Both are optional; with
+   * neither set, a sale is announced only in the journal.
+   *
+   * These live here rather than in a tenant config because they are the
+   * operator's own contact details and credentials, not part of a store's
+   * public identity -- and config.json is gitignored.
+   */
+  notify: z.object({
+    /** Address to email on every paid order. */
+    email: z.string().email().nullable().default(null),
+    /** https://pushover.net -- application token and your user key. */
+    pushover: z.object({
+      token: z.string().min(1),
+      user: z.string().min(1),
+      /**
+       * Built-in name, or a custom sound uploaded to your Pushover
+       * application. Either one name for every store, or one per store --
+       * with two shops a distinct sound tells you which one sold without
+       * looking at the phone.
+       *
+       *   "sound": "cashregister"
+       *   "sound": { "i3x": "cashregister", "webos": "webos-notify" }
+       *
+       * Omit for Pushover's default. An unknown name is rejected by their
+       * API with a clear message rather than falling back silently.
+       */
+      sound: z.union([z.string().min(1), z.record(z.string().min(1))]).nullable().default(null),
+      /** -2 quiet, 0 normal, 1 high, 2 requires acknowledgement. */
+      priority: z.number().int().min(-2).max(2).nullable().default(null),
+      /** Limit to one device by name; omit to reach all of them. */
+      device: z.string().min(1).nullable().default(null),
+    }).nullable().default(null),
+  }).default({ email: null, pushover: null }),
+
   storage: z.object({
     /** Directory holding one SQLite file per store. */
     dataDir: z.string().default('./data'),

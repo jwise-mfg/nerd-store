@@ -27,7 +27,8 @@
     "validate:dist": "node scripts/validate-tenants.mjs --dist",
     "check:stripe": "node scripts/check-stripe.ts",
     "admin": "node scripts/admin.ts",
-    "test:mail": "node scripts/test-mail.ts"
+    "test:mail": "node scripts/test-mail.ts",
+    "test:notify": "node scripts/test-notify.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

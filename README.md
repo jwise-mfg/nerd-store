@@ -71,6 +71,26 @@ node scripts/test-mail.ts you@example.com          # or -t webos
 With `mail.transport` left as `"log"` nothing is sent; receipts only appear in
 the journal.
 
+**5. Order notifications.** Receipts go to the customer; `notify` tells *you*.
+
+```json
+"notify": {
+  "email": "you@example.com",
+  "pushover": {
+    "token": "…", "user": "…",
+    "sound": { "i3x": "cashregister", "webos": "webos-notify" }
+  }
+}
+```
+
+`sound` takes a built-in or custom Pushover sound, and a per-store map means
+you can tell which shop sold without looking. Test both channels without
+placing an order:
+
+```bash
+node scripts/test-notify.ts          # or -t webos
+```
+
 Deploying to a VPS: see [deploy/README.md](deploy/README.md).
 
 ---

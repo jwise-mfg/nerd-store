@@ -84,7 +84,12 @@ ${tenant.mail.postalAddress}
  * never turn a completed sale into a failed webhook.
  */
 export async function sendReceipt(tenant: TenantConfig, data: ReceiptData): Promise<void> {
-  const msg = renderReceipt(tenant, data)
+  await sendMail(tenant.id, renderReceipt(tenant, data))
+}
+
+/** Hand any message to the configured transport. */
+export async function sendMail(label: string, msg: MailMessage): Promise<void> {
+  const tenant = { id: label } as { id: string }
   const m = config().mail
 
   switch (m.transport) {

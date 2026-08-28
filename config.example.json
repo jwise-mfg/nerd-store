@@ -45,6 +45,32 @@
     "webhookUrl": null
   },
 
+  // Where YOU are told about new orders. Both optional; with neither set, a
+  // sale is announced only in the journal. Distinct from mail above, which is
+  // what the customer receives.
+  "notify": {
+    // Emailed on every paid order, through the mail transport above.
+    "email": null,
+
+    // https://pushover.net -- create an application to get a token; the user
+    // key is on your dashboard.
+    //
+    // "sound" takes a built-in name or a custom sound uploaded to your
+    // application. Give each store its own and you know which one sold
+    // without looking. Omit it for Pushover's default.
+    //   "sound": "cashregister"
+    //   "sound": { "i3x": "cashregister", "webos": "webos-notify" }
+    //
+    // "priority": -2 quiet, 0 normal, 1 high, 2 needs acknowledgement.
+    // "device": limit to one device by name; omit to reach all of them.
+    "pushover": null
+    // "pushover": {
+    //   "token": "REPLACE_ME",
+    //   "user": "REPLACE_ME",
+    //   "sound": { "i3x": "cashregister", "webos": "webos-notify" }
+    // }
+  },
+
   "storage": {
     // Directory holding one SQLite file per store. A relative path is
     // resolved against the repository root, not the working directory.
