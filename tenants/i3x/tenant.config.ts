@@ -67,9 +67,9 @@ export const i3x: TenantConfig = {
 
   brand: {
     wordmark: { src: '/brand/i3x-logo-white.png', alt: 'i3X — Industrial Information Interoperability eXchange', height: '30px' },
-    mark: { src: '/brand/i3x-orb-256.png', alt: '', size: '30px' },
+    mark: { src: '/brand/i3x-orb-64.png', alt: '', size: '30px' },
     favicon: '/brand/i3x-orb-32.png',
-    appleTouchIcon: '/brand/i3x-orb-512.png',
+    appleTouchIcon: '/brand/i3x-orb-256.png',
   },
 
   copy: {
