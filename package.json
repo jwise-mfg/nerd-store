@@ -25,7 +25,8 @@
     "test": "npm run test:availability && npm run test:oversell && npm run validate",
     "validate": "node scripts/validate-tenants.mjs",
     "validate:dist": "node scripts/validate-tenants.mjs --dist",
-    "check:stripe": "node scripts/check-stripe.ts"
+    "check:stripe": "node scripts/check-stripe.ts",
+    "admin": "node scripts/admin.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
