@@ -26,7 +26,7 @@ export const i3x: TenantConfig = {
     fromName: 'i3X Store',
     fromAddress: 'store@i3x.dev',
     replyTo: 'store@i3x.dev',
-    postalAddress: 'i3X Store — [postal address required on commercial email]',
+    postalAddress: 'JW LLC — 5387 Avion Park Dr., Highland Heights, OH 44143',
   },
   support: { email: 'store@i3x.dev', returnsPath: '/policies/returns' },
 
@@ -109,9 +109,9 @@ export const i3x: TenantConfig = {
 
   shipping: [
     { code: 'us_standard', label: 'Standard (USPS)', amount: 500, freeAbove: 7500,
-      countries: ['US'], estimate: '3–7 business days' },
+      countries: ['US'], estimate: '5-10 business days' },
     { code: 'us_priority', label: 'Priority Mail', amount: 1200, freeAbove: null,
-      countries: ['US'], estimate: '2–3 business days' },
+      countries: ['US'], estimate: '3-5 business days' },
   ],
 
   // Distinct from the other store's analytics. A shared measurement id is the

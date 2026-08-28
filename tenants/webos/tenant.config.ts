@@ -22,7 +22,7 @@ export const webos: TenantConfig = {
     fromName: 'webOS Archive Shop',
     fromAddress: 'shop@webosarchive.org',
     replyTo: 'shop@webosarchive.org',
-    postalAddress: 'webOS Archive Shop — [postal address required on commercial email]',
+    postalAddress: 'JW LLC — 5387 Avion Park Dr., Highland Heights, OH 44143',
   },
   support: { email: 'shop@webosarchive.org', returnsPath: '/policies/returns' },
 
@@ -121,9 +121,9 @@ export const webos: TenantConfig = {
 
   shipping: [
     { code: 'us_ground', label: 'Ground (tracked)', amount: 800, freeAbove: null,
-      countries: ['US'], estimate: '3–6 business days' },
+      countries: ['US'], estimate: '5-10 business days' },
     { code: 'us_expedited', label: 'Expedited', amount: 1800, freeAbove: null,
-      countries: ['US'], estimate: '2 business days' },
+      countries: ['US'], estimate: '3-5 business days' },
   ],
 
   // The archive already self-hosts Matomo. Reuse the instance, but NEVER the
