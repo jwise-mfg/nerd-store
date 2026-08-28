@@ -83,6 +83,22 @@ surface on a live store.
 
 Add `-t webos` to target the other store; it defaults to `i3x`.
 
+Editing listings and images:
+
+```bash
+./storemgr product-edit how-machines-talk --title "..." --subtitle "..."
+./storemgr describe how-machines-talk description.md   # Markdown, from a file
+./storemgr images how-machines-talk                    # list, with indices
+./storemgr image-add how-machines-talk cover.jpg --alt "Book cover"
+./storemgr image-add hp-touchpad-32gb front.jpg --sku WOA-TP32-A-0417 --alt "This unit" -t webos
+./storemgr image-rm how-machines-talk 0
+```
+
+`image-add` copies the file into that store's own `public-<tenant>/products/`
+directory. Referencing a path elsewhere on disk would work locally and 404 in
+production, because the build only ships what is inside it. Use `--sku` for a
+photograph of one specific unit rather than the product generally.
+
 Adding something new takes two steps, because a product with no variant never
 appears in the shop:
 
@@ -116,6 +132,7 @@ packages/core/                  Everything that doesn't
   inventory/                      Availability + reservations (oversell protection)
   cart/  orders/  payments/  mail/
 apps/storefront/                One Astro app, built once per tenant
+  public-i3x/  public-webos/     Per-store static files; never shared
 deploy/systemd/                 Two hardened units, sweep + backup timers
 deploy/nginx/                   One server block per store, separate certs
 scripts/validate-tenants.mjs    Config-collision gate, run before deploy

@@ -126,6 +126,37 @@ if (process.argv.includes('--dist')) {
       })
     : []
 
+  // Binary assets shared between builds. The text scan below cannot see these
+  // -- a logo or product photograph present in two stores is an identifying
+  // link, and it was exactly how the i3X brand images ended up inside the
+  // webOS build when both stores shared one public/ directory.
+  const assetsByTenant = {}
+  for (const t of CONFIGS) {
+    const root = join(ROOT, `apps/storefront/dist-${t.id}/client`)
+    const all = existsSync(root)
+      ? readdirSync(root).flatMap(function rec(f) {
+          const p = join(root, f)
+          return statSync(p).isDirectory()
+            ? readdirSync(p).map((x) => join(f, x)).flatMap(rec)
+            : [f]
+        })
+      : []
+    // The hashed code bundles live under _<tenant>/ and are identical by
+    // design -- both stores run the same application.
+    assetsByTenant[t.id] = new Set(
+      all.filter((f) =>
+        !f.startsWith(`_${t.id}/`) &&
+        !f.endsWith('.html') &&
+        // Directory placeholders exist in both by design and identify nothing.
+        !f.split('/').some((seg) => seg.startsWith('.'))),
+    )
+  }
+  for (const [a, b] of PAIRS) {
+    const shared = [...(assetsByTenant[a.id] ?? [])].filter((f) => assetsByTenant[b.id]?.has(f))
+    check(`${a.id}/${b.id}: no static asset appears in both builds`,
+      shared.length === 0, shared.slice(0, 5).join(', '))
+  }
+
   for (const self of CONFIGS) {
     const dist = join(ROOT, `apps/storefront/dist-${self.id}`)
     const files = walk(dist)

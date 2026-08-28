@@ -12,6 +12,8 @@
  * page SAYS needs a rebuild before shoppers see it. Stock is fetched live and
  * does not. Each command reports which it is.
  */
+import { copyFileSync, existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs'
+import { basename, extname, join, resolve } from 'node:path'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { db, withWriteRetry } from '../packages/core/src/db/index.ts'
 import { products, variants, orders, orderItems, shipments } from '../packages/core/src/db/schema.ts'
@@ -50,7 +52,161 @@ function toCents(s: string): number {
   return Math.round(parseFloat(s.replace('$', '')) * 100)
 }
 
+/** Where this store's static files live. Per-store, so nothing crosses over. */
+const publicDir = () => resolve(process.cwd(), `apps/storefront/public-${t.id}`)
+
 // ------------------------------------------------------------ commands ----
+
+async function editProduct() {
+  const [slug] = positional
+  if (!slug) die('usage: admin product-edit <slug> [--title "..."] [--subtitle "..."] [--description "..."] [--slug new-slug] [--position 3]')
+  const p = db(t.id).select().from(products)
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
+  if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+
+  const patch: Record<string, unknown> = {}
+  if (flags.title) patch.title = String(flags.title)
+  if (flags.subtitle !== undefined) patch.subtitle = flags.subtitle === true ? null : String(flags.subtitle)
+  if (flags.description !== undefined) patch.descriptionMd = flags.description === true ? '' : String(flags.description)
+  if (flags.position) patch.position = Number(flags.position)
+  if (flags.slug) {
+    const taken = db(t.id).select({ id: products.id }).from(products)
+      .where(and(eq(products.tenant, t.id), eq(products.slug, String(flags.slug)))).get()
+    if (taken) die(`"${flags.slug}" is already used by another product.`)
+    patch.slug = String(flags.slug)
+  }
+  if (Object.keys(patch).length === 0) die('Nothing to change. Pass --title, --subtitle, --description, --slug or --position.')
+
+  patch.updatedAt = new Date()
+  await withWriteRetry(() => db(t.id).update(products).set(patch).where(eq(products.id, p.id)).run())
+  for (const [k, v] of Object.entries(patch)) {
+    if (k === 'updatedAt') continue
+    console.log(`\n  ${k}: ${JSON.stringify(v)}`)
+  }
+  if (patch.slug) console.log(`\n  The old URL /shop/${slug} will 404. Anyone who bookmarked it loses it.`)
+  rebuild('Product text')
+}
+
+/** Markdown description read from a file, for anything longer than a line. */
+async function describe() {
+  const [slug, file] = positional
+  if (!slug || !file) die('usage: admin describe <slug> <file.md>   -- replaces the description from a Markdown file')
+  const path = resolve(process.cwd(), file)
+  if (!existsSync(path)) die(`No such file: ${path}`)
+  const md = (await import('node:fs')).readFileSync(path, 'utf8')
+  const r = await withWriteRetry(() => db(t.id).update(products)
+    .set({ descriptionMd: md, updatedAt: new Date() })
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug)))
+    .returning({ title: products.title }).all())
+  if (r.length === 0) die(`No product "${slug}" in ${t.storeName}.`)
+  console.log(`\n  "${r[0]!.title}": description replaced (${md.length} chars of Markdown).`)
+  rebuild('The description')
+}
+
+const IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.svg']
+
+/**
+ * Copy an image into this store's public directory and attach it.
+ *
+ * The file is copied rather than referenced, because the build only ships
+ * what is inside publicDir -- a path elsewhere on disk would resolve locally
+ * and 404 in production.
+ */
+async function addImage() {
+  const [slug, file] = positional
+  if (!slug || !file) die('usage: admin image-add <slug> <file.jpg> [--alt "..."] [--sku SKU] [--first]')
+  const src = resolve(process.cwd(), file)
+  if (!existsSync(src)) die(`No such file: ${src}`)
+  const ext = extname(src).toLowerCase()
+  if (!IMAGE_TYPES.includes(ext)) die(`${ext} is not an image. Use one of: ${IMAGE_TYPES.join(' ')}`)
+
+  const p = db(t.id).select().from(products)
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
+  if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+
+  const sku = flags.sku ? String(flags.sku) : null
+  const v = sku
+    ? db(t.id).select().from(variants).where(and(eq(variants.tenant, t.id), eq(variants.sku, sku))).get()
+    : null
+  if (sku && !v) die(`No variant "${sku}" in ${t.storeName}.`)
+  if (v && v.productId !== p.id) die(`${sku} does not belong to "${slug}".`)
+
+  // Name it after the product so the directory stays legible, and keep a
+  // counter so re-adding never silently overwrites an existing photo.
+  const dir = join(publicDir(), 'products', slug)
+  mkdirSync(dir, { recursive: true })
+  let name = `${sku ? sku.toLowerCase() : slug}${ext}`
+  let n = 2
+  while (existsSync(join(dir, name))) name = `${sku ? sku.toLowerCase() : slug}-${n++}${ext}`
+  copyFileSync(src, join(dir, name))
+
+  const url = `/products/${slug}/${name}`
+  const alt = String(flags.alt ?? p.title)
+  const entry = { url, alt }
+
+  if (v) {
+    const next = flags.first ? [entry, ...v.unitImages] : [...v.unitImages, entry]
+    await withWriteRetry(() => db(t.id).update(variants).set({ unitImages: next }).where(eq(variants.id, v.id)).run())
+    console.log(`\n  Attached to ${sku} as photo ${next.length} of ${next.length}.`)
+  } else {
+    const next = flags.first ? [entry, ...p.images] : [...p.images, entry]
+    await withWriteRetry(() => db(t.id).update(products).set({ images: next, updatedAt: new Date() }).where(eq(products.id, p.id)).run())
+    console.log(`\n  Attached to "${p.title}" as image ${next.length} of ${next.length}.`)
+  }
+  console.log(`  ${url}  (${Math.round(statSync(src).size / 1024)} KB)`)
+  if (!flags.alt) console.log(`  No --alt given, so alt text defaults to the product title. Set it for screen readers.`)
+  rebuild('Images')
+}
+
+async function listImages() {
+  const [slug] = positional
+  if (!slug) die('usage: admin images <slug>')
+  const p = db(t.id).select().from(products)
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
+  if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+  console.log(`\n  ${p.title}\n`)
+  console.log('  product images:')
+  if (p.images.length === 0) console.log('    (none -- the card and page show no picture)')
+  p.images.forEach((im, i) => console.log(`    [${i}] ${im.url}\n        alt: ${im.alt}`))
+  const vs = db(t.id).select().from(variants).where(eq(variants.productId, p.id)).all()
+  for (const v of vs.filter((x) => x.unitImages.length)) {
+    console.log(`\n  ${v.sku} (photographs of this unit):`)
+    v.unitImages.forEach((im, i) => console.log(`    [${i}] ${im.url}\n        alt: ${im.alt}`))
+  }
+  console.log()
+}
+
+async function removeImage() {
+  const [slug, idxRaw] = positional
+  if (!slug || idxRaw === undefined) die('usage: admin image-rm <slug> <index> [--sku SKU]   -- index from: admin images <slug>')
+  const idx = Number(idxRaw)
+  const p = db(t.id).select().from(products)
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
+  if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+
+  const sku = flags.sku ? String(flags.sku) : null
+  const v = sku ? db(t.id).select().from(variants).where(and(eq(variants.tenant, t.id), eq(variants.sku, sku))).get() : null
+  if (sku && !v) die(`No variant "${sku}".`)
+
+  const list = v ? v.unitImages : p.images
+  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  const gone = list[idx]!
+  const next = list.filter((_, i) => i !== idx)
+
+  if (v) await withWriteRetry(() => db(t.id).update(variants).set({ unitImages: next }).where(eq(variants.id, v.id)).run())
+  else await withWriteRetry(() => db(t.id).update(products).set({ images: next, updatedAt: new Date() }).where(eq(products.id, p.id)).run())
+
+  // Detach first, delete the file only if nothing else references it.
+  const stillUsed = db(t.id).select({ images: products.images }).from(products).where(eq(products.tenant, t.id)).all()
+    .some((r) => r.images.some((im) => im.url === gone.url))
+    || db(t.id).select({ u: variants.unitImages }).from(variants).where(eq(variants.tenant, t.id)).all()
+    .some((r) => r.u.some((im) => im.url === gone.url))
+  const onDisk = join(publicDir(), gone.url.replace(/^\//, ''))
+  if (!stillUsed && existsSync(onDisk)) { unlinkSync(onDisk); console.log(`\n  Detached and deleted ${gone.url}`) }
+  else console.log(`\n  Detached ${gone.url}${stillUsed ? ' (file kept -- still used elsewhere)' : ''}`)
+  rebuild('Images')
+}
+
 async function catalogue() {
   const rows = db(t.id).select({
     slug: products.slug, title: products.title, status: products.status,
@@ -255,6 +411,11 @@ function usage() {
     stock <sku> <qty|+n|-n>            set or adjust stock        (no rebuild)
     price <sku> <26.50>                set price                  (rebuild)
     product-add --slug --title --kind [--subtitle --description]
+    product-edit <slug> [--title --subtitle --description --slug --position]
+    describe <slug> <file.md>          replace the description from a file
+    images <slug>                      list attached images
+    image-add <slug> <file.jpg> --alt "..." [--sku SKU] [--first]
+    image-rm <slug> <index> [--sku SKU]
     variant-add --product <slug> --sku --title --price --stock
                 [--attr size=L] [--condition grade_a --serial X --notes "..."]
     activate <slug> / archive <slug>                              (rebuild)
@@ -275,6 +436,11 @@ const commands: Record<string, () => Promise<void>> = {
   stock: setStock,
   price: setPrice,
   'product-add': addProduct,
+  'product-edit': editProduct,
+  describe,
+  'image-add': addImage,
+  images: listImages,
+  'image-rm': removeImage,
   'variant-add': addVariant,
   activate: () => setStatus('active'),
   archive: () => setStatus('archived'),

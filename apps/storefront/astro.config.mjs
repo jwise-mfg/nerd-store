@@ -14,6 +14,11 @@ export default defineConfig({
   adapter: node({ mode: 'standalone' }),
   integrations: [preact()],
   outDir: `./dist-${tenant}`,
+  // Per-store static assets. Astro copies publicDir wholesale into the build,
+  // so a single shared ./public would put every store's logos and product
+  // photographs into every other store's output -- shop.webosarchive.org would
+  // serve the i3X logo, which is a direct link between them.
+  publicDir: `./public-${tenant}`,
   build: { assets: `_${tenant}` },
   vite: {
     define: { 'import.meta.env.PUBLIC_TENANT': JSON.stringify(tenant) },
