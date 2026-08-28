@@ -12,6 +12,7 @@
  * page SAYS needs a rebuild before shoppers see it. Stock is fetched live and
  * does not. Each command reports which it is.
  */
+import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs'
 import { basename, extname, join, resolve } from 'node:path'
 import { and, desc, eq, sql } from 'drizzle-orm'
@@ -44,8 +45,38 @@ const t = (() => {
 
 function die(msg: string): never { console.error(`\n  ${msg}\n`); process.exit(1) }
 const money = (c: number) => formatMoney(c, t.currency)
-const rebuild = (why: string) =>
-  console.log(`\n  ${why} is baked into the prerendered pages.\n  Run ./scripts/deploy.sh --no-pull for shoppers to see it.\n`)
+
+/**
+ * Catalogue pages are prerendered, so anything that changes what a page SAYS
+ * needs a rebuild. Commands record why; publish() runs it once at the end, so
+ * a command touching several things rebuilds once rather than per change.
+ */
+let pendingRebuild: string | null = null
+const rebuild = (why: string) => { pendingRebuild = why }
+
+/**
+ * Rebuild this store's static pages.
+ *
+ * No service restart: Astro's node server and nginx both read the built files
+ * from disk per request, so a rebuilt page is served by the process already
+ * running. Verified. That makes publishing a few seconds with no interruption,
+ * rather than the restart-everything deploy this used to tell you to run.
+ */
+function publishNow(): void {
+  process.stdout.write(`  publishing ${t.id}… `)
+  const started = Date.now()
+  try {
+    execFileSync('npm', ['run', `build:${t.id}`], { stdio: 'pipe' })
+    console.log(`done (${((Date.now() - started) / 1000).toFixed(1)}s) — live now\n`)
+  } catch (e) {
+    const out = (e as { stdout?: Buffer }).stdout?.toString() ?? ''
+    console.log('FAILED\n')
+    console.error(out.split('\n').slice(-15).join('\n'))
+    console.error(`\n  The change is saved, but the site still shows the previous build.`)
+    console.error(`  Fix the error above and run: storemgr publish -t ${t.id}\n`)
+    process.exit(1)
+  }
+}
 
 /** "26" -> 2600, "26.50" -> 2650. Dollars, because cents invite a 100x error. */
 function toCents(s: string): number {
@@ -145,17 +176,28 @@ async function addImage() {
   const alt = String(flags.alt ?? p.title)
   const entry = { url, alt }
 
+  const before = v ? v.unitImages : p.images
+  const next = flags.first ? [entry, ...before] : [...before, entry]
+  const addedAt = flags.first ? 0 : next.length - 1
+
   if (v) {
-    const next = flags.first ? [entry, ...v.unitImages] : [...v.unitImages, entry]
     await withWriteRetry(() => db(t.id).update(variants).set({ unitImages: next }).where(eq(variants.id, v.id)).run())
-    console.log(`\n  Attached to ${sku} as photo ${next.length} of ${next.length}.`)
+    console.log(`\n  Attached to ${sku} as photo ${addedAt + 1} of ${next.length}.`)
   } else {
-    const next = flags.first ? [entry, ...p.images] : [...p.images, entry]
     await withWriteRetry(() => db(t.id).update(products).set({ images: next, updatedAt: new Date() }).where(eq(products.id, p.id)).run())
-    console.log(`\n  Attached to "${p.title}" as image ${next.length} of ${next.length}.`)
+    console.log(`\n  Attached to "${p.title}" as image ${addedAt + 1} of ${next.length}.`)
   }
   console.log(`  ${url}  (${Math.round(statSync(src).size / 1024)} KB)`)
   if (!flags.alt) console.log(`  No --alt given, so alt text defaults to the product title. Set it for screen readers.`)
+
+  // The catalogue card shows image [0] and nothing else, so appending behind
+  // a leftover placeholder looks exactly like the command did nothing.
+  if (!flags.first && next[0] && /placehold\.co|placeholder/i.test(next[0].url)) {
+    console.log(`\n  NOTE: image [0] is still a placeholder, and the catalogue card shows only [0].`)
+    console.log(`  Yours is at [${addedAt}] and will not appear on the grid until you promote it:`)
+    console.log(`      storemgr image-first ${slug} ${addedAt}${sku ? ` --sku ${sku}` : ''} -t ${t.id}`)
+    console.log(`  or drop the placeholder:  storemgr image-rm ${slug} 0${sku ? ` --sku ${sku}` : ''} -t ${t.id}`)
+  }
   rebuild('Images')
 }
 
@@ -175,6 +217,56 @@ async function listImages() {
     v.unitImages.forEach((im, i) => console.log(`    [${i}] ${im.url}\n        alt: ${im.alt}`))
   }
   console.log()
+}
+
+/** Images for a product or, with --sku, for one specific unit. */
+function imageListFor(slug: string, sku: string | null) {
+  const p = db(t.id).select().from(products)
+    .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
+  if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+  const v = sku
+    ? db(t.id).select().from(variants).where(and(eq(variants.tenant, t.id), eq(variants.sku, sku))).get()
+    : null
+  if (sku && !v) die(`No variant "${sku}" in ${t.storeName}.`)
+  return { p, v, list: v ? v.unitImages : p.images }
+}
+
+async function saveImageList(
+  p: { id: string }, v: { id: string } | null, next: { url: string; alt: string }[],
+) {
+  if (v) await withWriteRetry(() => db(t.id).update(variants).set({ unitImages: next }).where(eq(variants.id, v.id)).run())
+  else await withWriteRetry(() => db(t.id).update(products).set({ images: next, updatedAt: new Date() }).where(eq(products.id, p.id)).run())
+}
+
+async function setAlt() {
+  const [slug, idxRaw, ...rest] = positional
+  const text = rest.join(' ')
+  if (!slug || idxRaw === undefined || !text) {
+    die('usage: admin image-alt <slug> <index> "new alt text" [--sku SKU]   -- index from: admin images <slug>')
+  }
+  const sku = flags.sku ? String(flags.sku) : null
+  const { p, v, list } = imageListFor(slug, sku)
+  const idx = Number(idxRaw)
+  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  const next = list.map((im, i) => (i === idx ? { ...im, alt: text } : im))
+  await saveImageList(p, v, next)
+  console.log(`\n  [${idx}] alt: "${list[idx]!.alt}" -> "${text}"`)
+  rebuild('Alt text')
+}
+
+/** Promote an image to the front, which is what the catalogue card shows. */
+async function makeFirst() {
+  const [slug, idxRaw] = positional
+  if (!slug || idxRaw === undefined) die('usage: admin image-first <slug> <index> [--sku SKU]')
+  const sku = flags.sku ? String(flags.sku) : null
+  const { p, v, list } = imageListFor(slug, sku)
+  const idx = Number(idxRaw)
+  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  if (idx === 0) { console.log(`\n  [0] is already the lead image.\n`); return }
+  const next = [list[idx]!, ...list.filter((_, i) => i !== idx)]
+  await saveImageList(p, v, next)
+  console.log(`\n  ${list[idx]!.url} is now the lead image — this is what the catalogue card shows.`)
+  rebuild('Image order')
 }
 
 async function removeImage() {
@@ -452,17 +544,20 @@ function usage() {
   Catalogue
     catalogue                          products, prices, stock, live holds
     low [--threshold 5]                what needs restocking
-    stock <sku> <qty|+n|-n>            set or adjust stock        (no rebuild)
-    price <sku> <26.50>                set price                  (rebuild)
+    publish                            rebuild this store's pages
+    stock <sku> <qty|+n|-n>            set or adjust stock        (no publish)
+    price <sku> <26.50>                set price
     product-add --slug --title --kind [--subtitle --description]
     product-edit <slug> [--title --subtitle --description --slug --position]
     describe <slug> <file.md>          replace the description from a file
     images <slug>                      list attached images
     image-add <slug> <file.jpg> --alt "..." [--sku SKU] [--first]
     image-rm <slug> <index> [--sku SKU]
+    image-alt <slug> <index> "new alt text" [--sku SKU]
+    image-first <slug> <index> [--sku SKU]   promote to the catalogue card
     variant-add --product <slug> --sku --title --price --stock
                 [--attr size=L] [--condition grade_a --serial X --notes "..."]
-    activate <slug> / archive <slug>                              (rebuild)
+    activate <slug> / archive <slug>
 
   Orders
     orders [--status paid] [--limit 20]
@@ -473,12 +568,21 @@ function usage() {
   USPS, UPS, FedEx and DHL get a tracking link built automatically from the
   carrier and number; --url overrides it for anyone else.
 
-  Catalogue pages are prerendered, so changes to what a page SAYS need
-  ./scripts/deploy.sh --no-pull. Stock is read live and takes effect at once.
+  Changes that alter a page's content republish automatically -- a few
+  seconds, no downtime, no service restart. Pass --no-publish to defer when
+  making several edits, then run: storemgr publish
+
+  Stock is read live and needs no publish at all.
 `)
 }
 
+async function publish() {
+  rebuild('Requested')
+  console.log()
+}
+
 const commands: Record<string, () => Promise<void>> = {
+  publish,
   catalogue, catalog: catalogue, ls: catalogue,
   low,
   stock: setStock,
@@ -489,6 +593,8 @@ const commands: Record<string, () => Promise<void>> = {
   'image-add': addImage,
   images: listImages,
   'image-rm': removeImage,
+  'image-alt': setAlt,
+  'image-first': makeFirst,
   'variant-add': addVariant,
   activate: () => setStatus('active'),
   archive: () => setStatus('archived'),
@@ -502,4 +608,15 @@ if (!cmd || cmd === 'help' || cmd === '--help') { usage(); process.exit(0) }
 const run = commands[cmd]
 if (!run) { console.error(`\n  Unknown command "${cmd}".`); usage(); process.exit(1) }
 await run()
+
+// Publish automatically, because remembering to is not the operator's job.
+// --no-publish defers it when making several changes in a row.
+if (pendingRebuild) {
+  if (flags['no-publish']) {
+    console.log(`  ${pendingRebuild} needs a rebuild. Deferred (--no-publish).`)
+    console.log(`  Run: storemgr publish -t ${t.id}\n`)
+  } else {
+    publishNow()
+  }
+}
 process.exit(0)

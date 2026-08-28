@@ -146,10 +146,13 @@ Put it on your PATH to drop the `./`:
 mkdir -p ~/.local/bin && ln -sf "$PWD/storemgr" ~/.local/bin/storemgr
 ```
 
-**Stock changes are live; everything else needs a rebuild.** The product page
-fetches availability on load, so stock takes effect at once. Price, title, and
-visibility are baked into prerendered HTML and need
-`./scripts/deploy.sh --no-pull`. Every command tells you which it is.
+**Changes publish themselves.** Anything that alters a page's content
+rebuilds that store automatically — a few seconds, no downtime, and no service
+restart, because Astro's node server and nginx both read the built files from
+disk per request. Pass `--no-publish` to defer when making several edits, then
+run `storemgr publish` once.
+
+Stock needs no publish at all: the product page fetches availability live.
 
 ---
 
