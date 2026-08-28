@@ -70,7 +70,8 @@ since "$t"
 
 # --- checks ---------------------------------------------------------------
 step "Validating tenant configuration"
-npm run validate:dist 2>&1 | tail -1
+# pipefail is on, so a failed validation still aborts the deploy.
+npm run validate:dist 2>&1 | grep -E 'passed|FAIL'
 
 step "Migrating databases"
 npm run db:migrate 2>&1 | grep -E 'migrated|error' || true
