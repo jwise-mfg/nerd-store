@@ -108,9 +108,9 @@ export const i3x: TenantConfig = {
   },
 
   shipping: [
-    { code: 'us_standard', label: 'Standard (USPS)', amount: 500, freeAbove: 7500,
+    { code: 'us_standard', label: 'Standard (USPS)', amount: 900, freeAbove: null,
       countries: ['US'], estimate: '7-10 business days' },
-    { code: 'us_priority', label: 'Priority Mail', amount: 1200, freeAbove: null,
+    { code: 'us_priority', label: 'Priority Mail', amount: 1800, freeAbove: null,
       countries: ['US'], estimate: '5-7 business days' },
   ],
 

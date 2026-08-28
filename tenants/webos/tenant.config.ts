@@ -120,9 +120,9 @@ export const webos: TenantConfig = {
   },
 
   shipping: [
-    { code: 'us_ground', label: 'Ground (tracked)', amount: 800, freeAbove: null,
+    { code: 'us_ground', label: 'Ground (tracked)', amount: 1100, freeAbove: null,
       countries: ['US'], estimate: '7-10 business days' },
-    { code: 'us_expedited', label: 'Expedited', amount: 1800, freeAbove: null,
+    { code: 'us_expedited', label: 'Expedited', amount: 2200, freeAbove: null,
       countries: ['US'], estimate: '5-7 business days' },
   ],
 
