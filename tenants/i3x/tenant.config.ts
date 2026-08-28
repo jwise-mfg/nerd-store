@@ -76,7 +76,7 @@ export const i3x: TenantConfig = {
     tagline: 'Open by design.',
     heroTitle: 'Wear the standard.',
     heroBody:
-      'A children’s book, shirts, and stickers from the team behind the Industrial Information Interoperability eXchange. Every order helps keep the specification open and freely implementable.',
+      'Swag for Industrial Information Interoperability eXchange. Show off the standard - i3X is for everyone!',
     heroCta: 'Browse the shop',
     catalogTitle: 'Everything in the shop',
     catalogEmpty: 'Nothing here just yet — new items are on the way.',
@@ -87,7 +87,7 @@ export const i3x: TenantConfig = {
       'Payment is processed securely. Your card statement will show "I3X STORE".',
     orderConfirmedTitle: 'Order confirmed — thank you.',
     orderConfirmedBody:
-      'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within two business days.',
+      'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within 7-10 business days.',
     soldOut: 'Sold out',
     lastOne: 'Only one left',
     footerBlurb:
