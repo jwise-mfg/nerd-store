@@ -77,21 +77,65 @@ ${tenant.mail.postalAddress}
 }
 
 /**
- * Delivery is left as an adapter. Point mail.webhookUrl at your provider; the
- * only hard requirement is that each tenant authenticates its own sending
- * domain (SPF/DKIM for i3x.dev and webosarchive.org separately). A shared
- * envelope sender or a shared DKIM d= domain is visible in every raw header.
+ * Send a receipt.
+ *
+ * Failures are the caller's to swallow: this is invoked from the Stripe
+ * webhook after the payment has already been captured, and a mail outage must
+ * never turn a completed sale into a failed webhook.
  */
 export async function sendReceipt(tenant: TenantConfig, data: ReceiptData): Promise<void> {
   const msg = renderReceipt(tenant, data)
-  const endpoint = config().mail.webhookUrl
-  if (!endpoint) {
-    console.info(`[mail:${tenant.id}] would send to ${msg.to}: ${msg.subject}`)
-    return
+  const m = config().mail
+
+  switch (m.transport) {
+    case 'resend':
+      await sendViaResend(m.apiKey!, msg)
+      console.info(`[mail:${tenant.id}] sent to ${msg.to}: ${msg.subject}`)
+      return
+
+    case 'webhook': {
+      const res = await fetch(m.webhookUrl!, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(msg),
+      })
+      if (!res.ok) throw new Error(`Mail webhook returned ${res.status}`)
+      console.info(`[mail:${tenant.id}] posted to webhook for ${msg.to}`)
+      return
+    }
+
+    default:
+      console.info(`[mail:${tenant.id}] (not sent -- transport is "log") to ${msg.to}: ${msg.subject}`)
   }
-  await fetch(endpoint, {
+}
+
+/**
+ * Resend's HTTP API.
+ *
+ * Deliberately not a dependency: it is one authenticated POST, and an SDK
+ * would be another package to keep current for no benefit. Verify each store's
+ * domain separately in Resend so mail is DKIM-signed as d=i3x.dev and
+ * d=webosarchive.org rather than sharing one signing identity.
+ */
+async function sendViaResend(apiKey: string, msg: MailMessage): Promise<void> {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(msg),
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: msg.from,
+      to: [msg.to],
+      reply_to: msg.replyTo,
+      subject: msg.subject,
+      text: msg.text,
+    }),
   })
+  if (!res.ok) {
+    // Quote Resend's own message: "domain not verified" and "invalid api key"
+    // are the two failures worth seeing verbatim.
+    const body = await res.text().catch(() => '')
+    throw new Error(`Resend returned ${res.status}: ${body.slice(0, 300)}`)
+  }
 }

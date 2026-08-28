@@ -59,6 +59,18 @@ npm run build:all    # produces dist-i3x/ and dist-webos/
 npm test             # availability + oversell + tenant validation
 ```
 
+**4. Receipts.** Set `mail.transport` to `"resend"` and paste an API key from
+<https://resend.com/api-keys>. Verify each store's domain separately in Resend
+so mail is signed as `d=i3x.dev` and `d=webosarchive.org` rather than sharing
+one identity. Then check it before a customer does:
+
+```bash
+node scripts/test-mail.ts you@example.com          # or -t webos
+```
+
+With `mail.transport` left as `"log"` nothing is sent; receipts only appear in
+the journal.
+
 Deploying to a VPS: see [deploy/README.md](deploy/README.md).
 
 ---

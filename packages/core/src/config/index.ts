@@ -23,9 +23,29 @@ const ConfigSchema = z.object({
     webhookSecret: z.string().min(1, 'stripe.webhookSecret is required'),
   }),
   mail: z.object({
-    /** POST target for receipts. null logs them instead, which is right in dev. */
+    /**
+     * How receipts leave the building.
+     *   log     - write to the journal only. The default, and right in dev.
+     *   resend  - Resend's HTTP API. Needs only an API key.
+     *   webhook - POST the rendered message as JSON to a URL you handle.
+     *
+     * Note that "webhook" is NOT a way to use a mail provider: it posts an
+     * unauthenticated message-shaped body to a URL, which every provider will
+     * reject. It exists for routing receipts into something of your own.
+     */
+    transport: z.enum(['log', 'resend', 'webhook']).default('log'),
+    /** Resend API key, https://resend.com/api-keys -- starts with re_ */
+    apiKey: z.string().nullable().default(null),
     webhookUrl: z.string().url().nullable().default(null),
-  }).default({ webhookUrl: null }),
+  }).default({ transport: 'log', apiKey: null, webhookUrl: null })
+    .superRefine((m, ctx) => {
+      if (m.transport === 'resend' && !m.apiKey) {
+        ctx.addIssue({ code: 'custom', path: ['apiKey'], message: 'transport is "resend" but no apiKey is set' })
+      }
+      if (m.transport === 'webhook' && !m.webhookUrl) {
+        ctx.addIssue({ code: 'custom', path: ['webhookUrl'], message: 'transport is "webhook" but webhookUrl is null' })
+      }
+    }),
   storage: z.object({
     /** Directory holding one SQLite file per store. */
     dataDir: z.string().default('./data'),

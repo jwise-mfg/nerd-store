@@ -145,7 +145,17 @@ export async function markPaid(eventId: string, paymentIntentId: string, tenant:
   const cartId = await cartIdForIntent(paymentIntentId)
   if (cartId) await commitReservation(tenant, cartId)
 
-  await sendReceipt(tenant, { order, items })
+  // Never let mail fail the webhook. The payment is already captured and the
+  // event id is already recorded, so a throw here would return 500, Stripe
+  // would retry, the retry would see the event as handled and return early --
+  // and the receipt would be lost anyway, with the order still marked paid.
+  // Log loudly instead; `storemgr orders` remains the source of truth.
+  try {
+    await sendReceipt(tenant, { order, items })
+  } catch (e) {
+    console.error(`[mail:${tenant.id}] receipt FAILED for ${order.orderNumber} <${order.email}>:`,
+      e instanceof Error ? e.message : e)
+  }
 }
 
 async function cartIdForIntent(paymentIntentId: string): Promise<string | null> {
