@@ -91,7 +91,7 @@ const publicDir = () => resolve(process.cwd(), `apps/storefront/public-${t.id}`)
 
 async function editProduct() {
   const [slug] = positional
-  if (!slug) die('usage: admin product-edit <slug> [--title "..."] [--subtitle "..."] [--description "..."] [--slug new-slug] [--position 3]')
+  if (!slug) die('usage: storemgr product-edit <slug> [--title "..."] [--subtitle "..."] [--description "..."] [--slug new-slug] [--position 3]')
   const p = db(t.id).select().from(products)
     .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
   if (!p) die(`No product "${slug}" in ${t.storeName}.`)
@@ -122,7 +122,7 @@ async function editProduct() {
 /** Markdown description read from a file, for anything longer than a line. */
 async function describe() {
   const [slug, file] = positional
-  if (!slug || !file) die('usage: admin describe <slug> <file.md>   -- replaces the description from a Markdown file')
+  if (!slug || !file) die('usage: storemgr describe <slug> <file.md>   -- replaces the description from a Markdown file')
   const path = resolve(process.cwd(), file)
   if (!existsSync(path)) die(`No such file: ${path}`)
   const md = (await import('node:fs')).readFileSync(path, 'utf8')
@@ -146,7 +146,7 @@ const IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.svg']
  */
 async function addImage() {
   const [slug, file] = positional
-  if (!slug || !file) die('usage: admin image-add <slug> <file.jpg> [--alt "..."] [--sku SKU] [--first]')
+  if (!slug || !file) die('usage: storemgr image-add <slug> <file.jpg> [--alt "..."] [--sku SKU] [--first]')
   const src = resolve(process.cwd(), file)
   if (!existsSync(src)) die(`No such file: ${src}`)
   const ext = extname(src).toLowerCase()
@@ -203,18 +203,32 @@ async function addImage() {
 
 async function listImages() {
   const [slug] = positional
-  if (!slug) die('usage: admin images <slug>')
+  if (!slug) die('usage: storemgr images <slug>')
   const p = db(t.id).select().from(products)
     .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
   if (!p) die(`No product "${slug}" in ${t.storeName}.`)
+  const at = t.id === 'i3x' ? '' : ` -t ${t.id}`
   console.log(`\n  ${p.title}\n`)
-  console.log('  product images:')
-  if (p.images.length === 0) console.log('    (none -- the card and page show no picture)')
-  p.images.forEach((im, i) => console.log(`    [${i}] ${im.url}\n        alt: ${im.alt}`))
+
+  console.log('  Product images — shown on the shop grid and the product page:')
+  if (p.images.length === 0) console.log('    (none)')
+  p.images.forEach((im, i) => {
+    console.log(`    [${i}] ${im.url}`)
+    console.log(`         alt: ${im.alt}`)
+    console.log(`         remove: storemgr image-rm ${slug} ${i}${at}`)
+  })
+
+  // Variant photos are a SEPARATE index space that also starts at 0, and the
+  // product page shows both sets together. Printing the full command for each
+  // removes the guesswork about which index belongs to which list.
   const vs = db(t.id).select().from(variants).where(eq(variants.productId, p.id)).all()
   for (const v of vs.filter((x) => x.unitImages.length)) {
-    console.log(`\n  ${v.sku} (photographs of this unit):`)
-    v.unitImages.forEach((im, i) => console.log(`    [${i}] ${im.url}\n        alt: ${im.alt}`))
+    console.log(`\n  ${v.sku} — photos of this specific unit (separate numbering):`)
+    v.unitImages.forEach((im, i) => {
+      console.log(`    [${i}] ${im.url}`)
+      console.log(`         alt: ${im.alt}`)
+      console.log(`         remove: storemgr image-rm ${slug} ${i} --sku ${v.sku}${at}`)
+    })
   }
   console.log()
 }
@@ -242,12 +256,12 @@ async function setAlt() {
   const [slug, idxRaw, ...rest] = positional
   const text = rest.join(' ')
   if (!slug || idxRaw === undefined || !text) {
-    die('usage: admin image-alt <slug> <index> "new alt text" [--sku SKU]   -- index from: admin images <slug>')
+    die('usage: storemgr image-alt <slug> <index> "new alt text" [--sku SKU]   -- index from: storemgr images <slug>')
   }
   const sku = flags.sku ? String(flags.sku) : null
   const { p, v, list } = imageListFor(slug, sku)
   const idx = Number(idxRaw)
-  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  if (!list[idx]) die(`No image at index ${idx}. Run: storemgr images ${slug}`)
   const next = list.map((im, i) => (i === idx ? { ...im, alt: text } : im))
   await saveImageList(p, v, next)
   console.log(`\n  [${idx}] alt: "${list[idx]!.alt}" -> "${text}"`)
@@ -257,11 +271,11 @@ async function setAlt() {
 /** Promote an image to the front, which is what the shop grid shows. */
 async function makeFirst() {
   const [slug, idxRaw] = positional
-  if (!slug || idxRaw === undefined) die('usage: admin image-first <slug> <index> [--sku SKU]')
+  if (!slug || idxRaw === undefined) die('usage: storemgr image-first <slug> <index> [--sku SKU]')
   const sku = flags.sku ? String(flags.sku) : null
   const { p, v, list } = imageListFor(slug, sku)
   const idx = Number(idxRaw)
-  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  if (!list[idx]) die(`No image at index ${idx}. Run: storemgr images ${slug}`)
   if (idx === 0) { console.log(`\n  [0] is already the lead image.\n`); return }
   const next = [list[idx]!, ...list.filter((_, i) => i !== idx)]
   await saveImageList(p, v, next)
@@ -269,9 +283,38 @@ async function makeFirst() {
   rebuild('Image order')
 }
 
+/**
+ * Explain an out-of-range index properly.
+ *
+ * Product images and each variant's photos are separate lists that both start
+ * at 0, and the product page shows them together -- so counting images on the
+ * page and passing that number is a natural mistake with an unhelpful answer.
+ */
+function outOfRange(
+  p: { id: string }, v: { sku: string } | null,
+  list: unknown[], idx: number, slug: string, sku: string | null,
+): string {
+  const at = t.id === 'i3x' ? '' : ` -t ${t.id}`
+  const where = v ? `${v.sku} has` : 'This product has'
+  const valid = list.length === 0 ? 'none' : `0-${list.length - 1}`
+  let msg = `No image at index ${idx}. ${where} ${list.length} image(s): valid indices ${valid}.`
+
+  if (!sku) {
+    const withPhotos = db(t.id).select().from(variants)
+      .where(eq(variants.productId, p.id)).all().filter((x) => x.unitImages.length)
+    if (withPhotos.length) {
+      msg += `\n\n  Some images belong to a specific unit and are numbered separately:`
+      for (const x of withPhotos) {
+        msg += `\n    ${x.sku}: ${x.unitImages.length} photo(s) — storemgr image-rm ${slug} <n> --sku ${x.sku}${at}`
+      }
+    }
+  }
+  return `${msg}\n\n  Full list: storemgr images ${slug}${at}`
+}
+
 async function removeImage() {
   const [slug, idxRaw] = positional
-  if (!slug || idxRaw === undefined) die('usage: admin image-rm <slug> <index> [--sku SKU]   -- index from: admin images <slug>')
+  if (!slug || idxRaw === undefined) die('usage: storemgr image-rm <slug> <index> [--sku SKU]   -- index from: storemgr images <slug>')
   const idx = Number(idxRaw)
   const p = db(t.id).select().from(products)
     .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
@@ -282,7 +325,7 @@ async function removeImage() {
   if (sku && !v) die(`No variant "${sku}".`)
 
   const list = v ? v.unitImages : p.images
-  if (!list[idx]) die(`No image at index ${idx}. Run: admin images ${slug}`)
+  if (!list[idx]) die(outOfRange(p, v, list, idx, slug, sku))
   const gone = list[idx]!
   const next = list.filter((_, i) => i !== idx)
 
@@ -332,7 +375,7 @@ async function inventory() {
 
 async function setStock() {
   const [sku, qty] = positional
-  if (!sku || !qty) die('usage: admin stock <sku> <qty|+n|-n> [-t store]')
+  if (!sku || !qty) die('usage: storemgr stock <sku> <qty|+n|-n> [-t store]')
   const v = db(t.id).select().from(variants)
     .where(and(eq(variants.tenant, t.id), eq(variants.sku, sku))).get()
   if (!v) die(`No variant "${sku}" in ${t.storeName}.`)
@@ -349,7 +392,7 @@ async function setStock() {
 
 async function setPrice() {
   const [sku, amount] = positional
-  if (!sku || !amount) die('usage: admin price <sku> <26.50> [-t store]')
+  if (!sku || !amount) die('usage: storemgr price <sku> <26.50> [-t store]')
   const cents = toCents(amount)
   const v = db(t.id).select().from(variants)
     .where(and(eq(variants.tenant, t.id), eq(variants.sku, sku))).get()
@@ -363,7 +406,7 @@ async function setPrice() {
 async function addProduct() {
   const slug = String(flags.slug ?? ''), title = String(flags.title ?? ''), kind = String(flags.kind ?? '')
   if (!slug || !title || !kind) {
-    die('usage: admin product-add --slug tote-bag --title "Tote Bag" --kind apparel [--subtitle "..."] [--description "..."]')
+    die('usage: storemgr product-add --slug tote-bag --title "Tote Bag" --kind apparel [--subtitle "..."] [--description "..."]')
   }
   const exists = db(t.id).select({ id: products.id }).from(products)
     .where(and(eq(products.tenant, t.id), eq(products.slug, slug))).get()
@@ -376,14 +419,14 @@ async function addProduct() {
     images: [], status: 'draft', position: Number(flags.position ?? 100),
   }).run())
   console.log(`\n  Created "${title}" as a DRAFT.`)
-  console.log(`  Add a variant, then: admin activate ${slug} -t ${t.id}`)
+  console.log(`  Add a variant, then: storemgr activate ${slug} -t ${t.id}`)
   console.log(`  A product with no variant never appears, even when active.\n`)
 }
 
 async function addVariant() {
   const product = String(flags.product ?? ''), sku = String(flags.sku ?? '')
   if (!product || !sku || !flags.price) {
-    die('usage: admin variant-add --product tote-bag --sku TOTE-NAT --title "Natural" --price 18 --stock 25 [--attr size=L --attr color=Navy]')
+    die('usage: storemgr variant-add --product tote-bag --sku TOTE-NAT --title "Natural" --price 18 --stock 25 [--attr size=L --attr color=Navy]')
   }
   const p = db(t.id).select().from(products)
     .where(and(eq(products.tenant, t.id), eq(products.slug, product))).get()
@@ -408,7 +451,7 @@ async function addVariant() {
 
 async function setStatus(status: 'active' | 'archived') {
   const [slug] = positional
-  if (!slug) die(`usage: admin ${status === 'active' ? 'activate' : 'archive'} <slug> [-t store]`)
+  if (!slug) die(`usage: storemgr ${status === 'active' ? 'activate' : 'archive'} <slug> [-t store]`)
   const r = await withWriteRetry(() => db(t.id).update(products).set({ status })
     .where(and(eq(products.tenant, t.id), eq(products.slug, slug)))
     .returning({ title: products.title }).all())
@@ -429,13 +472,13 @@ async function listOrders() {
     console.log(`  ${o.orderNumber.padEnd(12)} ${o.status.padEnd(10)} ${money(o.totalCents).padStart(9)}  ${o.email.padEnd(28)} ${when.toISOString().slice(0, 16).replace('T', ' ')}`)
   }
   const unfulfilled = rows.filter((o) => o.status === 'paid').length
-  if (unfulfilled) console.log(`\n  ${unfulfilled} paid and awaiting shipment. admin order <number> for detail.\n`)
+  if (unfulfilled) console.log(`\n  ${unfulfilled} paid and awaiting shipment. storemgr order <number> for detail.\n`)
   else console.log()
 }
 
 async function showOrder() {
   const [num] = positional
-  if (!num) die('usage: admin order <ORDER-NUMBER> [-t store]')
+  if (!num) die('usage: storemgr order <ORDER-NUMBER> [-t store]')
   const o = db(t.id).select().from(orders)
     .where(and(eq(orders.tenant, t.id), eq(orders.orderNumber, num.toUpperCase()))).get()
   if (!o) die(`No order ${num} in ${t.storeName}.`)
@@ -455,14 +498,14 @@ async function showOrder() {
   console.log(`    ${a.name}\n    ${a.line1}${a.line2 ? `\n    ${a.line2}` : ''}\n    ${a.city}, ${a.state} ${a.postalCode}\n    ${a.country}`)
   if (o.stripePaymentIntentId) console.log(`\n    stripe: ${o.stripePaymentIntentId}`)
   if (ship.length) for (const s of ship) console.log(`\n    shipped ${s.shippedAt.toISOString().slice(0, 10)} via ${s.carrier}${s.trackingCode ? ` ${s.trackingCode}` : ''}`)
-  else if (o.status === 'paid') console.log(`\n    not yet shipped -- admin ship ${o.orderNumber} --carrier USPS --tracking 9400...`)
+  else if (o.status === 'paid') console.log(`\n    not yet shipped -- storemgr ship ${o.orderNumber} --carrier USPS --tracking 9400...`)
   console.log()
 }
 
 async function ship() {
   const [num] = positional
   const carrier = String(flags.carrier ?? '')
-  if (!num || !carrier) die('usage: admin ship <ORDER-NUMBER> --carrier USPS [--tracking 9400...] [--url https://...]')
+  if (!num || !carrier) die('usage: storemgr ship <ORDER-NUMBER> --carrier USPS [--tracking 9400...] [--url https://...]')
   const o = db(t.id).select().from(orders)
     .where(and(eq(orders.tenant, t.id), eq(orders.orderNumber, num.toUpperCase()))).get()
   if (!o) die(`No order ${num} in ${t.storeName}.`)
@@ -495,20 +538,20 @@ async function ship() {
     console.log(`  Emailed ${o.email}${link ? `\n  Tracking link: ${link}` : ''}\n`)
   } catch (e) {
     console.log(`  BUT the shipping email failed: ${e instanceof Error ? e.message : e}`)
-    console.log(`  The order IS marked fulfilled. Re-send with: admin ship-email ${o.orderNumber} -t ${t.id}\n`)
+    console.log(`  The order IS marked fulfilled. Re-send with: storemgr ship-email ${o.orderNumber} -t ${t.id}\n`)
   }
 }
 
 /** Re-send a shipping notification for an order already marked fulfilled. */
 async function shipEmail() {
   const [num] = positional
-  if (!num) die('usage: admin ship-email <ORDER-NUMBER> [--to someone@else] [-t store]')
+  if (!num) die('usage: storemgr ship-email <ORDER-NUMBER> [--to someone@else] [-t store]')
   const o = db(t.id).select().from(orders)
     .where(and(eq(orders.tenant, t.id), eq(orders.orderNumber, num.toUpperCase()))).get()
   if (!o) die(`No order ${num} in ${t.storeName}.`)
   const ship = db(t.id).select().from(shipments).where(eq(shipments.orderId, o.id))
     .orderBy(desc(shipments.shippedAt)).get()
-  if (!ship) die(`${o.orderNumber} has no recorded shipment. Use: admin ship ${o.orderNumber} --carrier USPS`)
+  if (!ship) die(`${o.orderNumber} has no recorded shipment. Use: storemgr ship ${o.orderNumber} --carrier USPS`)
 
   const items = db(t.id).select().from(orderItems).where(eq(orderItems.orderId, o.id)).all()
   await sendShipped(t, {
