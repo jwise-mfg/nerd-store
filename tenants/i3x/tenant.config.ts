@@ -109,9 +109,9 @@ export const i3x: TenantConfig = {
 
   shipping: [
     { code: 'us_standard', label: 'Standard (USPS)', amount: 500, freeAbove: 7500,
-      countries: ['US'], estimate: '5-10 business days' },
+      countries: ['US'], estimate: '7-10 business days' },
     { code: 'us_priority', label: 'Priority Mail', amount: 1200, freeAbove: null,
-      countries: ['US'], estimate: '3-5 business days' },
+      countries: ['US'], estimate: '5-7 business days' },
   ],
 
   // Distinct from the other store's analytics. A shared measurement id is the
