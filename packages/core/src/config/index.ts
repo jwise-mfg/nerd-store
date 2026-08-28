@@ -14,6 +14,17 @@ import { z } from 'zod'
  */
 
 const ConfigSchema = z.object({
+  /**
+   * Set false to close the shop. Every page then shows a maintenance notice
+   * and the checkout API refuses to take money.
+   *
+   * Read at BUILD time as well as at run time, because the catalogue pages are
+   * prerendered and served straight off disk by nginx -- a flag only Node
+   * checked would leave those pages open. Toggling it therefore needs a
+   * publish: `storemgr publish` for one store, or scripts/deploy.sh for both.
+   */
+  storeOpen: z.boolean().default(true),
+
   stripe: z.object({
     /** Server-side key. Never reaches the browser. */
     secretKey: z.string().min(1, 'stripe.secretKey is required'),

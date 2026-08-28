@@ -11,6 +11,11 @@
 //  location (systemd uses /etc/nerd-store/config.json).
 // ─────────────────────────────────────────────────────────────────────────
 {
+  // false closes both storefronts: every page shows a maintenance notice and
+  // checkout refuses to take money. Run `storemgr publish` after changing it,
+  // because the catalogue pages are prerendered.
+  "storeOpen": true,
+
   "stripe": {
     // Test keys: https://dashboard.stripe.com/test/apikeys
     // Server-side only; never reaches the browser.

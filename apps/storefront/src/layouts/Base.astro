@@ -1,14 +1,19 @@
 ---
 import { TENANT } from '../lib/tenant.ts'
 import { themeCss } from '../lib/theme.ts'
+import { config } from '@store/core'
+import Closed from './Closed.astro'
 import '../styles/app.css'
 
 interface Props { title?: string; description?: string }
 const { title, description } = Astro.props
+// Closing the shop replaces every page that uses this layout, which is all of
+// them, rather than requiring each page to remember to check.
+const open = config().storeOpen
 const t = TENANT
 const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${t.copy.tagline}`
 ---
-<!doctype html>
+{!open ? <Closed /> : (
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -74,3 +79,4 @@ const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${
     </script>
   </body>
 </html>
+)}
