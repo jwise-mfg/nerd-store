@@ -70,7 +70,7 @@ export async function POST(ctx: APIContext) {
     return json(result)
   } catch (e) {
     if (e instanceof OutOfStockError) {
-      return json({ error: 'An item in your cart just sold out.', variantId: e.variantId, available: e.available }, 409)
+      return json({ error: 'An item in your cart just sold out.', sku: e.sku, available: e.available }, 409)
     }
     // Validation problems are the customer's to fix, so they are quoted back.
     // Anything else -- a Stripe API error, a database fault -- is logged and

@@ -12,8 +12,7 @@
   "scripts": {
     "db:generate": "node ../../node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node src/db/migrate.ts",
-    "db:studio": "node ../../node_modules/drizzle-kit/bin.cjs studio",
-    "seed": "node src/db/seed.ts"
+    "db:studio": "node ../../node_modules/drizzle-kit/bin.cjs studio"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",

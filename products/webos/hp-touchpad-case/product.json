@@ -1,0 +1,28 @@
+{
+  "title": "HP TouchPad Folio Case",
+  "subtitle": "New old stock",
+  "kind": "accessory",
+  "status": "active",
+  "position": 4,
+  "description": "The original HP folio, which doubled as a stand at two angles. Unused, still bagged.",
+  "images": [
+    {
+      "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%20Folio",
+      "alt": "TouchPad Folio"
+    }
+  ],
+  "variants": [
+    {
+      "sku": "WOA-FOLIO-NOS",
+      "title": "New old stock",
+      "price": "29.00",
+      "attributes": {
+        "color": "Black",
+        "model": "TouchPad"
+      },
+      "weightGrams": 320,
+      "condition": "new_old_stock",
+      "stock": 12
+    }
+  ]
+}

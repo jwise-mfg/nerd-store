@@ -4,6 +4,17 @@ import {
 } from 'drizzle-orm/sqlite-core'
 
 /**
+ * What the database is FOR.
+ *
+ * Products live in products/<tenant>/<slug>/product.json -- seven of them did
+ * not need a schema and an admin interface. Stock lives there too, so
+ * restocking is editing a number in the file you already have open.
+ *
+ * This holds only what changes while the site is running and must survive a
+ * restart: carts, the holds that stop two people buying the last unit, orders,
+ * dispatches, and Stripe's idempotency record. Everything here is keyed by
+ * SKU, which is the stable identity a file-based catalogue gives us.
+ *
  * One SQLite file per tenant (see db/index.ts), so cross-store leakage is
  * prevented by the filesystem rather than by a WHERE clause.
  *
@@ -36,59 +47,6 @@ const id = () => text('id').primaryKey().$defaultFn(() => crypto.randomUUID())
  */
 const ts = (name: string) => integer(name, { mode: 'timestamp' })
 
-export const products = sqliteTable('products', {
-  id: id(),
-  tenant: text('tenant', { enum: TENANTS }).notNull(),
-  slug: text('slug').notNull(),
-  kind: text('kind', { enum: PRODUCT_KINDS }).notNull(),
-  title: text('title').notNull(),
-  subtitle: text('subtitle'),
-  /** Markdown. Rendered at build time into the static product page. */
-  descriptionMd: text('description_md').notNull().default(''),
-  images: text('images', { mode: 'json' }).$type<Img[]>().notNull().default([]),
-  status: text('status', { enum: ['draft', 'active', 'archived'] }).notNull().default('draft'),
-  /** Sort weight for the catalog grid; lower shows first. */
-  position: integer('position').notNull().default(100),
-  createdAt: ts('created_at').notNull().default(sql`(unixepoch())`),
-  updatedAt: ts('updated_at').notNull().default(sql`(unixepoch())`),
-}, (t) => [
-  uniqueIndex('products_tenant_slug_idx').on(t.tenant, t.slug),
-  index('products_tenant_status_idx').on(t.tenant, t.status),
-])
-
-export const variants = sqliteTable('variants', {
-  id: id(),
-  tenant: text('tenant', { enum: TENANTS }).notNull(),
-  productId: text('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
-  sku: text('sku').notNull(),
-  title: text('title').notNull(),
-  /**
-   * The axis values for this variant, keyed by the tenant's `variantAxes`.
-   * i3x apparel:  { size: 'L', color: 'Navy' }
-   * webOS device: { storage: '32GB', color: 'White', condition: 'grade_b' }
-   * This is what lets one schema serve two very different catalogues.
-   */
-  attributes: text('attributes', { mode: 'json' }).$type<Record<string, string>>().notNull().default({}),
-  priceCents: integer('price_cents').notNull(),
-  compareAtCents: integer('compare_at_cents'),
-  /** Physical units on hand. Authoritative. Never trust a prerendered page. */
-  stockQty: integer('stock_qty').notNull().default(0),
-  weightGrams: integer('weight_grams').notNull().default(0),
-
-  // --- used / refurbished goods only (CatalogShape.showConditionDetail) ---
-  condition: text('condition', { enum: CONDITION_GRADES }),
-  /** Serial or IMEI of the specific unit, for quantity-1 listings. */
-  serial: text('serial'),
-  conditionNotes: text('condition_notes'),
-  /** Photographs of THIS unit, not stock photography. */
-  unitImages: text('unit_images', { mode: 'json' }).$type<Img[]>().notNull().default([]),
-
-  active: integer('active', { mode: 'boolean' }).notNull().default(true),
-}, (t) => [
-  uniqueIndex('variants_tenant_sku_idx').on(t.tenant, t.sku),
-  index('variants_product_idx').on(t.productId),
-])
-
 export const carts = sqliteTable('carts', {
   id: id(),
   tenant: text('tenant', { enum: TENANTS }).notNull(),
@@ -99,12 +57,14 @@ export const carts = sqliteTable('carts', {
 
 export const cartItems = sqliteTable('cart_items', {
   cartId: text('cart_id').notNull().references(() => carts.id, { onDelete: 'cascade' }),
-  variantId: text('variant_id').notNull().references(() => variants.id, { onDelete: 'cascade' }),
+  /** Identity comes from the product file. A SKU removed from the files
+      simply stops resolving, and the line drops out of the cart. */
+  sku: text('sku').notNull(),
   qty: integer('qty').notNull(),
   /** Price snapshot at add-to-cart, so a repricing mid-session is visible. */
   unitPriceCents: integer('unit_price_cents').notNull(),
   addedAt: ts('added_at').notNull().default(sql`(unixepoch())`),
-}, (t) => [primaryKey({ columns: [t.cartId, t.variantId] })])
+}, (t) => [primaryKey({ columns: [t.cartId, t.sku] })])
 
 /**
  * Soft holds taken at checkout, released on expiry. Without these, two people
@@ -114,13 +74,13 @@ export const cartItems = sqliteTable('cart_items', {
 export const reservations = sqliteTable('reservations', {
   id: id(),
   tenant: text('tenant', { enum: TENANTS }).notNull(),
-  variantId: text('variant_id').notNull().references(() => variants.id, { onDelete: 'cascade' }),
+  sku: text('sku').notNull(),
   cartId: text('cart_id').notNull().references(() => carts.id, { onDelete: 'cascade' }),
   qty: integer('qty').notNull(),
   expiresAt: ts('expires_at').notNull(),
 }, (t) => [
-  index('reservations_variant_idx').on(t.variantId, t.expiresAt),
-  uniqueIndex('reservations_cart_variant_idx').on(t.cartId, t.variantId),
+  index('reservations_sku_idx').on(t.sku, t.expiresAt),
+  uniqueIndex('reservations_cart_sku_idx').on(t.cartId, t.sku),
 ])
 
 export const orders = sqliteTable('orders', {
@@ -153,8 +113,8 @@ export const orders = sqliteTable('orders', {
 export const orderItems = sqliteTable('order_items', {
   id: id(),
   orderId: text('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  variantId: text('variant_id').references(() => variants.id, { onDelete: 'set null' }),
-  /** Snapshots -- an order must stay readable after the catalogue changes. */
+  /** Snapshots -- an order must stay readable after the catalogue changes,
+      including after a product file is edited or deleted outright. */
   sku: text('sku').notNull(),
   titleSnapshot: text('title_snapshot').notNull(),
   attributesSnapshot: text('attributes_snapshot', { mode: 'json' })

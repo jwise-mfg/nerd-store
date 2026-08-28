@@ -1,0 +1,41 @@
+{
+  "title": "Palm Pre 3",
+  "subtitle": "The one that barely shipped",
+  "kind": "device",
+  "status": "active",
+  "position": 3,
+  "description": [
+    "Released in Europe for a matter of weeks before HP cancelled webOS hardware.",
+    "Unlocked GSM. Slider and keyboard tested through a full actuation cycle."
+  ],
+  "images": [
+    {
+      "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Palm%20Pre%203",
+      "alt": "Palm Pre 3"
+    }
+  ],
+  "variants": [
+    {
+      "sku": "WOA-PRE3-A-1102",
+      "title": "Grade A — unlocked GSM",
+      "price": "325.00",
+      "attributes": {
+        "storage": "8GB",
+        "color": "Black",
+        "condition": "grade_a",
+        "model": "Pre 3"
+      },
+      "weightGrams": 190,
+      "condition": "grade_a",
+      "serial": "PRE3-1102",
+      "conditionNotes": "Excellent cosmetics. Keyboard crisp. Original battery, replacement available on request.",
+      "images": [
+        {
+          "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Pre%203%201102",
+          "alt": "Pre 3 1102"
+        }
+      ],
+      "stock": 1
+    }
+  ]
+}

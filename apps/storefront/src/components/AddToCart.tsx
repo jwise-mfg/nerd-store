@@ -38,19 +38,19 @@ export default function AddToCart({ product, tenant }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    const ids = product.variants.map((v) => v.id)
-    fetch(`/api/availability?ids=${ids.join(',')}`)
+    const skus = product.variants.map((v) => v.sku)
+    fetch(`/api/availability?skus=${skus.join(',')}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('unavailable'))))
-      .then((rows: { variantId: string; available: number }[]) => {
+      .then((rows: { sku: string; available: number }[]) => {
         if (cancelled) return
-        setLive(Object.fromEntries(rows.map((r) => [r.variantId, r.available])))
+        setLive(Object.fromEntries(rows.map((r) => [r.sku, r.available])))
       })
       // Fail closed: if we cannot confirm stock, we do not let the sale happen.
       .catch(() => !cancelled && setLive({}))
     return () => { cancelled = true }
   }, [product.id])
 
-  const available = variant && live ? (live[variant.id] ?? 0) : null
+  const available = variant && live ? (live[variant.sku] ?? 0) : null
   const ready = live !== null && variant !== undefined
   const canBuy = ready && (available ?? 0) > 0 && !busy
 
@@ -64,7 +64,7 @@ export default function AddToCart({ product, tenant }: Props) {
       const res = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'add', variantId: variant.id, qty: 1 }),
+        body: JSON.stringify({ action: 'add', sku: variant.sku, qty: 1 }),
       })
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Could not add to cart')
       location.href = '/cart'

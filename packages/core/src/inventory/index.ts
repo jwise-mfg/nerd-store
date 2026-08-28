@@ -1,156 +1,172 @@
+import { readFileSync, writeFileSync, renameSync } from 'node:fs'
+import { join } from 'node:path'
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import { db, withWriteRetry } from '../db/index.ts'
-import { reservations, variants } from '../db/schema.ts'
+import { reservations } from '../db/schema.ts'
+import { readProductFiles, productsDir } from '../catalog/files.ts'
 import type { TenantConfig } from '../tenant/types.ts'
 
 export const RESERVATION_TTL_MS = 15 * 60 * 1000
 
 export interface Availability {
-  variantId: string
-  /** stockQty minus live reservations held by other carts. */
+  sku: string
   available: number
   inStock: boolean
-  /** True when `available` is at or below the tenant's scarcity threshold. */
   scarce: boolean
 }
 
 export class OutOfStockError extends Error {
-  // Plain fields rather than TypeScript parameter properties: Node's
-  // strip-only type removal cannot compile those, and scripts in this repo
-  // are run directly with `node file.ts`.
-  readonly variantId: string
+  readonly sku: string
   readonly available: number
-
-  constructor(variantId: string, available: number) {
-    super(`Insufficient stock for variant ${variantId}: ${available} available`)
+  constructor(sku: string, available: number) {
+    super(`Insufficient stock for ${sku}: ${available} available`)
     this.name = 'OutOfStockError'
-    this.variantId = variantId
+    this.sku = sku
     this.available = available
   }
 }
 
-/**
- * Live availability for a set of variants. This is what the prerendered
- * product page calls on mount -- the static HTML never asserts a stock number
- * it cannot guarantee.
- */
-export function availability(
-  tenant: TenantConfig,
-  variantIds: string[],
-  opts: { ignoreCartId?: string } = {},
-): Availability[] {
-  if (variantIds.length === 0) return []
+/** Declared stock for every SKU, straight from the product files. */
+export function stockFromFiles(tenant: TenantConfig): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const p of readProductFiles(tenant.id)) {
+    for (const v of p.variants) m.set(v.sku, v.stock)
+  }
+  return m
+}
 
+/** Live holds per SKU, from the database. */
+function heldBySku(tenant: TenantConfig, skus: string[], ignoreCartId?: string): Map<string, number> {
+  if (skus.length === 0) return new Map()
   const rows = db(tenant.id)
-    .select({
-      id: variants.id,
-      stockQty: variants.stockQty,
-      active: variants.active,
-      // `unixepoch()` rather than a JavaScript timestamp: the database clock
-      // decides whether a hold has expired, so an app server with a skewed
-      // clock cannot hand out stock that is still reserved.
-      // NOTE: `variants.id` is written out literally rather than interpolated
-      // as ${variants.id}. Drizzle's SQLite dialect emits UNQUALIFIED names in
-      // a select list, so that would render as `r.variant_id = "id"` -- which
-      // silently resolves to the subquery's own reservations.id, matches
-      // nothing, and reports every held item as available.
-      held: sql<number>`coalesce((
-        select sum(r.qty) from reservations r
-        where r.variant_id = variants.id
-          and r.expires_at > unixepoch()
-          ${opts.ignoreCartId ? sql`and r.cart_id <> ${opts.ignoreCartId}` : sql``}
-      ), 0)`,
-    })
-    .from(variants)
-    // Tenant scope is applied even though the file is already per-tenant:
-    // a misconfigured path then yields nothing rather than the wrong store.
-    .where(and(eq(variants.tenant, tenant.id), inArray(variants.id, variantIds)))
+    .select({ sku: reservations.sku, qty: reservations.qty })
+    .from(reservations)
+    .where(and(
+      eq(reservations.tenant, tenant.id),
+      inArray(reservations.sku, skus),
+      sql`${reservations.expiresAt} > unixepoch()`,
+      ...(ignoreCartId ? [sql`${reservations.cartId} <> ${ignoreCartId}`] : []),
+    ))
     .all()
-
-  return rows.map((r) => {
-    const available = r.active ? Math.max(0, r.stockQty - r.held) : 0
-    return {
-      variantId: r.id,
-      available,
-      inStock: available > 0,
-      scarce: available > 0 && available <= tenant.catalog.scarcityThreshold,
-    }
-  })
+  const m = new Map<string, number>()
+  for (const r of rows) m.set(r.sku, (m.get(r.sku) ?? 0) + r.qty)
+  return m
 }
 
 /**
- * Take (or extend) holds for every line in a cart, atomically.
+ * What can actually be sold right now: the number in the file, minus holds
+ * other shoppers are sitting on.
+ */
+export function availability(
+  tenant: TenantConfig,
+  skus: string[],
+  opts: { ignoreCartId?: string } = {},
+): Availability[] {
+  if (skus.length === 0) return []
+  const declared = stockFromFiles(tenant)
+  const held = heldBySku(tenant, skus, opts.ignoreCartId)
+
+  return skus
+    .filter((s) => declared.has(s))
+    .map((sku) => {
+      const available = Math.max(0, (declared.get(sku) ?? 0) - (held.get(sku) ?? 0))
+      return {
+        sku,
+        available,
+        inStock: available > 0,
+        scarce: available > 0 && available <= tenant.catalog.scarcityThreshold,
+      }
+    })
+}
+
+/**
+ * Take or extend holds for a cart.
  *
- * SQLite allows one writer at a time, which makes this serializable by
- * construction -- but only if the transaction takes the write lock UP FRONT.
- * `behavior: 'immediate'` does that. With the default deferred behaviour the
- * transaction starts as a reader, both checkouts read "1 available", and the
- * second discovers the conflict only when it tries to upgrade -- after it has
- * already decided it won.
- *
- * Verified under load: 8 concurrent processes racing for 1 unit, 30 rounds,
- * zero oversells and zero errors.
+ * The check and the insert happen in one immediate transaction, so two
+ * shoppers racing for the last unit cannot both pass: one commits, the other
+ * sees the hold and is refused before any card is charged.
  */
 export async function reserveForCart(
   tenant: TenantConfig,
   cartId: string,
-  lines: { variantId: string; qty: number }[],
+  lines: { sku: string; qty: number }[],
 ): Promise<Date> {
   const expiresAt = new Date(Date.now() + RESERVATION_TTL_MS)
+  const declared = stockFromFiles(tenant)
 
   await withWriteRetry(() =>
     db(tenant.id).transaction((tx) => {
       for (const line of lines) {
-        const row = tx
-          .select({
-            stockQty: variants.stockQty,
-            active: variants.active,
-            held: sql<number>`coalesce((
-              select sum(r.qty) from reservations r
-              where r.variant_id = ${line.variantId}
-                and r.expires_at > unixepoch()
-                and r.cart_id <> ${cartId}
-            ), 0)`,
-          })
-          .from(variants)
-          .where(and(eq(variants.id, line.variantId), eq(variants.tenant, tenant.id)))
-          .get()
+        const stock = declared.get(line.sku)
+        if (stock === undefined) throw new OutOfStockError(line.sku, 0)
 
-        const free = row && row.active ? row.stockQty - row.held : 0
-        if (!row || free < line.qty) throw new OutOfStockError(line.variantId, Math.max(0, free))
+        const heldRows = tx.select({ qty: reservations.qty }).from(reservations)
+          .where(and(
+            eq(reservations.tenant, tenant.id),
+            eq(reservations.sku, line.sku),
+            sql`${reservations.expiresAt} > unixepoch()`,
+            sql`${reservations.cartId} <> ${cartId}`,
+          )).all()
+        const held = heldRows.reduce((n, r) => n + r.qty, 0)
+
+        const free = stock - held
+        if (free < line.qty) throw new OutOfStockError(line.sku, Math.max(0, free))
 
         tx.insert(reservations)
-          .values({ tenant: tenant.id, cartId, variantId: line.variantId, qty: line.qty, expiresAt })
+          .values({ tenant: tenant.id, cartId, sku: line.sku, qty: line.qty, expiresAt })
           .onConflictDoUpdate({
-            target: [reservations.cartId, reservations.variantId],
+            target: [reservations.cartId, reservations.sku],
             set: { qty: line.qty, expiresAt },
           })
           .run()
       }
     }, { behavior: 'immediate' }),
   )
-
   return expiresAt
 }
 
-/** Convert holds into a permanent stock decrement. Called once, on payment success. */
-export async function commitReservation(tenant: TenantConfig, cartId: string): Promise<void> {
-  await withWriteRetry(() =>
-    db(tenant.id).transaction((tx) => {
-      const held = tx
-        .select({ variantId: reservations.variantId, qty: reservations.qty })
-        .from(reservations)
-        .where(and(eq(reservations.cartId, cartId), eq(reservations.tenant, tenant.id)))
-        .all()
+/**
+ * Write a new stock number into a product file.
+ *
+ * Written to a temporary file and renamed, which is atomic on POSIX -- a
+ * crash mid-write leaves the original intact rather than a truncated file.
+ * Only the one number changes; formatting and key order are preserved so the
+ * file stays diffable and your edits are not reshuffled.
+ */
+export function setStockInFile(tenant: TenantConfig, sku: string, next: number): boolean {
+  for (const p of readProductFiles(tenant.id)) {
+    if (!p.variants.some((v) => v.sku === sku)) continue
+    const file = join(productsDir(tenant.id), p.slug, 'product.json')
+    const doc = JSON.parse(readFileSync(file, 'utf8')) as {
+      variants: { sku: string; stock?: number }[]
+    }
+    const v = doc.variants.find((x) => x.sku === sku)
+    if (!v) continue
+    v.stock = Math.max(0, next)
+    const tmp = `${file}.tmp`
+    writeFileSync(tmp, JSON.stringify(doc, null, 2) + '\n')
+    renameSync(tmp, file)
+    return true
+  }
+  return false
+}
 
-      for (const h of held) {
-        tx.update(variants)
-          .set({ stockQty: sql`max(0, ${variants.stockQty} - ${h.qty})` })
-          .where(and(eq(variants.id, h.variantId), eq(variants.tenant, tenant.id)))
-          .run()
-      }
-      tx.delete(reservations).where(eq(reservations.cartId, cartId)).run()
-    }, { behavior: 'immediate' }),
+/** Convert holds into a permanent decrement in the product files. */
+export async function commitReservation(tenant: TenantConfig, cartId: string): Promise<void> {
+  const held = db(tenant.id)
+    .select({ sku: reservations.sku, qty: reservations.qty })
+    .from(reservations)
+    .where(and(eq(reservations.cartId, cartId), eq(reservations.tenant, tenant.id)))
+    .all()
+
+  const declared = stockFromFiles(tenant)
+  for (const h of held) {
+    const now = declared.get(h.sku)
+    if (now === undefined) continue
+    setStockInFile(tenant, h.sku, Math.max(0, now - h.qty))
+  }
+  await withWriteRetry(() =>
+    db(tenant.id).delete(reservations).where(eq(reservations.cartId, cartId)).run(),
   )
 }
 
@@ -160,14 +176,12 @@ export async function releaseReservation(tenant: TenantConfig, cartId: string): 
   )
 }
 
-/** Housekeeping: drop expired holds. Run from a systemd timer every few minutes. */
+/** Housekeeping: drop expired holds. Run from a systemd timer. */
 export async function sweepExpiredReservations(tenant: TenantConfig): Promise<number> {
   const rows = await withWriteRetry(() =>
-    db(tenant.id)
-      .delete(reservations)
+    db(tenant.id).delete(reservations)
       .where(sql`${reservations.expiresAt} <= unixepoch()`)
-      .returning({ id: reservations.id })
-      .all(),
+      .returning({ id: reservations.id }).all(),
   )
   return rows.length
 }

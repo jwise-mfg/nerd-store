@@ -48,10 +48,13 @@ export function db(tenant: TenantId): Db {
   // Refuse to serve from a database that has never been migrated. Without
   // this, a wrong path yields an empty store that looks like a sold-out one.
   if (!process.env.ALLOW_UNMIGRATED_DB) {
-    const hasCatalog = conn
-      .prepare(`select count(*) n from sqlite_master where type='table' and name='products'`)
+    // `orders` is the sentinel: products live in files now, so the catalogue
+    // tables are gone and cannot be used to tell a migrated database from an
+    // empty one.
+    const migrated = conn
+      .prepare(`select count(*) n from sqlite_master where type='table' and name='orders'`)
       .get() as { n: number }
-    if (hasCatalog.n === 0) {
+    if (migrated.n === 0) {
       conn.close()
       throw new Error(
         `Tenant "${tenant}" database at ${path} has no schema` +

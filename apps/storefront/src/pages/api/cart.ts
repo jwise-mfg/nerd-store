@@ -14,18 +14,17 @@ export async function GET(ctx: APIContext) {
 export async function POST(ctx: APIContext) {
   const t = requestTenant(ctx.request)
   const body = await ctx.request.json().catch(() => null)
-  if (!body || typeof body.variantId !== 'string') return json({ error: 'Bad request' }, 400)
+  if (!body || typeof body.sku !== 'string') return json({ error: 'Bad request' }, 400)
 
   const cartId = await ensureCartId(ctx, t)
   const qty = Number.isInteger(body.qty) ? Math.max(0, Math.min(99, body.qty)) : 1
 
   try {
-    // Every mutation is scoped to the tenant: a variant id belonging to the
-    // other store simply is not found here, so one storefront can never add
-    // the other's inventory to a cart.
-    if (body.action === 'remove') await removeItem(t, cartId, body.variantId)
-    else if (body.action === 'set') await setQty(t, cartId, body.variantId, qty)
-    else await addItem(t, cartId, body.variantId, qty)
+    // Every mutation resolves the SKU against THIS store's product files, so
+    // one storefront can never add the other's inventory to a cart.
+    if (body.action === 'remove') await removeItem(t, cartId, body.sku)
+    else if (body.action === 'set') await setQty(t, cartId, body.sku, qty)
+    else await addItem(t, cartId, body.sku, qty)
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'Could not update cart' }, 400)
   }

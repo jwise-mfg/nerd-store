@@ -1,0 +1,35 @@
+{
+  "title": "How Machines Talk",
+  "subtitle": "A picture book about factories that finally understand each other",
+  "kind": "book",
+  "status": "active",
+  "position": 1,
+  "description": [
+    "A 32-page hardcover for ages 5–9 about why the machines in a factory",
+    "speak different languages — and what happens when someone finally writes them a common one.",
+    "",
+    "Written and illustrated for the i3X initiative. Printed on FSC-certified stock."
+  ],
+  "images": [
+    {
+      "file": "cover.png",
+      "alt": "How Machines Talk — cover"
+    }
+  ],
+  "variants": [
+    {
+      "sku": "I3X-BOOK-HC",
+      "title": "Hardcover",
+      "price": "24.00",
+      "weightGrams": 420,
+      "stock": 180
+    },
+    {
+      "sku": "I3X-BOOK-HC-SIGN",
+      "title": "Hardcover, signed",
+      "price": "35.00",
+      "weightGrams": 420,
+      "stock": 25
+    }
+  ]
+}

@@ -12,10 +12,10 @@ export const prerender = false
  */
 export async function GET(ctx: APIContext) {
   const t = requestTenant(ctx.request)
-  const raw = new URL(ctx.request.url).searchParams.get('ids') ?? ''
-  const ids = raw.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 50)
-  if (ids.length === 0) return json([])
+  const raw = new URL(ctx.request.url).searchParams.get('skus')
+    ?? new URL(ctx.request.url).searchParams.get('ids') ?? ''
+  const skus = raw.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 50)
+  if (skus.length === 0) return json([])
 
-  const rows = availability(t, ids)
-  return json(rows.map((r) => ({ variantId: r.variantId, available: r.available, scarce: r.scarce })))
+  return json(availability(t, skus).map((r) => ({ sku: r.sku, available: r.available, scarce: r.scarce })))
 }

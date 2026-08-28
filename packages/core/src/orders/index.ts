@@ -1,9 +1,10 @@
 import { and, eq } from 'drizzle-orm'
 import { db, withWriteRetry } from '../db/index.ts'
-import { orderItems, orders, variants, webhookEvents } from '../db/schema.ts'
+import { orderItems, orders, webhookEvents } from '../db/schema.ts'
 import type { Address } from '../db/schema.ts'
 import type { TenantConfig } from '../tenant/types.ts'
 import { clearCart, loadCart, shippingFor } from '../cart/index.ts'
+import { findVariant } from '../catalog/index.ts'
 import { commitReservation, reserveForCart } from '../inventory/index.ts'
 import { createPaymentIntent } from '../payments/stripe.ts'
 import { newOrderNumber } from '../util/orderNumber.ts'
@@ -56,7 +57,7 @@ export async function beginCheckout(
     .find((r) => r.code === shippingRateCode)
   if (!rate) throw new CheckoutValidationError('That shipping option is not available for your address.')
 
-  const expiresAt = await reserveForCart(tenant, cartId, cart.lines)
+  const expiresAt = await reserveForCart(tenant, cartId, cart.lines.map((l) => ({ sku: l.sku, qty: l.qty })))
 
   const subtotalCents = cart.subtotalCents
   const shippingCents = rate.amount
@@ -86,12 +87,12 @@ export async function beginCheckout(
       const id = created[0]!.id
       tx.insert(orderItems).values(
         cart.lines.map((l) => {
-          const v = tx.select({ serial: variants.serial }).from(variants)
-            .where(eq(variants.id, l.variantId)).get()
+          const found = findVariant(tenant, l.sku)
           return {
-            orderId: id, variantId: l.variantId, sku: l.sku,
+            orderId: id, sku: l.sku,
             titleSnapshot: `${l.productTitle} — ${l.variantTitle}`,
-            attributesSnapshot: l.attributes, serialSnapshot: v?.serial ?? null,
+            attributesSnapshot: l.attributes,
+            serialSnapshot: found?.variant.serial ?? null,
             qty: l.qty, unitPriceCents: l.unitPriceCents,
           }
         }),

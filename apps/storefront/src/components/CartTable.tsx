@@ -12,12 +12,12 @@ export default function CartTable({ tenant }: Props) {
 
   useEffect(() => { fetch('/api/cart').then((r) => r.json()).then(setCart) }, [])
 
-  async function mutate(variantId: string, action: 'set' | 'remove', qty = 0) {
+  async function mutate(sku: string, action: 'set' | 'remove', qty = 0) {
     setBusy(true)
     const res = await fetch('/api/cart', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ action, variantId, qty }),
+      body: JSON.stringify({ action, sku, qty }),
     })
     if (res.ok) setCart(await res.json())
     setBusy(false)
@@ -37,7 +37,7 @@ export default function CartTable({ tenant }: Props) {
       <table class="table">
         <tbody>
           {cart.lines.map((l) => (
-            <tr key={l.variantId}>
+            <tr key={l.sku}>
               <td style="width:88px;">
                 {l.image && <img src={l.image.url} alt={l.image.alt} width="72" height="72" style="border-radius:var(--r-sm);" />}
               </td>
@@ -55,7 +55,7 @@ export default function CartTable({ tenant }: Props) {
                     request stock the store does not have. */}
                 <input
                   type="number" min="0" max={Math.max(l.available, 0)} value={l.qty} disabled={busy}
-                  onChange={(e) => mutate(l.variantId, 'set', Number((e.target as HTMLInputElement).value))}
+                  onChange={(e) => mutate(l.sku, 'set', Number((e.target as HTMLInputElement).value))}
                   style="width:100%;padding:6px;background:var(--c-bg-elevated);color:var(--c-ink);border:1px solid var(--c-line);border-radius:var(--r-sm);"
                 />
               </td>
@@ -64,7 +64,7 @@ export default function CartTable({ tenant }: Props) {
               </td>
               <td style="width:32px;text-align:right;">
                 <button
-                  onClick={() => mutate(l.variantId, 'remove')} disabled={busy}
+                  onClick={() => mutate(l.sku, 'remove')} disabled={busy}
                   aria-label={`Remove ${l.productTitle}`}
                   style="background:none;border:0;color:var(--c-ink-muted);cursor:pointer;font-size:1.2rem;"
                 >×</button>

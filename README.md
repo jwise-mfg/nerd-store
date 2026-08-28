@@ -97,62 +97,54 @@ Deploying to a VPS: see [deploy/README.md](deploy/README.md).
 
 ## Running the shop
 
-`storemgr` manages the catalogue, stock, and orders. Authentication is SSH: if
-you can run it, you are the operator, so there is no login and no public admin
-surface on a live store.
+**Products are files.** One folder per product, images alongside:
+
+```
+products/i3x/how-machines-talk/
+  product.json
+  cover.png
+```
+
+Everything about a product lives in that JSON — title, description, price,
+variants, stock. Edit it in whatever you like, then:
 
 ```bash
-./storemgr help
+./storemgr publish
+```
 
-./storemgr inventory                      # listings, prices, stock, live holds
+Descriptions take Markdown, and inline HTML passes through. Write them as an
+array of lines so JSON never makes you escape a newline:
+
+```json
+"description": [
+  "A 32-page hardcover for ages 5-9 about why the machines in a factory",
+  "speak different languages.",
+  "",
+  "Printed on FSC-certified stock."
+]
+```
+
+Images are a bare filename plus alt text; the file sits next to product.json
+and the build copies it in.
+
+`storemgr` covers only what a file cannot do:
+
+```bash
+./storemgr inventory                     # listed, priced, in stock, on hold
 ./storemgr low                           # what needs restocking
-./storemgr stock I3X-BOOK-HC +50         # set (250) or adjust (+50 / -10)
-./storemgr price I3X-BOOK-HC 26.50       # dollars, not cents
+./storemgr stock I3X-BOOK-HC +50         # writes the number into the file
+./storemgr check                         # validate every product file
 ./storemgr orders --status paid          # awaiting shipment
-./storemgr order I3X-ABC123              # full detail incl. address
+./storemgr order I3X-ABC123
 ./storemgr ship I3X-ABC123 --carrier USPS --tracking 9400...
 ```
 
-Add `-t webos` to target the other store; it defaults to `i3x`.
+Add `-t webos` for the other store; it defaults to `i3x`.
 
-Editing listings and images:
-
-```bash
-./storemgr product-edit how-machines-talk --title "..." --subtitle "..."
-./storemgr describe how-machines-talk description.md   # Markdown, from a file
-./storemgr images how-machines-talk                    # list, with indices
-./storemgr image-add how-machines-talk cover.jpg --alt "Book cover"
-./storemgr image-add hp-touchpad-32gb front.jpg --sku WOA-TP32-A-0417 --alt "This unit" -t webos
-./storemgr image-rm how-machines-talk 0
-```
-
-`image-add` copies the file into that store's own `public-<tenant>/products/`
-directory. Referencing a path elsewhere on disk would work locally and 404 in
-production, because the build only ships what is inside it. Use `--sku` for a
-photograph of one specific unit rather than the product generally.
-
-Adding something new takes two steps, because a product with no variant never
-appears in the shop:
-
-```bash
-./storemgr product-add --slug tote --title "i3X Tote" --kind apparel
-./storemgr variant-add --product tote --sku I3X-TOTE-NAT --price 18 --stock 25
-./storemgr activate tote
-```
-
-Put it on your PATH to drop the `./`:
-
-```bash
-mkdir -p ~/.local/bin && ln -sf "$PWD/storemgr" ~/.local/bin/storemgr
-```
-
-**Changes publish themselves.** Anything that alters a page's content
-rebuilds that store automatically — a few seconds, no downtime, and no service
-restart, because Astro's node server and nginx both read the built files from
-disk per request. Pass `--no-publish` to defer when making several edits, then
-run `storemgr publish` once.
-
-Stock needs no publish at all: the product page fetches availability live.
+**The database holds no products.** Only what changes while the site runs and
+must survive a restart: carts, the holds that stop two people buying the last
+unit, orders, dispatches, and Stripe idempotency. Stock lives in the product
+file and is decremented there when a sale completes.
 
 ---
 

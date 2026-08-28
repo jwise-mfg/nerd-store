@@ -1,54 +1,43 @@
+#!/usr/bin/env node
 /**
- * Concurrency test: two shoppers race for the last TouchPad.
- * Exactly one must win. The loser must fail BEFORE any card is charged.
+ * Two shoppers race for the last unit. Exactly one may win, and the loser must
+ * fail BEFORE any card is charged.
  */
-import { and, eq } from 'drizzle-orm'
-import { db, variants, cartItems } from '../packages/core/src/db/index.ts'
-import { createCart } from '../packages/core/src/cart/index.ts'
-import { reserveForCart, availability, commitReservation, releaseReservation, OutOfStockError }
-  from '../packages/core/src/inventory/index.ts'
 import { webos } from '../tenants/webos/tenant.config.ts'
+import { createCart } from '../packages/core/src/cart/index.ts'
+import { availability, reserveForCart, releaseReservation, commitReservation,
+  setStockInFile, stockFromFiles, OutOfStockError } from '../packages/core/src/inventory/index.ts'
+import { db } from '../packages/core/src/db/index.ts'
+import { cartItems } from '../packages/core/src/db/schema.ts'
 
-const unit = db('webos').select().from(variants)
-  .where(and(eq(variants.tenant, 'webos'), eq(variants.sku, 'WOA-TP32-A-0417'))).get()
-
-console.log(`Unit ${unit!.sku}: stockQty = ${unit!.stockQty}\n`)
+const SKU = 'WOA-TP32-A-0417'
+const original = stockFromFiles(webos).get(SKU)!
+setStockInFile(webos, SKU, 1)
+console.log(`\n  ${SKU}: stock set to 1 for the test\n`)
 
 const cartA = await createCart(webos)
 const cartB = await createCart(webos)
-const line = [{ variantId: unit!.id, qty: 1 }]
+const line = [{ sku: SKU, qty: 1 }]
 
-console.log('Two carts attempt to reserve the same unit simultaneously…')
 const results = await Promise.allSettled([
   reserveForCart(webos, cartA, line),
   reserveForCart(webos, cartB, line),
 ])
-
-let winners = 0, losers = 0
+let won = 0
 results.forEach((r, i) => {
   const who = i === 0 ? 'Cart A' : 'Cart B'
-  if (r.status === 'fulfilled') { winners++; console.log(`  ${who}: RESERVED until ${r.value.toISOString()}`) }
-  else {
-    losers++
-    const e = r.reason
-    console.log(`  ${who}: REFUSED — ${e instanceof OutOfStockError ? `out of stock (${e.available} available)` : e.message}`)
-  }
+  if (r.status === 'fulfilled') { won++; console.log(`  ${who}: RESERVED`) }
+  else console.log(`  ${who}: REFUSED — ${r.reason instanceof OutOfStockError ? `out of stock (${r.reason.available} available)` : r.reason.message}`)
 })
+console.log(won === 1 ? '\n  PASS — exactly one reservation succeeded' : `\n  FAIL — ${won} winners`)
+console.log(`  public availability while held: ${availability(webos, [SKU])[0]!.available} (expect 0)`)
 
-console.log(`\nWinners: ${winners}, Losers: ${losers}`)
-console.log(winners === 1 && losers === 1 ? '  PASS — exactly one reservation succeeded' : '  FAIL — oversell possible!')
+const winner = results[0]!.status === 'fulfilled' ? cartA : cartB
+db('webos').insert(cartItems).values({ cartId: winner, sku: SKU, qty: 1, unitPriceCents: 18500 }).run()
+await commitReservation(webos, winner)
+console.log(`  stock in the file after payment: ${stockFromFiles(webos).get(SKU)} (expect 0)`)
 
-const [avail] = availability(webos, [unit!.id])
-console.log(`\nPublic availability while held: ${avail!.available} (expect 0)`)
-
-const winnerCart = results[0]!.status === 'fulfilled' ? cartA : cartB
-db('webos').insert(cartItems).values({ cartId: winnerCart, variantId: unit!.id, qty: 1, unitPriceCents: unit!.priceCents }).run()
-await commitReservation(webos, winnerCart)
-const after = db('webos').select({ q: variants.stockQty }).from(variants).where(eq(variants.id, unit!.id)).get()
-console.log(`Stock after the winner pays: ${after!.q} (expect 0)`)
-
-// restore for further manual poking
-db('webos').update(variants).set({ stockQty: 1 }).where(eq(variants.id, unit!.id)).run()
+setStockInFile(webos, SKU, original)
 await releaseReservation(webos, cartA); await releaseReservation(webos, cartB)
-console.log('\n(stock restored to 1)')
-process.exit(0)
+console.log(`\n  (stock restored to ${original})\n`)
+process.exit(won === 1 ? 0 : 1)
