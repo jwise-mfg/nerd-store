@@ -53,6 +53,8 @@ export interface TenantCopy {
   cartTitle: string
   cartEmpty: string
   checkoutTitle: string
+  /** Shown on the cart and checkout. Say where you ship before they type. */
+  shippingRestriction: string
   /** Shown under the payment form. Sets expectations about the charge. */
   checkoutReassurance: string
   orderConfirmedTitle: string

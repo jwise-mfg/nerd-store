@@ -83,6 +83,7 @@ export const i3x: TenantConfig = {
     cartTitle: 'Your cart',
     cartEmpty: 'Your cart is empty.',
     checkoutTitle: 'Checkout',
+    shippingRestriction: 'We ship within the United States only.',
     checkoutReassurance:
       'Payment is processed securely. Your card statement will show "I3X STORE".',
     orderConfirmedTitle: 'Order confirmed — thank you.',
@@ -111,8 +112,6 @@ export const i3x: TenantConfig = {
       countries: ['US'], estimate: '3–7 business days' },
     { code: 'us_priority', label: 'Priority Mail', amount: 1200, freeAbove: null,
       countries: ['US'], estimate: '2–3 business days' },
-    { code: 'intl_standard', label: 'International', amount: 2200, freeAbove: null,
-      countries: ['CA', 'GB', 'DE', 'FR', 'NL', 'SE', 'AU', 'JP'], estimate: '10–21 business days' },
   ],
 
   // Distinct from the other store's analytics. A shared measurement id is the

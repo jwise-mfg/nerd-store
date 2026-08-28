@@ -7,11 +7,16 @@ interface Props {
   tenant: {
     currency: string
     storeName: string
-    copy: Pick<TenantConfig['copy'], 'checkoutReassurance'>
+    copy: Pick<TenantConfig['copy'], 'checkoutReassurance' | 'shippingRestriction'>
     /** Token values, passed in so Stripe's iframe matches the surrounding page. */
     appearance: { bg: string; bgElevated: string; ink: string; inkMuted: string; accent: string; line: string; danger: string; font: string; radius: string }
   }
 }
+
+const REGION = typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+  ? new Intl.DisplayNames(['en'], { type: 'region' })
+  : null
+const countryName = (code: string) => REGION?.of(code) ?? code
 
 const money = (c: number, cur: string) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: cur.toUpperCase() }).format(c / 100)
@@ -30,6 +35,7 @@ interface Rate { code: string; label: string; amount: number; estimate: string }
 export default function Checkout({ publishableKey, tenant }: Props) {
   const [step, setStep] = useState<'address' | 'pay'>('address')
   const [rates, setRates] = useState<Rate[]>([])
+  const [countries, setCountries] = useState<string[]>([])
   const [subtotal, setSubtotal] = useState(0)
   const [form, setForm] = useState({
     email: '', name: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: 'US',
@@ -53,6 +59,12 @@ export default function Checkout({ publishableKey, tenant }: Props) {
       .then((r) => r.json())
       .then((d) => {
         setRates(d.rates); setSubtotal(d.subtotalCents)
+        setCountries(d.countries ?? [])
+        // If the store ships to exactly one country, there is no choice to
+        // make -- adopt it rather than asking.
+        if (d.countries?.length === 1 && form.country !== d.countries[0]) {
+          setForm((f) => ({ ...f, country: d.countries[0] }))
+        }
         if (d.rates.length && !d.rates.some((r: Rate) => r.code === rateCode)) setRateCode(d.rates[0].code)
       })
   }, [form.country])
@@ -144,6 +156,7 @@ export default function Checkout({ publishableKey, tenant }: Props) {
     return (
       <form onSubmit={beginPayment}>
         {left === 'expired' && <p class="notice">Your reservation expired. Confirm your details to try again.</p>}
+        <p class="muted" style="margin-top:0;">{tenant.copy.shippingRestriction}</p>
         <label class="field"><span>Email</span>
           <input type="email" required value={form.email} onInput={set('email')} autocomplete="email" /></label>
         <label class="field"><span>Full name</span>
@@ -162,13 +175,24 @@ export default function Checkout({ publishableKey, tenant }: Props) {
           <label class="field"><span>Postal code</span>
             <input required value={form.postalCode} onInput={set('postalCode')} autocomplete="postal-code" /></label>
           <label class="field"><span>Country</span>
-            <input required value={form.country} onInput={set('country')} maxLength={2}
-                   autocomplete="country" style="text-transform:uppercase;" /></label>
+            {countries.length === 1 ? (
+              // One destination: show it, do not offer a box that invites a
+              // value the store will refuse.
+              <input value={countryName(countries[0]!)} readOnly tabIndex={-1}
+                     style="opacity:.7;cursor:default;" />
+            ) : (
+              <select required value={form.country}
+                      onChange={(e) => setForm({ ...form, country: (e.target as HTMLSelectElement).value })}>
+                {countries.map((c) => <option value={c} key={c}>{countryName(c)}</option>)}
+              </select>
+            )}</label>
         </div>
 
         <fieldset style="border:1px solid var(--c-line);border-radius:var(--r-md);padding:calc(var(--s)*2);margin-bottom:calc(var(--s)*3);">
           <legend class="muted" style="font-size:.85rem;">Shipping</legend>
-          {rates.length === 0 && <p class="muted" style="margin:0;">We don’t ship to that country yet.</p>}
+          {rates.length === 0 && (
+            <p class="muted" style="margin:0;">{tenant.copy.shippingRestriction}</p>
+          )}
           {rates.map((r) => (
             <label key={r.code} style="display:flex;gap:8px;align-items:baseline;padding:4px 0;">
               <input type="radio" name="rate" checked={rateCode === r.code} onChange={() => setRateCode(r.code)} />

@@ -92,6 +92,7 @@ export const webos: TenantConfig = {
     cartTitle: 'Your cart',
     cartEmpty: 'Nothing in your cart yet.',
     checkoutTitle: 'Checkout',
+    shippingRestriction: 'We ship within the United States only.',
     checkoutReassurance:
       'Payment is processed securely. Your card statement will show "WEBOS SHOP".',
     orderConfirmedTitle: 'Order confirmed.',
@@ -123,9 +124,6 @@ export const webos: TenantConfig = {
       countries: ['US'], estimate: '3–6 business days' },
     { code: 'us_expedited', label: 'Expedited', amount: 1800, freeAbove: null,
       countries: ['US'], estimate: '2 business days' },
-    // Devices carry lithium cells: carrier rules restrict where they can go.
-    { code: 'intl_tracked', label: 'International (tracked)', amount: 3500, freeAbove: null,
-      countries: ['CA', 'GB', 'DE', 'FR', 'NL', 'IT', 'ES', 'SE', 'AU'], estimate: '10–25 business days' },
   ],
 
   // The archive already self-hosts Matomo. Reuse the instance, but NEVER the

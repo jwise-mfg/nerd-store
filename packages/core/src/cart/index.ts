@@ -132,6 +132,18 @@ export async function removeItem(tenant: TenantConfig, cartId: string, variantId
   )
 }
 
+/**
+ * Every country this store will ship to, derived from its declared rates.
+ *
+ * Deliberately not a separate config field: a second list would drift from
+ * the rates, and the pair could disagree about whether an order is
+ * deliverable. Delete a rate and the country stops being offered everywhere
+ * -- checkout form, validation, and copy -- with no other edit.
+ */
+export function shipsTo(tenant: TenantConfig): string[] {
+  return [...new Set(tenant.shipping.flatMap((r) => r.countries))].sort()
+}
+
 /** Cheapest rate that serves the destination, honouring free-shipping thresholds. */
 export function shippingFor(
   tenant: TenantConfig, country: string, subtotalCents: number,

@@ -1,18 +1,28 @@
 import type { APIContext } from 'astro'
-import { beginCheckout, shippingFor, loadCart, OutOfStockError, type Address } from '@store/core'
+import { beginCheckout, shippingFor, shipsTo, loadCart, OutOfStockError, type Address } from '@store/core'
 import { CheckoutValidationError } from '@store/core'
 import { requestTenant } from '../../lib/tenant.ts'
 import { json, readCartId } from '../../lib/session.ts'
 
 export const prerender = false
 
-/** GET: shipping options for a destination, priced against the live cart. */
+/**
+ * GET: shipping options for a destination, priced against the live cart, plus
+ * the countries this store ships to. The form uses that list to offer only
+ * deliverable destinations rather than letting someone complete an address we
+ * will refuse.
+ */
 export async function GET(ctx: APIContext) {
   const t = requestTenant(ctx.request)
-  const country = new URL(ctx.request.url).searchParams.get('country') ?? 'US'
+  const countries = shipsTo(t)
+  const requested = (new URL(ctx.request.url).searchParams.get('country') ?? countries[0] ?? 'US').toUpperCase()
   const cart = await loadCart(t, readCartId(ctx, t))
-  if (!cart) return json({ rates: [], subtotalCents: 0 })
-  return json({ rates: shippingFor(t, country, cart.subtotalCents), subtotalCents: cart.subtotalCents })
+  if (!cart) return json({ rates: [], subtotalCents: 0, countries })
+  return json({
+    rates: shippingFor(t, requested, cart.subtotalCents),
+    subtotalCents: cart.subtotalCents,
+    countries,
+  })
 }
 
 /**
@@ -36,9 +46,22 @@ export async function POST(ctx: APIContext) {
   if (!a || required.some((k) => typeof a[k] !== 'string' || !a[k].trim())) {
     return json({ error: 'A complete shipping address is required' }, 400)
   }
+  // Enforced here, not just in the form: the browser can post anything. A
+  // destination we cannot ship to is refused before stock is reserved and
+  // before a PaymentIntent exists, so no card is ever touched for an order
+  // that cannot be fulfilled.
+  const country = String(a.country).toUpperCase()
+  const allowed = shipsTo(t)
+  if (!allowed.includes(country)) {
+    return json({
+      error: t.copy.shippingRestriction,
+      allowedCountries: allowed,
+    }, 422)
+  }
+
   const address: Address = {
     name: a.name, line1: a.line1, line2: a.line2 || undefined, city: a.city,
-    state: a.state, postalCode: a.postalCode, country: String(a.country).toUpperCase(),
+    state: a.state, postalCode: a.postalCode, country,
     phone: a.phone || undefined,
   }
 

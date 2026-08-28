@@ -19,7 +19,10 @@ const pk = config().stripe.publishableKey
         tenant={{
           currency: t.currency,
           storeName: t.storeName,
-          copy: { checkoutReassurance: t.copy.checkoutReassurance },
+          copy: {
+            checkoutReassurance: t.copy.checkoutReassurance,
+            shippingRestriction: t.copy.shippingRestriction,
+          },
           appearance: {
             bg: c.bg, bgElevated: c.bgElevated, ink: c.ink, inkMuted: c.inkMuted,
             accent: c.accent, line: c.line, danger: c.danger,
