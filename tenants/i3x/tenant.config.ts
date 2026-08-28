@@ -54,7 +54,6 @@ export const i3x: TenantConfig = {
         'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Work+Sans:wght@500;600;700&display=swap',
     },
     radius: { sm: '4px', md: '8px', lg: '14px', pill: '999px' },
-    logo: { src: '/brand/i3x-logo-white.png', alt: 'i3X', height: '34px' },
     space: { unit: '8px' },
     extraCss: `
       /* Green rule under the masthead, as on i3x.dev. */
@@ -64,6 +63,13 @@ export const i3x: TenantConfig = {
       /* Buttons shift green -> navy on hover, matching the parent site. */
       .btn:hover:not(:disabled) { background: var(--c-accent-hover); }
     `,
+  },
+
+  brand: {
+    wordmark: { src: '/brand/i3x-logo-white.png', alt: 'i3X — Industrial Information Interoperability eXchange', height: '30px' },
+    mark: { src: '/brand/i3x-orb-256.png', alt: '', size: '30px' },
+    favicon: '/brand/i3x-orb-32.png',
+    appleTouchIcon: '/brand/i3x-orb-512.png',
   },
 
   copy: {

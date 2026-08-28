@@ -16,6 +16,10 @@ const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${
     <title>{pageTitle}</title>
     <meta name="description" content={description ?? t.copy.heroBody} />
     <link rel="canonical" href={new URL(Astro.url.pathname, t.origin).href} />
+    {t.brand.favicon && <link rel="icon" type="image/png" href={t.brand.favicon} />}
+    {t.brand.appleTouchIcon && <link rel="apple-touch-icon" href={t.brand.appleTouchIcon} />}
+    {/* Tints the browser chrome on mobile to match the store. */}
+    <meta name="theme-color" content={t.theme.color.bg} />
     {t.theme.font.googleFontsHref && (
       <>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,10 +34,15 @@ const pageTitle = title ? `${title} — ${t.storeName}` : `${t.storeName} — ${
     <header class="masthead">
       <div class="wrap masthead-inner">
         <a class="brand" href="/" aria-label={t.storeName}>
-          {t.theme.logo
-            ? <img src={t.theme.logo.src} alt={t.theme.logo.alt}
-                   style={`height:${t.theme.logo.height};width:auto;display:block;`} />
-            : t.storeName}
+          {t.brand.mark && (
+            <img class="brand-mark" src={t.brand.mark.src} alt={t.brand.mark.alt}
+                 width="512" height="512"
+                 style={`height:${t.brand.mark.size};width:${t.brand.mark.size};`} />
+          )}
+          {t.brand.wordmark
+            ? <img class="brand-wordmark" src={t.brand.wordmark.src} alt={t.brand.wordmark.alt}
+                   style={`height:${t.brand.wordmark.height};width:auto;`} />
+            : <span>{t.storeName}</span>}
         </a>
         <nav class="nav">
           {t.copy.nav.map((n) => <a href={n.href}>{n.label}</a>)}

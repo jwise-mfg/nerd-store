@@ -37,12 +37,6 @@ export interface ThemeTokens {
     googleFontsHref: string | null
   }
   radius: { sm: string; md: string; lg: string; pill: string }
-  /**
-   * Brand mark for the masthead. Tokens can carry colour and type, but not a
-   * logo -- and a store with neither reads as generic no matter how correct
-   * its palette is. null falls back to the store name set in the display face.
-   */
-  logo: { src: string; alt: string; height: string } | null
   space: { unit: string }
   /** Extra raw CSS appended after tokens -- for textures, gradients, scanlines. */
   extraCss?: string
@@ -129,6 +123,24 @@ export interface TenantConfig {
     returnsPath: string
   }
   theme: ThemeTokens
+  /**
+   * Brand assets.
+   *
+   * Tokens carry colour and type; they cannot carry identity. A store with a
+   * perfectly correct palette and no wordmark or icon still reads as generic,
+   * and a browser tab with no favicon reads as unfinished. Every field is
+   * nullable so a store can decline one without the layout breaking.
+   */
+  brand: {
+    /** Masthead wordmark. null falls back to storeName in the display face. */
+    wordmark: { src: string; alt: string; height: string } | null
+    /** Compact mark shown beside the wordmark. Usually the icon form. */
+    mark: { src: string; alt: string; size: string } | null
+    /** Browser tab icon. PNG; every current browser accepts one. */
+    favicon: string | null
+    /** Square icon for an iOS home screen. 180px or larger. */
+    appleTouchIcon: string | null
+  }
   copy: TenantCopy
   catalog: CatalogShape
   shipping: ShippingRate[]

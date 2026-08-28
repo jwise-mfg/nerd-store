@@ -49,7 +49,6 @@ export const webos: TenantConfig = {
       googleFontsHref: null,      // matches the archive: no external font request
     },
     radius: { sm: '6px', md: '12px', lg: '20px', pill: '999px' },
-    logo: null,
     space: { unit: '8px' },
     extraCss: `
       /* The glow behind the masthead, as on webosarchive.org's landing page. */
@@ -77,6 +76,10 @@ export const webos: TenantConfig = {
       .grade { font-family: var(--f-mono); letter-spacing: .06em; text-transform: uppercase; }
     `,
   },
+
+  // No brand assets supplied yet -- the wordmark falls back to storeName and
+  // the tab shows the browser default until an icon is added.
+  brand: { wordmark: null, mark: null, favicon: null, appleTouchIcon: null },
 
   copy: {
     tagline: 'Keeping webOS alive.',
