@@ -35,7 +35,12 @@ ProtectHome=no
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
-RestrictAddressFamilies=AF_INET AF_INET6
+# AF_NETLINK is required, not optional: os.networkInterfaces() enumerates
+# interfaces over a netlink socket, and Astro's node adapter calls it at
+# startup to print the "Network:" URL. Omitting it makes that call fail with
+# EAFNOSUPPORT (errno 97) and throw an unhandled rejection on every start.
+# AF_UNIX covers journald and local resolver sockets.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 RestrictNamespaces=yes
 LockPersonality=yes
 # The only writable path. Both units share this directory but touch different
