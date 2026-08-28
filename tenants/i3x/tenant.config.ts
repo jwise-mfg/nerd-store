@@ -93,9 +93,8 @@ export const i3x: TenantConfig = {
     footerBlurb:
       'The i3X Store is operated in support of the i3X open API initiative. Proceeds fund specification work, conformance tooling, and community outreach.',
     nav: [
-      { label: 'Shop', href: '/shop' },
-      { label: 'The Book', href: '/shop?kind=book' },
       { label: 'i3x.dev', href: 'https://www.i3x.dev' },
+      { label: 'Shop', href: '/shop' },
     ],
   },
 

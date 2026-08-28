@@ -14,7 +14,7 @@ export function stripe(): Stripe {
   // The webhook endpoint in the Stripe dashboard must be set to this same
   // version, or events arrive rendered in a different shape than this code
   // expects.
-  _stripe = new Stripe(config().stripe.secretKey, { apiVersion: '2025-02-24.acacia' })
+  _stripe = new Stripe(config().stripe.secretKey, { apiVersion: '2026-08-26.dahlia' })
   return _stripe
 }
 

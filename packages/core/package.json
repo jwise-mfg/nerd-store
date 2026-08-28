@@ -16,14 +16,14 @@
     "seed": "node src/db/seed.ts"
   },
   "dependencies": {
+    "better-sqlite3": "^11.7.0",
     "drizzle-orm": "^0.38.2",
-    "stripe": "^17.5.0",
-    "zod": "^3.24.1",
-    "better-sqlite3": "^11.7.0"
+    "stripe": "^22.6.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.30.1",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
-    "@types/better-sqlite3": "^7.6.12"
+    "drizzle-kit": "^0.30.1"
   }
 }
