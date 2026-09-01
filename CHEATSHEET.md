@@ -140,6 +140,7 @@ sudo nginx -t && sudo systemctl reload nginx
 | Title, price, description, images, status | edit `product.json` → `storemgr publish` |
 | `storeOpen`, theme, copy, shipping rates | edit → `storemgr publish` |
 | Stripe keys, mail, notify in `config.json` | edit → `sudo systemctl restart shop-i3x shop-webos` |
+| Service units in `deploy/systemd/` | edit → `./scripts/deploy.sh` (daemon-reloads for you) |
 | Code | `./scripts/deploy.sh` |
 
 Product images are **not** in git — they live in `products/…` and are copied

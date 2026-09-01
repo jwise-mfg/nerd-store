@@ -19,11 +19,12 @@ cp config.example.json config.json
 chmod 600 config.json
 nano config.json          # replace every REPLACE_ME with a real Stripe key
 
-# 4. Units and timers
-sudo cp deploy/systemd/*.service deploy/systemd/*.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now shop-i3x shop-webos
-sudo systemctl enable --now nerd-store-sweep.timer nerd-store-backup.timer
+# 4. Units and timers. /etc/systemd/system gets symlinks back into
+#    deploy/systemd, so the units are version-controlled with everything
+#    else and there is never a second copy to keep in step.
+sudo ./deploy/install-units.sh
+sudo systemctl start shop-i3x shop-webos
+sudo systemctl start nerd-store-sweep.timer nerd-store-backup.timer
 
 # sqlite3 CLI is what backup.sh uses for consistent snapshots
 sudo apt-get install -y sqlite3
@@ -53,9 +54,38 @@ a code-only deploy takes seconds rather than reinstalling ~350 packages.
 
 `--no-pull` deploys what is already checked out.
 
+If the pull changed anything under `deploy/systemd/`, it runs
+`systemctl daemon-reload` before restarting and says which units moved.
+
 Builds both storefronts, **refuses to continue if the validator finds a config
 collision or one store's assets in the other's bundle**, migrates both
 databases, restarts the two services independently, and smoke-tests each.
+
+## Changing a unit file
+
+Edit it in `deploy/systemd/`, commit, and deploy — the symlink means the
+change is live on the box the moment the pull lands. Two things do *not*
+follow automatically:
+
+- **systemd caches unit contents.** A changed unit needs
+  `sudo systemctl daemon-reload`, then a restart of anything affected.
+  `deploy.sh` does both when the pull touches `deploy/systemd/`; if you edit
+  a unit directly on the box, run them yourself.
+- **Adding or removing a unit** changes the set of symlinks, so re-run
+  `sudo ./deploy/install-units.sh`. It is safe to re-run at any time and
+  starts nothing.
+
+Two things to know about this arrangement:
+
+- The units now live on `/home`. systemd reads them at boot, so if `/home`
+  ever moves to a late-mounted or encrypted filesystem the services fail to
+  start with no obvious cause. The app already runs from `~/repos`, so this
+  changes nothing today.
+- The unit files are writable by `cesmii` without sudo, and a unit is what
+  decides which user a service runs as. On a box with one administrator who
+  already has sudo that is not a new capability, but it does mean anything
+  that can write the repository can change what runs as whom at the next
+  reboot.
 
 ## Stripe webhook
 

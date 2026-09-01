@@ -41,8 +41,12 @@ if [ "$PULL" -eq 1 ]; then
   else
     echo "    $(git log --oneline "$before..$after" | wc -l) new commit(s) -> $(git log --oneline -1)"
   fi
+  # /etc/systemd/system symlinks into deploy/systemd, so a pull can change a
+  # unit with nothing to show for it -- systemd caches unit contents and keeps
+  # running the old definition until told otherwise. Catch it here.
+  units_changed="$(git diff --name-only "$before..$after" -- deploy/systemd/ 2>/dev/null || true)"
 else
-  lock_before=""; lock_after=""
+  lock_before=""; lock_after=""; units_changed=""
   echo "==> Skipping pull (--no-pull), at $(git log --oneline -1)"
 fi
 
@@ -78,6 +82,11 @@ npm run db:migrate 2>&1 | grep -E 'migrated|error' || true
 
 # --- restart --------------------------------------------------------------
 step "Restarting"
+if [ -n "$units_changed" ]; then
+  echo "    unit files changed -- reloading systemd:"
+  echo "$units_changed" | sed 's|^deploy/systemd/|      |'
+  sudo systemctl daemon-reload
+fi
 for unit in shop-i3x shop-webos; do
   sudo systemctl restart "$unit.service"
 done
