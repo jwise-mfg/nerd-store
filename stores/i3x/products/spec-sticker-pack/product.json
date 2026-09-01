@@ -4,6 +4,7 @@
     "kind": "sticker",
     "status": "active",
     "position": 3,
+    "orderMax": 5,
     "description": "Weatherproof vinyl. Survives a laptop lid and a dishwasher, in that order.",
     "images": [
         {

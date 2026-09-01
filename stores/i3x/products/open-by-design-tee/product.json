@@ -4,6 +4,7 @@
     "kind": "apparel",
     "status": "active",
     "position": 2,
+    "orderMax": 5,
     "description": "Ringspun 6.1oz cotton. Runs true to size. Printed in small batches.",
     "images": [
         {

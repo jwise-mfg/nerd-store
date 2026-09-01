@@ -1,0 +1,30 @@
+{
+    "title": "Oh, The Standards You'll Meet!",
+    "subtitle": "The story of i3X, by Matthew Parris",
+    "kind": "book",
+    "status": "active",
+    "position": 1,
+    "orderMax": 5,
+    "description": [
+        "The story of i3X, as read on-stage at ProveIt 2026. Written by Matthew Parris.",
+        "This is an 11-page, Hardcover board-book."
+    ],
+    "images": [
+        {
+            "file": "cover.png",
+            "alt": "Oh, The Standards You'll Meet - cover"
+        },
+        {
+            "file": "inside.png",
+            "alt": "Oh, The Standards You'll Meet - inside"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "I3X-BOOK-HC",
+            "title": "Hardcover",
+            "price": "32.00",
+            "weightGrams": 420
+        }
+    ]
+}

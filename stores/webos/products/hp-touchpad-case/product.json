@@ -4,6 +4,7 @@
     "kind": "accessory",
     "status": "active",
     "position": 4,
+    "orderMax": 2,
     "description": "The original HP folio, which doubled as a stand at two angles. Unused, still bagged.",
     "images": [
         {
