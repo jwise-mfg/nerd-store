@@ -22,7 +22,6 @@ lib/app.php          the storefront; every page goes through it
 lib/                 catalog, cart, stock, orders, checkout, mail
 templates/           plain PHP templates
 bin/store            administration (orders, shipping, stock)
-prototype/           the retired Astro implementation, kept for reference
 ```
 
 **Each shop has its own document root.** Its stylesheet, logos and product
@@ -123,3 +122,7 @@ account is one event stream, so both shops' events land on whichever endpoint
 is registered.
 
 Deployment lives in [`deploy/README.md`](deploy/README.md).
+
+The Astro implementation this replaced is not in the repository. It was moved
+to `prototype/` in commit `ab0fdf4` and untracked in `c0dd3f2`; the history is
+still there if it is ever wanted.
