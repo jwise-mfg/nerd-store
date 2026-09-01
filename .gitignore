@@ -25,6 +25,7 @@ private/
 .DS_Store
 
 # ── prototype/ — the retired Astro implementation, kept for reference ──
+prototype/
 prototype/data/
 prototype/config.json
 prototype/apps/*/dist/
