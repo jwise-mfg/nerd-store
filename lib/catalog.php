@@ -54,6 +54,16 @@ function sku_index(array $store, bool $all = false): array
     return $ix;
 }
 
+/**
+ * The most of this product one order may contain. Absent means the ordinary
+ * cap. Applies per variant: the two products carrying it have a single
+ * variant each, and summing siblings would cost more than it is worth.
+ */
+function order_max(array $product): int
+{
+    return max(1, (int) ($product['orderMax'] ?? 99));
+}
+
 /** The display name that goes on the invoice and the order row. */
 function sku_title(array $product, array $variant): string
 {

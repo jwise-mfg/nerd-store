@@ -87,15 +87,21 @@ if ($path === '/cart') {
         $qty = max(0, min(99, (int) ($_POST['qty'] ?? 0)));
         $ix  = sku_index($store);
         if (isset($ix[$sku])) {
-            $have = stock_of($sku);
+            $have    = stock_of($sku);
+            $limit   = order_max($ix[$sku]['product']);
+            $allowed = min($have, $limit);
             if (($_POST['action'] ?? '') === 'add') {
                 $qty = (cart_raw()[$sku] ?? 0) + max(1, $qty);
             }
-            if ($qty > $have) {
-                $qty    = $have;
-                $notice = $have === 0
-                    ? 'That item just sold out.'
-                    : 'Only ' . $have . ' of that item ' . ($have === 1 ? 'is' : 'are') . ' in stock.';
+            if ($qty > $allowed) {
+                $qty = $allowed;
+                if ($allowed === 0) {
+                    $notice = 'That item just sold out.';
+                } elseif ($limit <= $have) {
+                    $notice = 'You can order at most ' . $limit . ' of that item.';
+                } else {
+                    $notice = 'Only ' . $have . ' of that item ' . ($have === 1 ? 'is' : 'are') . ' in stock.';
+                }
             }
             cart_set($sku, $qty);
         }

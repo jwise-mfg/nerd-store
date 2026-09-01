@@ -46,6 +46,7 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
   "kind": "book",
   "status": "active",          // active | draft | archived
   "position": 1,               // sort order in the shop
+  "orderMax": 5,               // optional: most one order may contain
   "description": ["Line one.", "", "A blank line starts a paragraph."],
   "images": [{ "file": "cover.png", "alt": "…" }],
   "variants": [

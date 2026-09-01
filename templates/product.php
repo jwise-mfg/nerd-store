@@ -33,7 +33,15 @@
           <p class="price"><?= money(to_cents($v['price'])) ?></p>
         <?php endif; ?>
 
-        <label>Qty <input type="number" name="qty" value="1" min="1" max="99" inputmode="numeric"></label>
+        <?php
+          // One box for every variant, so this is the most any of them allows;
+          // the cart re-checks the exact SKU and says so if it has to reduce.
+          $ceiling = min(order_max($p), max(array_map(fn($v) => (int) ($stock[$v['sku']] ?? 0), $available)));
+        ?>
+        <label>Qty <input type="number" name="qty" value="1" min="1" max="<?= $ceiling ?>" inputmode="numeric"></label>
+        <?php if (order_max($p) < 99): ?>
+          <p class="fine">Limit <?= order_max($p) ?> per order.</p>
+        <?php endif; ?>
         <button class="btn" type="submit">Add to cart</button>
       <?php endif; ?>
     </form>

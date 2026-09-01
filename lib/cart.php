@@ -58,9 +58,9 @@ function cart_count(): int
  * Resolve the cart against the product files and the stock table.
  *
  * A line whose SKU no longer exists is dropped -- the product file was
- * deleted while it sat in someone's session. A line that exceeds stock is
- * capped and flagged, so the cart page can say so rather than the checkout
- * failing later.
+ * deleted while it sat in someone's session. A line that exceeds stock, or
+ * the product's own orderMax, is capped and flagged, so the cart page can say
+ * so rather than the checkout failing later.
  */
 function cart_lines(array $store): array
 {
@@ -74,7 +74,9 @@ function cart_lines(array $store): array
         $p        = $ix[$sku]['product'];
         $v        = $ix[$sku]['variant'];
         $on_hand  = (int) ($stock[$sku] ?? 0);
-        $capped   = min((int) $qty, $on_hand);
+        $limit    = order_max($p);
+        $allowed  = min($on_hand, $limit);
+        $capped   = min((int) $qty, $allowed);
         $unit     = to_cents($v['price']);
         $lines[] = [
             'sku'        => $sku,
@@ -84,6 +86,10 @@ function cart_lines(array $store): array
             'qty'        => $capped,
             'wanted'     => (int) $qty,
             'short'      => $capped < (int) $qty,
+            // Which ceiling was hit, so the cart can say the right thing.
+            'reason'     => $capped < (int) $qty ? ($limit <= $on_hand ? 'limit' : 'stock') : null,
+            'allowed'    => $allowed,
+            'limit'      => $limit,
             'on_hand'    => $on_hand,
             'unit_cents' => $unit,
             'line_cents' => $unit * $capped,

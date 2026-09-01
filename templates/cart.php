@@ -13,7 +13,9 @@
         <tr>
           <td>
             <a href="/shop/<?= e($l['product']['slug']) ?>"><?= e($l['title']) ?></a>
-            <?php if ($l['short']): ?>
+            <?php if ($l['short'] && $l['reason'] === 'limit'): ?>
+              <p class="fine warn">Limit <?= $l['limit'] ?> per order — quantity reduced.</p>
+            <?php elseif ($l['short']): ?>
               <p class="fine warn">Only <?= $l['on_hand'] ?> in stock — quantity reduced.</p>
             <?php endif; ?>
           </td>
@@ -21,7 +23,7 @@
             <form method="post" action="/cart">
               <input type="hidden" name="action" value="set">
               <input type="hidden" name="sku" value="<?= e($l['sku']) ?>">
-              <input type="number" name="qty" value="<?= $l['qty'] ?>" min="0" max="<?= $l['on_hand'] ?>"
+              <input type="number" name="qty" value="<?= $l['qty'] ?>" min="0" max="<?= $l['allowed'] ?>"
                      inputmode="numeric" onchange="this.form.submit()">
               <noscript><button type="submit">Update</button></noscript>
             </form>
