@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "types": ["node", "astro/client"],
-    "noEmit": true,
-    "paths": { "@store/core": ["../../packages/core/src/index.ts"] }
-  },
-  "include": ["src/**/*", "astro.config.mjs"]
-}
