@@ -18,7 +18,7 @@ note() { echo "  ✗ $1"; fail=1; }
 # 1. Files that must never be tracked, whatever they are called.
 while IFS= read -r f; do
   case "$f" in
-    config.json|*/config.json|.env|.env.*|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
+    config.php|config.json|*/config.json|.env|.env.*|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
       note "$f — secrets and databases do not belong in the repository" ;;
   esac
 done <<< "$staged"
@@ -33,11 +33,11 @@ if [ -n "$hits" ]; then
 fi
 
 # 3. The example config must stay stubbed -- it is committed, so anything in
-#    it is public. Every stripe.* value must still say REPLACE_ME.
-if grep -qx 'config.example.json' <<< "$staged"; then
-  bad=$(grep -E '"(secretKey|publishableKey|webhookSecret)"' config.example.json | grep -v 'REPLACE_ME' || true)
+#    it is public. Every key in it must still say REPLACE_ME.
+if grep -qx 'config.example.php' <<< "$staged"; then
+  bad=$(grep -E "'(secret_key|webhook_secret|api_key)'\s*=>" config.example.php | grep -v 'REPLACE_ME' || true)
   if [ -n "$bad" ]; then
-    note "config.example.json holds a non-stub value:"
+    note "config.example.php holds a non-stub value:"
     echo "$bad" | sed 's/^/      /'
   fi
 fi
@@ -47,8 +47,8 @@ if [ "$fail" -ne 0 ]; then
 
   Commit blocked.
 
-  Secrets live in config.json, which is gitignored. Copy config.example.json
-  to config.json and put real values there. To override this check for a
+  Secrets live in config.php, which is gitignored. Copy config.example.php
+  to config.php and put real values there. To override this check for a
   commit you are certain about:  git commit --no-verify
 
 MSG

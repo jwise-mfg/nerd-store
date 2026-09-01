@@ -1,0 +1,44 @@
+/* shop.webosarchive.org -- the card-and-glow look of the OS, in Verdana.
+   No webfont request: these faces are local or substituted. */
+:root {
+  --c-bg: #101110;
+  --c-bg-elevated: #1b1d1c;
+  --c-ink: #ffffff;
+  --c-ink-muted: #8a8f8c;
+  --c-accent: #e6e6fa;
+  --c-accent-hover: #ffffff;
+  --c-accent-ink: #101110;
+  --c-line: #2c2f2e;
+  --c-danger: #ff6b5e;
+
+  --f-sans: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+  --f-display: 'Prelude', 'Futura', 'Century Gothic', Verdana, sans-serif;
+
+  --r-sm: 6px; --r-md: 12px; --r-lg: 20px; --r-pill: 999px;
+}
+
+/* The glow behind the masthead, as webOS drew it. */
+.masthead {
+  background:
+    radial-gradient(ellipse 900px 380px at 50% -60px, rgba(120, 140, 220, .20), transparent 70%),
+    var(--c-bg);
+}
+
+/* Cards sit above the surface rather than being outlined on it. */
+.product-card {
+  background: var(--c-bg-elevated);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .35);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(0, 0, 0, .45);
+}
+
+.grade {
+  display: inline-block;
+  font-family: 'Courier New', ui-monospace, monospace;
+  text-transform: uppercase; letter-spacing: .06em; font-size: .75rem;
+  background: var(--c-bg-elevated); border: 1px solid var(--c-line);
+  border-radius: var(--r-pill); padding: .15em .7em; margin-right: .5em;
+}

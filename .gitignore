@@ -1,36 +1,32 @@
-# dependencies
+# Dependencies — nested workspaces put these several levels down.
 node_modules/
 
-# build output — deploy.sh builds on the server, never committed
-dist/
-prototype/apps/*/dist/
-prototype/apps/*/dist-*/
-.astro/
-prototype/apps/*/.astro/
+# Composer packages — composer.lock is committed, vendor/ is not.
+/vendor/
 
-# configuration — copy config.example.json to config.json.
-# config.json holds real keys and must never be committed.
-config.json
-config.*.json
-!config.example.json
-!prototype/config.example.json
+# Secrets. config.php at the root holds the Stripe and mail keys.
+# stores/*/config.php holds no secrets and IS tracked.
+/config.php
 .env
 .env.*
 
-# tenant databases — one file per store, never in version control
-data/
-prototype/data/
+# The database, and any backup of it.
+/data/
 *.db
+*.db-gz
 *.db-wal
 *.db-shm
 
-# operator notes
+# Operator notes
 private/
 
-# misc
+# Misc
 *.log
 .DS_Store
 
-# deploy bookkeeping
-.last-deploy
-.deploy.lock.d/
+# ── prototype/ — the retired Astro implementation, kept for reference ──
+prototype/data/
+prototype/config.json
+prototype/apps/*/dist/
+prototype/apps/*/dist-*/
+prototype/apps/*/.astro/

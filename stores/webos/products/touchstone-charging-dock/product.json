@@ -1,0 +1,33 @@
+{
+    "title": "Touchstone Charging Dock",
+    "subtitle": "Sealed new old stock — Palm original",
+    "kind": "accessory",
+    "status": "active",
+    "position": 1,
+    "description": [
+        "The inductive dock that made every other phone charger feel like work.",
+        "Still sealed in Palm retail packaging. Includes the dock and the original",
+        "microUSB power supply.",
+        "",
+        "Fits Pre, Pre Plus, Pre 2, and Pre 3 with a Touchstone-compatible back cover."
+    ],
+    "images": [
+        {
+            "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Touchstone%20Dock",
+            "alt": "Touchstone Dock"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "WOA-TS-NOS",
+            "title": "New old stock, sealed",
+            "price": "45.00",
+            "attributes": {
+                "model": "Touchstone"
+            },
+            "weightGrams": 260,
+            "condition": "new_old_stock",
+            "conditionNotes": "Factory sealed. Outer carton shows shelf wear consistent with storage since 2011."
+        }
+    ]
+}

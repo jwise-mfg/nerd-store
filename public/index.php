@@ -1,0 +1,162 @@
+<?php
+/**
+ * The whole storefront.
+ *
+ * nginx sends everything that is not a real file here. The hostname decides
+ * which store this is; the path decides which page. Both stores are this one
+ * file -- what differs between them lives in stores/<id>/.
+ */
+declare(strict_types=1);
+
+require dirname(__DIR__) . '/lib/boot.php';
+
+$path   = rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/') ?: '/';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+$storeId = store_for_host($_SERVER['HTTP_HOST'] ?? null);
+if ($storeId === null) {
+    http_response_code(404);
+    header('Content-Type: text/plain');
+    exit("No store is served at this address.\n");
+}
+$store = store_load($storeId);
+
+/* --- Stripe webhook -------------------------------------------------------
+   Before the session and before the closed-shop gate: a payment captured a
+   moment before the shop closed still has to be recorded. */
+if ($path === '/webhook/stripe') {
+    if ($method !== 'POST') {
+        http_response_code(405);
+        exit;
+    }
+    [$code, $note] = webhook_handle(
+        file_get_contents('php://input') ?: '',
+        $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? ''
+    );
+    error_log("[webhook] $note");
+    http_response_code($code);
+    header('Content-Type: text/plain');
+    exit($note . "\n");
+}
+
+cart_start($store);
+
+// A closed shop still shows order status and policies -- someone who has
+// already paid should not hit a maintenance notice looking for their order.
+$exempt = str_starts_with($path, '/order/') || str_starts_with($path, '/policies/');
+if (!$store['store_open'] && !$exempt) {
+    header('Retry-After: 3600');
+    respond($store, 'Closed for maintenance', view('closed', ['store' => $store]), 503);
+}
+
+/* --- routes --------------------------------------------------------------- */
+
+if ($path === '/') {
+    $all = products($store);
+    respond($store, $store['copy']['tagline'], view('home', [
+        'store'    => $store,
+        'featured' => array_slice($all, 0, 3),
+        'stock'    => stock_map($store['id']),
+    ]));
+}
+
+if ($path === '/shop') {
+    $items = products($store);
+    if ($kind = $_GET['kind'] ?? null) {
+        $items = array_values(array_filter($items, fn($p) => ($p['kind'] ?? '') === $kind));
+    }
+    respond($store, $store['copy']['catalog_title'], view('shop', [
+        'store' => $store,
+        'items' => $items,
+        'stock' => stock_map($store['id']),
+    ]));
+}
+
+if (preg_match('#^/shop/([A-Za-z0-9._-]+)$#', $path, $m)) {
+    $p = product($store, $m[1]);
+    if (!$p) {
+        not_found($store);
+    }
+    respond($store, $p['title'], view('product', [
+        'store' => $store,
+        'p'     => $p,
+        'stock' => stock_map($store['id']),
+    ]));
+}
+
+if ($path === '/cart') {
+    $notice = null;
+    if ($method === 'POST') {
+        $sku = (string) ($_POST['sku'] ?? '');
+        $qty = max(0, min(99, (int) ($_POST['qty'] ?? 0)));
+        $ix  = sku_index($store);
+        if (isset($ix[$sku])) {
+            $have = stock_of($sku);
+            if (($_POST['action'] ?? '') === 'add') {
+                $qty = (cart_raw()[$sku] ?? 0) + max(1, $qty);
+            }
+            if ($qty > $have) {
+                $qty    = $have;
+                $notice = $have === 0
+                    ? 'That item just sold out.'
+                    : 'Only ' . $have . ' of that item ' . ($have === 1 ? 'is' : 'are') . ' in stock.';
+            }
+            cart_set($sku, $qty);
+        }
+        // POST/redirect/GET, so a refresh does not re-add the item.
+        if ($notice === null) {
+            redirect('/cart');
+        }
+    }
+    $lines = cart_lines($store);
+    respond($store, $store['copy']['cart_title'], view('cart', [
+        'store'    => $store,
+        'lines'    => $lines,
+        'subtotal' => cart_subtotal($lines),
+        'notice'   => $notice,
+    ]));
+}
+
+if ($path === '/checkout') {
+    if ($method !== 'POST') {
+        redirect('/cart');
+    }
+    $lines = array_values(array_filter(cart_lines($store), fn($l) => $l['qty'] > 0));
+    if (!$lines) {
+        redirect('/cart');
+    }
+
+    $number = order_number($store['order_prefix']);
+    try {
+        $session = checkout_session($store, $lines, $number);
+    } catch (Throwable $e) {
+        error_log('[checkout] ' . $e->getMessage());
+        respond($store, 'Checkout unavailable', view('closed', ['store' => $store]), 503);
+    }
+
+    // Written before the redirect so /order/<number> resolves the moment
+    // Stripe sends the buyer back, webhook or no webhook.
+    order_create($store, $number, $lines, $session->id);
+    cart_clear();
+    redirect($session->url);
+}
+
+if (preg_match('#^/order/([A-Za-z0-9-]+)$#', $path, $m)) {
+    $order = order_by_number($m[1]);
+    if (!$order || $order['store'] !== $store['id']) {
+        not_found($store);
+    }
+    // Order pages are per-buyer and change state; never let a cache hold one.
+    header('Cache-Control: no-store');
+    respond($store, 'Order ' . $order['number'], view('order', [
+        'store' => $store,
+        'order' => $order,
+        'items' => order_items((int) $order['id']),
+    ]));
+}
+
+if (preg_match('#^/policies/(returns|privacy)$#', $path, $m)) {
+    respond($store, ucfirst($m[1]), view('policies', ['store' => $store, 'doc' => $m[1]]));
+}
+
+not_found($store);

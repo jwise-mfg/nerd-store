@@ -1,0 +1,211 @@
+#!/usr/bin/env php
+<?php
+/**
+ * store -- shop administration.
+ *
+ *   bin/store orders --status paid
+ *   bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
+ *   bin/store stock I3X-BOOK-HC +50
+ *
+ * Put it on your PATH so it works from anywhere:
+ *   mkdir -p ~/.local/bin && ln -sf "$PWD/bin/store" ~/.local/bin/store
+ *
+ * There is no `publish`. Product files are read on every request, so editing
+ * one is the whole operation.
+ */
+declare(strict_types=1);
+
+require dirname(__DIR__) . '/lib/boot.php';
+
+/** @return array{0:string[],1:array<string,string|bool>} positionals and flags */
+function parse_args(array $argv): array
+{
+    $pos = [];
+    $flag = [];
+    for ($i = 0; $i < count($argv); $i++) {
+        $a = $argv[$i];
+        if (str_starts_with($a, '--')) {
+            $name = substr($a, 2);
+            $next = $argv[$i + 1] ?? null;
+            if ($next !== null && !str_starts_with($next, '--')) {
+                $flag[$name] = $next;
+                $i++;
+            } else {
+                $flag[$name] = true;
+            }
+        } else {
+            $pos[] = $a;
+        }
+    }
+    return [$pos, $flag];
+}
+
+function fail(string $msg): never
+{
+    fwrite(STDERR, "store: $msg\n");
+    exit(1);
+}
+
+function stamp(?int $t): string
+{
+    return $t ? date('Y-m-d H:i', $t) : '—';
+}
+
+[$pos, $flag] = parse_args(array_slice($argv, 1));
+$cmd = array_shift($pos) ?? 'help';
+
+switch ($cmd) {
+
+case 'orders':
+    $rows = orders_list(
+        is_string($flag['status'] ?? null) ? $flag['status'] : null,
+        is_string($flag['store'] ?? null) ? $flag['store'] : null,
+        (int) ($flag['n'] ?? 50)
+    );
+    if (!$rows) {
+        echo "No orders.\n";
+        break;
+    }
+    printf("%-14s %-7s %-9s %10s  %-16s %s\n", 'ORDER', 'STORE', 'STATUS', 'TOTAL', 'PLACED', 'EMAIL');
+    foreach ($rows as $o) {
+        printf("%-14s %-7s %-9s %10s  %-16s %s\n",
+            $o['number'], $o['store'], $o['status'], money((int) $o['total_cents']),
+            stamp($o['paid_at'] ?? $o['created_at']), $o['email'] ?? '—');
+    }
+    break;
+
+case 'order':
+    $n = $pos[0] ?? fail('usage: store order <NUMBER>');
+    $o = order_by_number($n) ?? fail("no such order: $n");
+    $store = store_load($o['store']);
+    echo "Order {$o['number']}  ({$o['store']})\n";
+    echo "Status   {$o['status']}\n";
+    echo 'Placed   ' . stamp($o['paid_at'] ?? $o['created_at']) . "\n";
+    echo 'Email    ' . ($o['email'] ?: '—') . "\n\n";
+    foreach (order_items((int) $o['id']) as $i) {
+        printf("  %d x %-44s %10s\n", $i['qty'], $i['title'] . (!empty($i['serial']) ? " (S/N {$i['serial']})" : ''),
+            money((int) $i['qty'] * (int) $i['unit_cents']));
+    }
+    printf("\n  %-46s %10s\n", 'Subtotal', money((int) $o['subtotal_cents']));
+    printf("  %-46s %10s\n", 'Shipping', money((int) $o['shipping_cents']));
+    printf("  %-46s %10s\n\n", 'Total', money((int) $o['total_cents']));
+    if ($o['ship_line1']) {
+        echo "Ship to:\n" . address_block($o) . "\n\n";
+    }
+    if ($o['status'] === 'shipped') {
+        echo "Shipped  " . stamp($o['shipped_at']) . " via {$o['carrier']} {$o['tracking']}\n";
+        if ($u = tracking_url($o['carrier'], $o['tracking'])) {
+            echo "         $u\n";
+        }
+    }
+    break;
+
+case 'ship':
+    $n = $pos[0] ?? fail('usage: store ship <NUMBER> --carrier USPS --tracking 9400...');
+    $carrier = is_string($flag['carrier'] ?? null) ? $flag['carrier'] : fail('--carrier is required');
+    $tracking = is_string($flag['tracking'] ?? null) ? $flag['tracking'] : null;
+    $o = order_by_number($n) ?? fail("no such order: $n");
+    if ($o['status'] !== 'paid') {
+        fail("order {$o['number']} is {$o['status']}, not paid");
+    }
+    if (!order_mark_shipped($o['number'], $carrier, $tracking)) {
+        fail('could not mark shipped — did it change underneath us?');
+    }
+    $o = order_by_number($o['number']);
+    echo "{$o['number']} marked shipped.\n";
+    if (!empty($flag['no-email'])) {
+        echo "Email suppressed (--no-email).\n";
+        break;
+    }
+    echo mail_shipped(store_load($o['store']), $o, order_items((int) $o['id']))
+        ? "Shipping notice sent to {$o['email']}.\n"
+        : "No shipping notice sent (no buyer email, or the mail transport failed — check the log).\n";
+    break;
+
+case 'stock':
+    if (!$pos) {
+        foreach (store_ids() as $sid) {
+            $store = store_load($sid);
+            echo "$sid\n";
+            foreach (products($store, true) as $p) {
+                foreach ($p['variants'] as $v) {
+                    printf("  %-22s %-40s %5d\n", $v['sku'], sku_title($p, $v), stock_of($v['sku']));
+                }
+            }
+        }
+        break;
+    }
+    $sku = $pos[0];
+    $owner = null;
+    foreach (store_ids() as $sid) {
+        if (isset(sku_index(store_load($sid), true)[$sku])) {
+            $owner = $sid;
+        }
+    }
+    $owner ?? fail("no product file declares SKU $sku");
+    if (!isset($pos[1])) {
+        echo stock_of($sku) . "\n";
+        break;
+    }
+    $arg = $pos[1];
+    if (str_starts_with($arg, '+') || str_starts_with($arg, '-')) {
+        stock_adjust($sku, $owner, (int) $arg);
+    } else {
+        stock_set($sku, $owner, (int) $arg);
+    }
+    echo "$sku now " . stock_of($sku) . "\n";
+    break;
+
+case 'check':
+    $bad = 0;
+    foreach (store_ids() as $sid) {
+        $store = store_load($sid);
+        $seen = [];
+        foreach (products($store, true) as $p) {
+            $where = "$sid/{$p['slug']}";
+            if (empty($p['variants'])) {
+                echo "  ✗ $where has no variants — it will never appear\n";
+                $bad++;
+            }
+            foreach (($p['images'] ?? []) as $img) {
+                $f = $img['file'] ?? '';
+                if (!str_starts_with($f, 'http') && !is_file("{$store['dir']}/products/{$p['slug']}/$f")) {
+                    echo "  ✗ $where references a missing image: $f\n";
+                    $bad++;
+                }
+            }
+            foreach ($p['variants'] ?? [] as $v) {
+                if (isset($seen[$v['sku']])) {
+                    echo "  ✗ duplicate SKU {$v['sku']} in $where and {$seen[$v['sku']]}\n";
+                    $bad++;
+                }
+                $seen[$v['sku']] = $where;
+                if (to_cents($v['price']) <= 0) {
+                    echo "  ✗ $where/{$v['sku']} has a price of zero\n";
+                    $bad++;
+                }
+            }
+        }
+        if ($added = stock_sync($store)) {
+            echo '  · seeded ' . count($added) . " new SKU(s) at zero stock: " . implode(', ', $added) . "\n";
+        }
+    }
+    if ($bad) {
+        fail("$bad problem(s) found");
+    }
+    echo "All product files pass.\n";
+    break;
+
+default:
+    echo <<<TXT
+    store <command>
+
+      orders [--status paid|pending|shipped] [--store i3x|webos] [--n 50]
+      order  <NUMBER>
+      ship   <NUMBER> --carrier USPS --tracking 9400... [--no-email]
+      stock  [SKU [N | +N | -N]]
+      check
+
+    TXT;
+    exit($cmd === 'help' ? 0 : 1);
+}

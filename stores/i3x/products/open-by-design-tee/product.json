@@ -1,0 +1,116 @@
+{
+    "title": "Open by Design T-Shirt",
+    "subtitle": "Heavyweight cotton, screen printed",
+    "kind": "apparel",
+    "status": "active",
+    "position": 2,
+    "description": "Ringspun 6.1oz cotton. Runs true to size. Printed in small batches.",
+    "images": [
+        {
+            "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Open%20by%20Design%20Tee",
+            "alt": "Open by Design Tee"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "I3X-TEE-NA-S",
+            "title": "Navy / S",
+            "price": "28.00",
+            "attributes": {
+                "size": "S",
+                "color": "Navy"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-WH-S",
+            "title": "White / S",
+            "price": "28.00",
+            "attributes": {
+                "size": "S",
+                "color": "White"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-NA-M",
+            "title": "Navy / M",
+            "price": "28.00",
+            "attributes": {
+                "size": "M",
+                "color": "Navy"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-WH-M",
+            "title": "White / M",
+            "price": "28.00",
+            "attributes": {
+                "size": "M",
+                "color": "White"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-NA-L",
+            "title": "Navy / L",
+            "price": "28.00",
+            "attributes": {
+                "size": "L",
+                "color": "Navy"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-WH-L",
+            "title": "White / L",
+            "price": "28.00",
+            "attributes": {
+                "size": "L",
+                "color": "White"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-NA-XL",
+            "title": "Navy / XL",
+            "price": "28.00",
+            "attributes": {
+                "size": "XL",
+                "color": "Navy"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-WH-XL",
+            "title": "White / XL",
+            "price": "28.00",
+            "attributes": {
+                "size": "XL",
+                "color": "White"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-NA-2XL",
+            "title": "Navy / 2XL",
+            "price": "28.00",
+            "attributes": {
+                "size": "2XL",
+                "color": "Navy"
+            },
+            "weightGrams": 200
+        },
+        {
+            "sku": "I3X-TEE-WH-2XL",
+            "title": "White / 2XL",
+            "price": "28.00",
+            "attributes": {
+                "size": "2XL",
+                "color": "White"
+            },
+            "weightGrams": 200
+        }
+    ]
+}

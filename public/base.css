@@ -1,0 +1,111 @@
+/* Structure, shared by both stores. Colour and type come from the store's
+   own style.css, which loads after this and defines the custom properties. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font: 16px/1.6 var(--f-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.2; margin: 0 0 .5em; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+a { color: inherit; }
+img { max-width: 100%; height: auto; display: block; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.25rem; }
+.narrow { max-width: 640px; }
+.fine { color: var(--c-ink-muted); font-size: .875rem; }
+.warn { color: var(--c-danger); }
+.empty { color: var(--c-ink-muted); }
+.num { text-align: right; white-space: nowrap; }
+
+/* --- masthead ------------------------------------------------------------ */
+.masthead {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--c-bg);
+}
+.masthead .brand { text-decoration: none; }
+.masthead .wordmark { font-family: var(--f-display); font-weight: 700; font-size: 1.25rem; }
+.masthead nav { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; }
+.masthead nav a { text-decoration: none; font-size: .95rem; }
+.masthead nav a:hover { color: var(--c-accent); }
+.pill {
+  background: var(--c-accent); color: var(--c-accent-ink);
+  border-radius: var(--r-pill); padding: .05em .5em; font-size: .8rem;
+}
+
+/* --- hero ---------------------------------------------------------------- */
+.hero { max-width: 1040px; margin: 0 auto; padding: 4rem 1.25rem 2rem; }
+.hero .tagline { color: var(--c-accent); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; margin: 0 0 .75rem; }
+.hero .lede { font-size: 1.15rem; color: var(--c-ink-muted); max-width: 46ch; }
+
+/* --- buttons ------------------------------------------------------------- */
+.btn {
+  display: inline-block; cursor: pointer;
+  background: var(--c-accent); color: var(--c-accent-ink);
+  border: 0; border-radius: var(--r-md);
+  padding: .7em 1.4em; font: inherit; font-weight: 600; text-decoration: none;
+}
+.btn:hover:not(:disabled) { background: var(--c-accent-hover); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+button.link {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--c-ink-muted); font: inherit; text-decoration: underline;
+}
+
+/* --- catalogue ----------------------------------------------------------- */
+.grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.product-card {
+  display: block; text-decoration: none;
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-line); border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.product-card img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+.product-card .card-body { padding: 1rem; }
+.product-card h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
+.product-card .sub { margin: 0 0 .5rem; color: var(--c-ink-muted); font-size: .875rem; }
+.price { font-weight: 700; margin: 0; }
+.sold { color: var(--c-ink-muted); font-weight: 600; }
+.scarce { color: var(--c-danger); font-weight: 400; font-size: .85rem; margin-left: .5em; }
+
+/* --- product ------------------------------------------------------------- */
+.product { display: grid; gap: 2.5rem; grid-template-columns: 1fr; }
+@media (min-width: 800px) { .product { grid-template-columns: 1fr 1fr; } }
+.gallery { display: grid; gap: 1rem; align-content: start; }
+.gallery img { border: 1px solid var(--c-line); border-radius: var(--r-lg); }
+.detail .sub { color: var(--c-ink-muted); margin-top: -.25rem; }
+.prose p { margin: 0 0 1em; }
+.buy { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin: 1.5rem 0; }
+.buy label { display: grid; gap: .35rem; font-size: .875rem; color: var(--c-ink-muted); }
+.buy input, .buy select {
+  background: var(--c-bg); color: var(--c-ink);
+  border: 1px solid var(--c-line); border-radius: var(--r-sm);
+  padding: .6em .7em; font: inherit;
+}
+.buy input[type=number] { width: 5rem; }
+.condition { border-top: 1px solid var(--c-line); padding: .9rem 0; }
+.condition .fine { margin: .35rem 0 0; }
+
+/* --- cart and orders ----------------------------------------------------- */
+table.cart { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+table.cart td, table.cart th { border-bottom: 1px solid var(--c-line); padding: .85rem .5rem; text-align: left; vertical-align: top; }
+table.cart tfoot th { font-family: var(--f-display); }
+table.cart .qty input { width: 4.5rem; background: var(--c-bg); color: var(--c-ink); border: 1px solid var(--c-line); border-radius: var(--r-sm); padding: .4em; font: inherit; }
+.notice { background: var(--c-bg-elevated); border-left: 3px solid var(--c-danger); padding: .8rem 1rem; border-radius: var(--r-sm); }
+.address { white-space: normal; line-height: 1.5; }
+
+/* --- footer -------------------------------------------------------------- */
+footer {
+  border-top: 1px solid var(--c-line);
+  margin-top: 4rem; padding: 2rem 1.25rem 3rem;
+  max-width: 1040px; margin-inline: auto;
+  color: var(--c-ink-muted); font-size: .9rem;
+}
+footer a { color: var(--c-ink-muted); }
