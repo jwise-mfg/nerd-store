@@ -18,14 +18,30 @@ sudo apt-get install -y php8.3-fpm php8.3-sqlite3 php8.3-curl php8.3-mbstring sq
 cp config.example.php config.php
 nano config.php            # replace every REPLACE_ME
 
-# 4. php-fpm runs as www-data, so it must be able to READ config.php and
-#    WRITE the data directory. 600 would lock the web server out of its own
-#    configuration; 640 with the group set is what it needs.
-sudo chown cesmii:www-data config.php && chmod 640 config.php
+# 4. Permissions. php-fpm runs as www-data and you run bin/store as
+#    yourself, so BOTH write the same SQLite file. Getting this wrong shows
+#    up as "attempt to write a readonly database" at the first checkout.
+sudo chown cesmii:www-data config.php && chmod 640 config.php   # 600 locks fpm out
+
+sudo usermod -aG www-data cesmii     # so you can write what www-data created
 mkdir -p data
 sudo chown -R cesmii:www-data data
-sudo chmod 775 data        # the directory, not just the file: SQLite creates
-                           # -wal and -shm beside the database
+sudo chmod 2775 data                 # setgid: everything created in here gets
+                                     # group www-data, whoever makes it
+sudo chmod 664 data/store.sqlite     # if it exists already -- see below
+
+#    Two things that are not obvious:
+#      * SQLite creates the database asking for 0644, so a umask cannot make
+#        it group-writable. Only chmod can.
+#      * -wal and -shm inherit their mode from the database file, and SQLite
+#        DELETES them when the last connection closes, so they are made afresh
+#        every time. Fixing the database file's mode is what fixes them.
+#    Which means: if you create the database by running bin/store BEFORE the
+#    chown above, it lands as cesmii:cesmii 0644 and the web server cannot
+#    write it. Re-run the two lines above and it is sorted.
+
+#    Check it:
+sudo -u www-data test -w data/store.sqlite && echo "www-data can write" || echo "IT CANNOT"
 
 # 5. TLS — SEPARATE certificates, one per zone. Never one cert covering both
 #    names: certificate transparency logs are public and permanent, and a

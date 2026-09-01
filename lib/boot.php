@@ -43,9 +43,20 @@ function db(): PDO
     if ($pdo !== null) {
         return $pdo;
     }
+    // Two identities write this database: php-fpm as www-data serving the
+    // shop, and you as yourself running bin/store. This umask only affects the
+    // directory below -- mkdir asks for 0775 and the default 022 would strip
+    // the group write, leaving the web server unable to create the database.
+    //
+    // It does NOT govern the database file: SQLite opens that asking for 0644,
+    // and a umask can only clear bits, never add them. What makes the file
+    // group-writable is chmod, and -wal and -shm then inherit the mode from
+    // the database file. See deploy/README.md.
+    umask(0002);
+
     $dir = data_dir();
     if (!is_dir($dir)) {
-        mkdir($dir, 0o750, true);
+        mkdir($dir, 0o775, true);
     }
     $pdo = new PDO('sqlite:' . $dir . '/store.sqlite', null, null, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
