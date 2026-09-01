@@ -65,6 +65,7 @@ grid shows.
 
 ```bash
 bin/store check                     # validate every product file
+bin/store stripe                    # keys work and a checkout session builds
 bin/store stock                     # every SKU and its count
 bin/store stock I3X-BOOK-HC 250     # set
 bin/store stock I3X-BOOK-HC +50     # or adjust: +50 / -10

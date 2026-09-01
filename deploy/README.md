@@ -133,6 +133,7 @@ the accepted trade-off for not running our own card form.
 ## Operating
 
 ```bash
+bin/store stripe                        # keys work, test vs live mode
 bin/store orders --status paid          # awaiting shipment
 bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
 bin/store stock                         # every SKU
