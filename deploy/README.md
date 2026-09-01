@@ -35,6 +35,11 @@ sudo ln -s ~/repos/nerd-store/deploy/nginx/shop.i3x.dev.conf          /etc/nginx
 sudo ln -s ~/repos/nerd-store/deploy/nginx/shop.webosarchive.org.conf /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
+#    Each vhost roots at stores/<id>/public. Two symlinks in there are part of
+#    the checkout and come out of git already made:
+#      img      -> ../products                  product photographs
+#      base.css -> ../../../assets/base.css     the layout shared by both shops
+
 # 7. Stock, and a check that every product file parses.
 bin/store check
 bin/store stock I3X-BOOK-HC 180        # ... and so on

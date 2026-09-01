@@ -7,17 +7,29 @@ No build step. No application server. One Composer package. Editing a product
 means editing a file and reloading the page.
 
 ```
-public/index.php     the whole storefront; nginx sends everything here
-stores/i3x/          config.php, style.css, brand/, policies/, products/
+stores/i3x/
+  config.php         name, copy, colours, shipping rates, store_open
+  products/<slug>/   product.json and its images
+  policies/          returns and privacy, as this shop words them
+  public/            ← the document root nginx serves
+    index.php          two lines: names the store, requires lib/app.php
+    style.css          this shop's colours and type
+    brand/             its logos
+    img -> ../products     symlink, so photos stay beside product.json
+    base.css -> ../../../assets/base.css   symlink, the shared layout
 stores/webos/        the same, for the other shop
-lib/                 nine files: catalog, cart, stock, orders, checkout, mail
+lib/app.php          the storefront; every page goes through it
+lib/                 catalog, cart, stock, orders, checkout, mail
 templates/           plain PHP templates
 bin/store            administration (orders, shipping, stock)
 prototype/           the retired Astro implementation, kept for reference
 ```
 
-The **hostname** picks the store; the **path** picks the page. Both shops are
-the same code — everything that differs between them is in `stores/<id>/`.
+**Each shop has its own document root.** Its stylesheet, logos and product
+photographs are ordinary files in there, served straight off disk — nginx has
+no aliases and PHP never sees a request for one. Which shop a request belongs
+to is decided by which root it arrived in, so there is no hostname map to keep
+in step with the vhosts.
 
 ## Products are files
 
@@ -82,12 +94,12 @@ Nothing on that list requires a restart. PHP reads the files on each request.
 ```bash
 composer install
 cp config.example.php config.php     # Stripe test keys; mail transport 'log'
-STORE=i3x   php -S localhost:8000 -t public/
-STORE=webos php -S localhost:8001 -t public/
+php -S localhost:8000 -t stores/i3x/public
+php -S localhost:8001 -t stores/webos/public
 ```
 
-`STORE` exists because the built-in server has no hostname to go on. In
-production nginx passes the real `Host` and this variable is unset.
+The built-in server is pointed at the same directory nginx uses, so local and
+production serve the same files the same way.
 
 To exercise payment end to end you need the Stripe CLI:
 

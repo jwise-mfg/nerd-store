@@ -2,24 +2,20 @@
 /**
  * The whole storefront.
  *
- * nginx sends everything that is not a real file here. The hostname decides
- * which store this is; the path decides which page. Both stores are this one
- * file -- what differs between them lives in stores/<id>/.
+ * Each store has its own document root -- stores/<id>/public -- holding its
+ * stylesheet, brand images and product photographs as ordinary files, plus a
+ * two-line index.php that names the store and requires this. So nginx serves
+ * every asset directly and PHP only ever sees actual pages.
  */
 declare(strict_types=1);
 
-require dirname(__DIR__) . '/lib/boot.php';
+require __DIR__ . '/boot.php';
 
 $path   = rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-$storeId = store_for_host($_SERVER['HTTP_HOST'] ?? null);
-if ($storeId === null) {
-    http_response_code(404);
-    header('Content-Type: text/plain');
-    exit("No store is served at this address.\n");
-}
-$store = store_load($storeId);
+/** @var string $STORE_ID set by the store's public/index.php */
+$store = store_load($STORE_ID);
 
 /* --- Stripe webhook -------------------------------------------------------
    Before the session and before the closed-shop gate: a payment captured a
