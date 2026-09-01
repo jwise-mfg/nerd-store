@@ -23,7 +23,7 @@ return [
 
     'support_email'    => 'store@i3x.dev',
     'mail_from'        => 'i3X Store <store@i3x.dev>',
-    'postal_address'   => 'JW LLC — 5387 Avion Park Dr., Highland Heights, OH 44143',
+    'postal_address'   => 'JW LLC',
 
     'font_href'        => 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Work+Sans:wght@500;600;700&display=swap',
     'analytics_domain' => null,
@@ -69,6 +69,6 @@ return [
         'order_confirmed_body'  => 'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within 7-10 business days.',
         'sold_out'              => 'Sold out',
         'last_one'              => 'Only one left',
-        'footer_blurb'          => 'The i3X Store is operated in support of the i3X open API initiative. Proceeds fund specification work, conformance tooling, and community outreach.',
+        'footer_blurb'          => 'The i3X Store is not affliated with CESMII, UCLA or the Department of Energy. Items are sold near-cost, and as-is.',
     ],
 ];
