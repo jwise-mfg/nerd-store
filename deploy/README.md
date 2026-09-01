@@ -137,7 +137,8 @@ bin/store orders --status paid          # awaiting shipment
 bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
 bin/store stock                         # every SKU
 bin/backup.sh                           # backup on demand
-tail -f /var/log/nginx/shop.i3x.dev.error.log   # app errors land here
+sudo tail -f /var/log/php8.3-fpm.log    # PHP's own errors, incl. [checkout]
+tail -f /var/log/nginx/shop.i3x.dev.error.log   # nginx's, e.g. a bad try_files
 sqlite3 data/store.sqlite 'select * from orders order by id desc limit 5'
 ```
 

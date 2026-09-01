@@ -1,5 +1,5 @@
 <h1>Returns</h1>
-<p>Unfortunately, we can't provide returns. All sales are as-is.</p>
+<p>Unfortunately, we can't provide returns. All sales are as-is and final.</p>
 <p>If you have a question, or issue with your order, please contact
    <a href="mailto:<?= e($store['support_email']) ?>"><?= e($store['support_email']) ?></a>
    with your order number.</p>

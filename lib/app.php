@@ -132,8 +132,15 @@ if ($path === '/checkout') {
     try {
         $session = checkout_session($store, $lines, $number);
     } catch (Throwable $e) {
-        error_log('[checkout] ' . $e->getMessage());
-        respond($store, 'Checkout unavailable', view('closed', ['store' => $store]), 503);
+        // The class matters as much as the message: an AuthenticationException
+        // is a wrong key, an InvalidRequestException is a malformed session,
+        // and a bare RuntimeException is usually a missing `composer install`.
+        error_log(sprintf('[checkout] %s: %s', get_class($e), $e->getMessage()));
+        // NOT the maintenance page. The shop is open; the payment processor
+        // could not be reached, and telling a buyer the shop is closed sends
+        // them away instead of back to a cart that is still intact.
+        header('Retry-After: 300');
+        respond($store, 'Checkout unavailable', view('checkout-error', ['store' => $store]), 503);
     }
 
     // Written before the redirect so /order/<number> resolves the moment
