@@ -16,13 +16,16 @@ sudo apt-get install -y php8.3-fpm php8.3-sqlite3 php8.3-curl php8.3-mbstring sq
 # 3. Secrets — the only file holding keys. One Stripe account serves both
 #    shops, so there is one copy of this and not one per store.
 cp config.example.php config.php
-chmod 600 config.php
 nano config.php            # replace every REPLACE_ME
 
-# 4. Let the web server read the tree and write the database.
+# 4. php-fpm runs as www-data, so it must be able to READ config.php and
+#    WRITE the data directory. 600 would lock the web server out of its own
+#    configuration; 640 with the group set is what it needs.
+sudo chown cesmii:www-data config.php && chmod 640 config.php
 mkdir -p data
 sudo chown -R cesmii:www-data data
-sudo chmod 775 data
+sudo chmod 775 data        # the directory, not just the file: SQLite creates
+                           # -wal and -shm beside the database
 
 # 5. TLS — SEPARATE certificates, one per zone. Never one cert covering both
 #    names: certificate transparency logs are public and permanent, and a
@@ -52,6 +55,46 @@ crontab -e
 `cloudflare-real-ip.conf` is separate on purpose: `real_ip_header` may appear
 only once per context, so keeping it in both site files makes `nginx -t` fail
 with "directive is duplicate" as soon as the second shop is enabled.
+
+## Cutting over from the Astro deployment
+
+Only once, on a box already running the old version. Nothing here is
+reversible by accident, but the order matters: the old nginx files and the new
+ones cannot both be enabled, because each declares `real_ip_header`.
+
+```bash
+# 1. Everything in "Provision once" above, through step 4. The old site keeps
+#    serving throughout — it runs from dist-*/ which is not in git.
+
+# 2. Prove the new one runs before touching nginx.
+bin/store check
+php -S 127.0.0.1:8080 -t stores/i3x/public &
+curl -sI http://127.0.0.1:8080/ | head -1        # expect 200
+kill %1
+
+# 3. Stop the old application.
+sudo systemctl disable --now shop-i3x shop-webos
+sudo systemctl disable --now nerd-store-sweep.timer nerd-store-backup.timer
+
+# 4. Swap nginx in one go, then test BEFORE reloading. A failed test leaves
+#    the running config alone, so the other sites on this box are never at
+#    risk from a reload that was never issued.
+sudo rm -f /etc/nginx/sites-enabled/shop.i3x.dev* \
+           /etc/nginx/sites-enabled/shop.webosarchive.org*
+sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/cloudflare-real-ip.conf /etc/nginx/conf.d/
+sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/shop.i3x.dev.conf          /etc/nginx/sites-enabled/
+sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/shop.webosarchive.org.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**Rolling back.** The old builds are still on disk in
+`apps/storefront/dist-*/`, untouched by the pull because they were never in
+git. Put the old nginx files back in `sites-enabled`, remove
+`conf.d/cloudflare-real-ip.conf`, `nginx -t`, reload, and
+`sudo systemctl enable --now shop-i3x shop-webos`.
+
+The old `data/i3x.db` and `data/webos.db` are not touched by any of this — the
+new code uses `data/store.sqlite` — so the two test orders survive either way.
 
 ## Deploy a change
 

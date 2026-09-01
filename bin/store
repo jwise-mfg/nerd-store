@@ -163,6 +163,10 @@ case 'check':
         $seen = [];
         foreach (products($store, true) as $p) {
             $where = "$sid/{$p['slug']}";
+            if (($p['status'] ?? 'active') !== 'active') {
+                echo "  · $where is {$p['status']} — not for sale, not checked for SKU collisions\n";
+                continue;
+            }
             if (empty($p['variants'])) {
                 echo "  ✗ $where has no variants — it will never appear\n";
                 $bad++;
