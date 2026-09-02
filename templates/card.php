@@ -14,7 +14,9 @@ $onhand = array_sum(array_map(fn($v) => (int) ($stock[$v['sku']] ?? 0), $p['vari
       <?php if ($onhand === 0): ?>
         <span class="sold"><?= e($store['copy']['sold_out']) ?></span>
       <?php else: ?>
-        <?= count($prices) > 1 ? 'From ' . money(min($prices)) : money($prices[0]) ?>
+        <?php // "From" only when the variants actually differ in price -- ten
+              // t-shirt sizes at one price is a price, not a range. ?>
+        <?= min($prices) === max($prices) ? money($prices[0]) : 'From ' . money(min($prices)) ?>
         <?php if ($onhand <= ($store['scarcity_threshold'] ?? 3)): ?>
           <span class="scarce"><?= $onhand === 1 ? e($store['copy']['last_one']) : "Only $onhand left" ?></span>
         <?php endif; ?>
