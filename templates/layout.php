@@ -75,5 +75,10 @@
   </p>
   <p class="fine"><?= e($store['name']) ?> — <?= e($store['postal_address']) ?></p>
 </footer>
+<?php
+  // Raw HTML from the store's config, unescaped: third-party snippets that
+  // want to sit just before </body>. Null on a store that has none.
+  echo $store['body_end_html'] ?? '';
+?>
 </body>
 </html>

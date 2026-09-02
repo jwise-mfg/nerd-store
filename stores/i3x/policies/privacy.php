@@ -13,6 +13,9 @@
    remembers your cart. It contains a random identifier and nothing else.
    <?= $store['analytics_domain']
         ? 'Aggregate, cookie-free traffic statistics are collected for this site only.'
+        : '' ?>
+   <?= $store['body_end_html']
+        ? 'This site also loads HubSpot’s tracking script, which sets its own cookies to measure visits; see HubSpot’s privacy policy for what it collects.'
         : 'This site runs no analytics or tracking scripts.' ?></p>
 <p>To have your order data deleted, email
    <a href="mailto:<?= e($store['support_email']) ?>"><?= e($store['support_email']) ?></a>.

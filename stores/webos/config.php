@@ -31,6 +31,8 @@ return [
 
     'font_href'        => null,
     'analytics_domain' => 'shop.webosarchive.org',
+    // No third-party scripts on this store.
+    'body_end_html'    => null,
 
     // Most listings are a single graded unit, so "last one" should appear
     // later here than on the merchandise store.

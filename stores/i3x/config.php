@@ -33,6 +33,15 @@ return [
     'font_href'        => 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Work+Sans:wght@500;600;700&display=swap',
     'analytics_domain' => null,
 
+    // Emitted verbatim just before </body> on every page. Marketing's
+    // HubSpot tracker; the number is the portal id from HubSpot's
+    // "Tracking code" settings page. Null to turn it off.
+    'body_end_html'    => <<<'HTML'
+<!-- Start of HubSpot Embed Code -->
+<script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/43818189.js"></script>
+<!-- End of HubSpot Embed Code -->
+HTML,
+
     // Show "only N left" at or below this figure.
     'scarcity_threshold'     => 3,
     // Merchandise, not used goods: no condition grades on the product page.
