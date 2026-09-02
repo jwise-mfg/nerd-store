@@ -60,5 +60,20 @@
     <?php endforeach; ?>
 
     <p class="fine"><?= e($store['copy']['shipping_restriction']) ?></p>
+
+    <?php if ($show_stock): ?>
+      <table class="cart stock">
+        <thead><tr><th>SKU</th><th>Variant</th><th class="num">On hand</th></tr></thead>
+        <tbody>
+        <?php foreach ($p['variants'] as $v): ?>
+          <tr>
+            <td><code><?= e($v['sku']) ?></code></td>
+            <td><?= e($v['title']) ?></td>
+            <td class="num"><?= (int) ($stock[$v['sku']] ?? 0) ?></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
   </div>
 </section>

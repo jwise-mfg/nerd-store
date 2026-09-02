@@ -14,6 +14,9 @@ bin/store stock                                       # every SKU, its count, an
 bin/store stock I3X-BOOK-HC                           # one count
 ```
 
+From a phone: `https://shop.i3x.dev/shop/<slug>?showStock=true` lists every
+variant's count at the bottom of the product page.
+
 ## Stock
 
 ```bash

@@ -92,6 +92,9 @@ bin/store open                      # resume
 
 `ship` emails the buyer their tracking link. `--no-email` suppresses it.
 
+Away from a terminal, any product page with `?showStock=true` on the end
+lists the on-hand count of each variant.
+
 Day-to-day commands, server permissions, logs, backup and restore are all in
 [`cheatsheet.md`](cheatsheet.md).
 

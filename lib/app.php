@@ -77,9 +77,12 @@ if (preg_match('#^/shop/([A-Za-z0-9._-]+)$#', $path, $m)) {
     }
     $img = first_image($p);
     respond($store, $p['title'], view('product', [
-        'store' => $store,
-        'p'     => $p,
-        'stock' => stock_map($store['id']),
+        'store'      => $store,
+        'p'          => $p,
+        'stock'      => stock_map($store['id']),
+        // ?showStock=true prints the on-hand count of every variant. For
+        // you, checking a listing from your phone; it is not linked anywhere.
+        'show_stock' => in_array(strtolower((string) ($_GET['showStock'] ?? '')), ['1', 'true', 'yes'], true),
     ]), 200, [
         'type'        => 'product',
         'title'       => $p['title'] . (!empty($p['subtitle']) ? ' — ' . $p['subtitle'] : ''),
