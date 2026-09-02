@@ -43,7 +43,7 @@
 <footer>
   <p><?= e($store['copy']['footer_blurb']) ?></p>
   <p class="fine">
-    <a href="/policies/returns">Returns</a> ·
+    <a href="/policies/returns">All Sales Final</a> ·
     <a href="/policies/privacy">Privacy</a> ·
     <a href="mailto:<?= e($store['support_email']) ?>"><?= e($store['support_email']) ?></a>
   </p>
