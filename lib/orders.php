@@ -105,14 +105,14 @@ function order_mark_paid(string $session_id, array $f): ?array
                 email = ?, stripe_payment_intent = ?,
                 ship_name = ?, ship_line1 = ?, ship_line2 = ?, ship_city = ?,
                 ship_state = ?, ship_postal = ?, ship_country = ?,
-                shipping_cents = ?, total_cents = ?
+                shipping_cents = ?, tax_cents = ?, total_cents = ?
          WHERE stripe_session_id = ? AND status = \'pending\''
     );
     $st->execute([
         $f['email'] ?? null, $f['payment_intent'] ?? null,
         $f['name'] ?? null, $f['line1'] ?? null, $f['line2'] ?? null, $f['city'] ?? null,
         $f['state'] ?? null, $f['postal'] ?? null, $f['country'] ?? null,
-        (int) ($f['shipping_cents'] ?? 0), (int) ($f['total_cents'] ?? 0),
+        (int) ($f['shipping_cents'] ?? 0), (int) ($f['tax_cents'] ?? 0), (int) ($f['total_cents'] ?? 0),
         $session_id,
     ]);
     if ($st->rowCount() !== 1) {

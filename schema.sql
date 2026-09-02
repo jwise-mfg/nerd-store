@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS orders (
   ship_country          TEXT,
   subtotal_cents        INTEGER NOT NULL DEFAULT 0,
   shipping_cents        INTEGER NOT NULL DEFAULT 0,
+  -- What Stripe Tax calculated and collected. Our own copy: Stripe's reports
+  -- are what you file from, this is so an order reconciles on its own.
+  tax_cents             INTEGER NOT NULL DEFAULT 0,
   total_cents           INTEGER NOT NULL DEFAULT 0,
   currency              TEXT    NOT NULL DEFAULT 'usd',
   -- UNIQUE so a replayed Checkout Session can never open a second order.

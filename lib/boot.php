@@ -68,6 +68,18 @@ function db(): PDO
     $pdo->exec('PRAGMA busy_timeout = 5000');
     $pdo->exec('PRAGMA foreign_keys = ON');
     $pdo->exec(file_get_contents(base_dir() . '/schema.sql'));
+
+    // schema.sql is all CREATE IF NOT EXISTS, which does nothing for a column
+    // added to a table that already exists. SQLite has no ADD COLUMN IF NOT
+    // EXISTS, so ask what is there and add what is missing. Cheap, idempotent,
+    // and it keeps "deploy is git pull" true.
+    $columns = array_column($pdo->query('PRAGMA table_info(orders)')->fetchAll(), 'name');
+    foreach (['tax_cents' => 'INTEGER NOT NULL DEFAULT 0'] as $name => $decl) {
+        if (!in_array($name, $columns, true)) {
+            $pdo->exec("ALTER TABLE orders ADD COLUMN $name $decl");
+        }
+    }
+
     return $pdo;
 }
 

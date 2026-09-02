@@ -57,6 +57,9 @@ function checkout_session(array $store, array $lines, string $number): \Stripe\C
         'line_items'                  => $items,
         'shipping_options'            => $shipping,
         'shipping_address_collection' => ['allowed_countries' => ['US']],
+        // Stripe works the tax out from the shipping address on its own page,
+        // before any of this reaches us. Off unless config.php says otherwise.
+        'automatic_tax'               => ['enabled' => (bool) (secrets()['stripe']['automatic_tax'] ?? false)],
         'success_url'                 => $store['origin'] . '/order/' . $number,
         'cancel_url'                  => $store['origin'] . '/cart',
         'client_reference_id'         => $number,
@@ -124,6 +127,7 @@ function webhook_handle(string $payload, string $signature): array
         'postal'         => $addr->postal_code ?? null,
         'country'        => $addr->country ?? null,
         'shipping_cents' => (int) ($s->total_details->amount_shipping ?? 0),
+        'tax_cents'      => (int) ($s->total_details->amount_tax ?? 0),
         'total_cents'    => (int) ($s->amount_total ?? 0),
     ]);
 

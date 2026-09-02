@@ -138,6 +138,8 @@ function mail_new_order(array $store, array $order, array $items): bool
         . item_lines($items) . "\n"
         . str_pad('  Subtotal', 52) . money((int) $order['subtotal_cents']) . "\n"
         . str_pad('  Shipping', 52) . money((int) $order['shipping_cents']) . "\n"
+        . ((int) $order['tax_cents'] > 0
+            ? str_pad('  Tax', 52) . money((int) $order['tax_cents']) . "\n" : '')
         . str_pad('  Total', 52) . money((int) $order['total_cents']) . "\n\n"
         . "Ship to:\n" . address_block($order) . "\n\n"
         . "Buyer: {$order['email']}\n\n"

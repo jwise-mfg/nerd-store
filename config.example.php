@@ -12,6 +12,12 @@ return [
     'stripe' => [
         'secret_key'     => 'REPLACE_ME',   // sk_live_... or sk_test_...
         'webhook_secret' => 'REPLACE_ME',   // whsec_...
+
+        // Stripe Tax. Leave false until you have registered with your state
+        // AND filled in the origin address under Tax settings in the
+        // dashboard -- with it on and that missing, Stripe rejects the
+        // Checkout Session and nobody can buy anything.
+        'automatic_tax'  => false,
     ],
 
     'mail' => [

@@ -88,6 +88,7 @@ case 'order':
     }
     printf("\n  %-46s %10s\n", 'Subtotal', money((int) $o['subtotal_cents']));
     printf("  %-46s %10s\n", 'Shipping', money((int) $o['shipping_cents']));
+    printf("  %-46s %10s\n", 'Tax', money((int) $o['tax_cents']));
     printf("  %-46s %10s\n\n", 'Total', money((int) $o['total_cents']));
     if ($o['ship_line1']) {
         echo "Ship to:\n" . address_block($o) . "\n\n";
@@ -165,6 +166,10 @@ case 'stripe':
     if (str_contains((string) file_get_contents(base_dir() . '/config.php'), 'REPLACE_ME')) {
         echo "  ! config.php still contains REPLACE_ME\n";
     }
+
+    printf("  · automatic tax %s\n", (secrets()['stripe']['automatic_tax'] ?? false)
+        ? 'ON — Stripe calculates it; sessions are REJECTED if Tax settings are incomplete'
+        : 'off — no tax is calculated or collected');
 
     try {
         $acct = stripe_client()->balance->retrieve();

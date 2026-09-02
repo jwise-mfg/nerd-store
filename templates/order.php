@@ -43,6 +43,9 @@
     <tfoot>
       <tr><th>Subtotal</th><td class="num"><?= money((int) $order['subtotal_cents']) ?></td></tr>
       <tr><th>Shipping</th><td class="num"><?= money((int) $order['shipping_cents']) ?></td></tr>
+      <?php if ((int) $order['tax_cents'] > 0): ?>
+        <tr><th>Tax</th><td class="num"><?= money((int) $order['tax_cents']) ?></td></tr>
+      <?php endif; ?>
       <tr><th>Total</th><td class="num"><?= money((int) $order['total_cents']) ?></td></tr>
     </tfoot>
   </table>
