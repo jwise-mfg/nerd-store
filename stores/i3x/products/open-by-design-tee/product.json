@@ -1,5 +1,5 @@
 {
-    "title": "Open by Design T-Shirt",
+    "title": "i3X Logo T-Shirt",
     "subtitle": "100% cotton, screen printed",
     "kind": "apparel",
     "status": "active",
@@ -9,7 +9,7 @@
     "images": [
         {
             "file": "shirt.png",
-            "alt": "Open by Design Tee"
+            "alt": "i3X Logo T-Shirt"
         }
     ],
     "variants": [

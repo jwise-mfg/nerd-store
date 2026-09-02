@@ -19,5 +19,6 @@
             "price": "1.00",
             "weightGrams": 30
         }
-    ]
+    ],
+    "shippingCents": { "us_standard": 400, "us_priority": 800 }
 }
