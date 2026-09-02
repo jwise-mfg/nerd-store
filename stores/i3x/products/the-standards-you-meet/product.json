@@ -7,7 +7,7 @@
     "orderMax": 5,
     "description": [
         "The story of i3X, as read on-stage at ProveIt 2026. Written by Matthew Parris.",
-        "This is an 11-page, Hardcover board-book."
+        "An 11-page, professionally printed hardcover board-book, in the style of Dr. Seuss."
     ],
     "images": [
         {
@@ -23,8 +23,7 @@
         {
             "sku": "I3X-BOOK-HC",
             "title": "Hardcover",
-            "price": "30.00",
-            "weightGrams": 420
+            "price": "32.00"
         }
     ]
 }

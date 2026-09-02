@@ -52,14 +52,3 @@ function store_closed(array $store): bool
     return is_file(data_dir() . '/closed')
         || is_file(data_dir() . '/closed-' . $store['id']);
 }
-
-/** The shipping rate with this code, or null. */
-function shipping_rate(array $store, string $code): ?array
-{
-    foreach ($store['shipping'] as $rate) {
-        if ($rate['code'] === $code) {
-            return $rate;
-        }
-    }
-    return null;
-}

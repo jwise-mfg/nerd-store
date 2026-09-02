@@ -1,7 +1,7 @@
 # Deploying to one VPS
 
-nginx and PHP-FPM. Two vhosts, one SQLite file, no application server, **no
-systemd units**, and one cron line.
+nginx and PHP-FPM. Two vhosts, one SQLite file, no application server, and
+one cron line.
 
 ## Provision once
 
@@ -52,7 +52,7 @@ sudo -u www-data php -r 'require "lib/boot.php"; stock_edit(fn(&$c) => null); ec
 # 5. TLS — SEPARATE certificates, one per zone. Never one cert covering both
 #    names: certificate transparency logs are public and permanent, and a
 #    shared SAN list publishes the connection between the two shops forever.
-#    See NGINX-SETUP.md.
+#    The vhost files in deploy/nginx/ say which certificate each one uses.
 
 # 6. nginx. Symlinked, so `git pull` updates them and there is no second copy.
 sudo ln -s ~/repos/nerd-store/deploy/nginx/cloudflare-real-ip.conf /etc/nginx/conf.d/

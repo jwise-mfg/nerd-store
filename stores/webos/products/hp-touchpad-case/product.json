@@ -17,11 +17,6 @@
             "sku": "WOA-FOLIO-NOS",
             "title": "New old stock",
             "price": "29.00",
-            "attributes": {
-                "color": "Black",
-                "model": "TouchPad"
-            },
-            "weightGrams": 320,
             "condition": "new_old_stock"
         }
     ]

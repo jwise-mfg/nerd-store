@@ -16,9 +16,11 @@
         {
             "sku": "I3X-STICK-6",
             "title": "Pack of six",
-            "price": "3.00",
-            "weightGrams": 30
+            "price": "3.00"
         }
     ],
-    "shippingCents": { "us_standard": 400, "us_priority": 800 }
+    "shippingCents": {
+        "us_standard": 400,
+        "us_priority": 800
+    }
 }

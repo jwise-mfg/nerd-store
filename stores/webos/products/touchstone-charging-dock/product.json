@@ -22,10 +22,6 @@
             "sku": "WOA-TS-NOS",
             "title": "New old stock, sealed",
             "price": "45.00",
-            "attributes": {
-                "model": "Touchstone"
-            },
-            "weightGrams": 260,
             "condition": "new_old_stock",
             "conditionNotes": "Factory sealed. Outer carton shows shelf wear consistent with storage since 2011."
         }

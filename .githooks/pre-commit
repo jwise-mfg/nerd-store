@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Refuse to commit secrets.
 #
-# config.json is gitignored, but an ignore rule only protects you until
+# config.php is gitignored, but an ignore rule only protects you until
 # someone runs `git add -f`, renames a file, or pastes a key into a source
 # file. This hook checks the actual staged content, which is what gets
 # published.
@@ -18,7 +18,7 @@ note() { echo "  ✗ $1"; fail=1; }
 # 1. Files that must never be tracked, whatever they are called.
 while IFS= read -r f; do
   case "$f" in
-    config.php|config.json|*/config.json|.env|.env.*|*/.env|*.pem|*.key|*id_rsa*|*.db|*.db-wal|*.db-shm)
+    config.php|.env|.env.*|*/.env|*.pem|*.key|*id_rsa*|*.sqlite|*.sqlite-wal|*.sqlite-shm)
       note "$f — secrets and databases do not belong in the repository" ;;
   esac
 done <<< "$staged"

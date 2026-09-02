@@ -54,7 +54,7 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
   "description": ["Line one.", "", "A blank line starts a paragraph."],
   "images": [{ "file": "cover.png", "alt": "…" }],
   "variants": [
-    { "sku": "I3X-BOOK-HC", "title": "Hardcover", "price": "24.00", "weightGrams": 420 }
+    { "sku": "I3X-BOOK-HC", "title": "Hardcover", "price": "24.00" }
   ]
 }
 ```
@@ -131,7 +131,3 @@ account is one event stream, so both shops' events land on whichever endpoint
 is registered.
 
 Deployment lives in [`deploy/README.md`](deploy/README.md).
-
-The Astro implementation this replaced is not in the repository. It was moved
-to `prototype/` in commit `ab0fdf4` and untracked in `c0dd3f2`; the history is
-still there if it is ever wanted.

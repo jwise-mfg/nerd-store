@@ -52,8 +52,8 @@
           <span class="grade"><?= e(str_replace('_', ' ', $v['condition'])) ?></span>
           <strong><?= e($v['title']) ?></strong>
           <?php if (!empty($v['serial'])): ?><span class="fine">S/N <?= e($v['serial']) ?></span><?php endif; ?>
-          <?php if (!empty($v['condition_notes'] ?? $v['conditionNotes'] ?? null)): ?>
-            <p class="fine"><?= e($v['condition_notes'] ?? $v['conditionNotes']) ?></p>
+          <?php if (!empty($v['conditionNotes'])): ?>
+            <p class="fine"><?= e($v['conditionNotes']) ?></p>
           <?php endif; ?>
         </div>
       <?php endif; ?>

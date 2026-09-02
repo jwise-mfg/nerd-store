@@ -23,13 +23,6 @@
             "sku": "WOA-TP32-A",
             "title": "Grade A — 32GB",
             "price": "185.00",
-            "attributes": {
-                "storage": "32GB",
-                "color": "Black",
-                "condition": "grade_a",
-                "model": "TouchPad"
-            },
-            "weightGrams": 740,
             "condition": "grade_a",
             "serial": "TP32",
             "conditionNotes": "Screen free of scratches. Battery holds 91% of design capacity.",
@@ -48,13 +41,6 @@
             "sku": "WOA-TP32-B",
             "title": "Grade B — 32GB",
             "price": "135.00",
-            "attributes": {
-                "storage": "32GB",
-                "color": "Black",
-                "condition": "grade_b",
-                "model": "TouchPad"
-            },
-            "weightGrams": 740,
             "condition": "grade_b",
             "serial": "TP32",
             "conditionNotes": "Two hairline scratches on the bezel, none on the display. Battery at 78%.",
