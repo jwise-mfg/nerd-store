@@ -1,10 +1,6 @@
 # nerd-store
 
-Two small shops — [shop.i3x.dev](https://shop.i3x.dev) and
-[shop.webosarchive.org](https://shop.webosarchive.org) — served by one PHP file.
-
-No build step. No application server. One Composer package. Editing a product
-means editing a file and reloading the page.
+Simple, multi-front-end ecommerce. No build step, or app server, transactions through Stripe.
 
 ```
 stores/i3x/
