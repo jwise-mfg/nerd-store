@@ -20,7 +20,7 @@
     ],
     "variants": [
         {
-            "sku": "WOA-TP32-A-0417",
+            "sku": "WOA-TP32-A",
             "title": "Grade A — 32GB",
             "price": "185.00",
             "attributes": {
@@ -31,7 +31,7 @@
             },
             "weightGrams": 740,
             "condition": "grade_a",
-            "serial": "TP32-0417",
+            "serial": "TP32",
             "conditionNotes": "Screen free of scratches. Battery holds 91% of design capacity.",
             "images": [
                 {
@@ -45,7 +45,7 @@
             ]
         },
         {
-            "sku": "WOA-TP32-B-0912",
+            "sku": "WOA-TP32-B",
             "title": "Grade B — 32GB",
             "price": "135.00",
             "attributes": {
@@ -56,7 +56,7 @@
             },
             "weightGrams": 740,
             "condition": "grade_b",
-            "serial": "TP32-0912",
+            "serial": "TP32",
             "conditionNotes": "Two hairline scratches on the bezel, none on the display. Battery at 78%.",
             "images": [
                 {
