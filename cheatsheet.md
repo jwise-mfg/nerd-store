@@ -122,6 +122,10 @@ gunzip -c ~/backups/nerd-store/stock-<stamp>.json.gz > data/stock.json
 sudo chown cesmii:www-data data/store.sqlite data/stock.json
 chmod 664 data/store.sqlite data/stock.json
 bin/store open
+
+# config.php and stores/*/config.php, only if lost
+tar -xzf ~/backups/nerd-store/config-<stamp>.tar.gz -C ~/repos/nerd-store
+sudo chown cesmii:www-data config.php && chmod 640 config.php
 ```
 
 ## Local

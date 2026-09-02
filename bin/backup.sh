@@ -33,8 +33,16 @@ if [ -f "$STOCK" ]; then
   chmod 600 "$DEST/stock-$stamp.json.gz"
 fi
 
-# Keep the most recent $KEEP of each, drop the rest.
-ls -1t "$DEST"/store-*.db.gz    2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
-ls -1t "$DEST"/stock-*.json.gz  2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+# The secrets in config.php are gitignored, and stores/*/config.php may have
+# been edited on the server since the last push. One tarball, paths relative
+# to the repo root, so it unpacks straight back into place.
+CONF="$DEST/config-$stamp.tar.gz"
+tar -czf "$CONF" -C "$APP_DIR" config.php stores/*/config.php
+chmod 600 "$CONF"
 
-echo "backed up to $out.gz ($(du -h "$out.gz" | cut -f1))${STOCK:+ + stock.json}"
+# Keep the most recent $KEEP of each, drop the rest.
+ls -1t "$DEST"/store-*.db.gz     2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+ls -1t "$DEST"/stock-*.json.gz   2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+ls -1t "$DEST"/config-*.tar.gz   2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+
+echo "backed up to $out.gz ($(du -h "$out.gz" | cut -f1))${STOCK:+ + stock.json} + config"

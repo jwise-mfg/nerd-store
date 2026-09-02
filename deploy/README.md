@@ -127,7 +127,8 @@ sqlite3 data/store.sqlite 'select * from orders order by id desc limit 5'
 
 **Restore:** stop nothing. Copy the backup over and the next request picks it
 up. There are two files -- orders in the database, inventory in the JSON --
-and they are backed up as a matching pair each night.
+and they are backed up as a matching pair each night, alongside a tarball of
+`config.php` and each `stores/<id>/config.php`.
 
 ```bash
 cd ~/repos/nerd-store
@@ -143,6 +144,13 @@ bin/store open
 Restoring only one of the pair is legitimate -- inventory without touching
 orders is `data/stock.json` alone -- but they will disagree about what has
 been sold until you reconcile.
+
+Config, only if it is lost -- a fresh box, or a bad edit. Unpacks into place:
+
+```bash
+tar -xzf ~/backups/nerd-store/config-<stamp>.tar.gz -C ~/repos/nerd-store
+sudo chown cesmii:www-data config.php && chmod 640 config.php
+```
 
 ## Closing a shop
 
