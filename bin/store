@@ -124,18 +124,61 @@ case 'ship':
     break;
 
 case 'stock':
+    if (!empty($flag['prune'])) {
+        $declared = [];
+        foreach (store_ids() as $sid) {
+            $declared += sku_index(store_load($sid), true);
+        }
+        $gone = stock_edit(function (array &$c) use ($declared) {
+            $drop = array_diff_key($c, $declared);
+            foreach (array_keys($drop) as $sku) {
+                unset($c[$sku]);
+            }
+            return $drop;
+        });
+        if (!$gone) {
+            echo "Nothing to prune.\n";
+            break;
+        }
+        foreach ($gone as $sku => $n) {
+            printf("  removed %-22s (was %d)\n", $sku, $n);
+        }
+        break;
+    }
+
     if (!$pos) {
+        $declared = [];
         foreach (store_ids() as $sid) {
             $store = store_load($sid);
             echo "$sid\n";
             foreach (products($store, true) as $p) {
+                // The folder, and the status when it is not active. Without
+                // these, two product files sharing a SKU print as two
+                // identical lines and look like duplicated stock.
+                $where = $p['slug'] . (($p['status'] ?? 'active') !== 'active'
+                    ? ' (' . $p['status'] . ')' : '');
                 foreach ($p['variants'] as $v) {
-                    printf("  %-22s %-40s %5d\n", $v['sku'], sku_title($p, $v), stock_of($v['sku']));
+                    $declared[$v['sku']] = true;
+                    printf("  %-22s %-34s %5d   %s\n",
+                        $v['sku'], sku_title($p, $v), stock_of($v['sku']), $where);
                 }
             }
         }
+
+        // Counts left behind by a SKU that no longer exists. Harmless -- the
+        // shop cannot sell what no file declares -- but they are noise in a
+        // file whose whole point is being readable.
+        $orphans = array_diff_key(stock_all(), $declared);
+        if ($orphans) {
+            printf("\n  %d count(s) in stock.json that no product file declares:\n", count($orphans));
+            foreach ($orphans as $sku => $n) {
+                printf("    %-22s %5d\n", $sku, $n);
+            }
+            echo "  Remove them with: bin/store stock --prune\n";
+        }
         break;
     }
+
     $sku = $pos[0];
     $known = false;
     foreach (store_ids() as $sid) {
@@ -310,7 +353,7 @@ default:
       orders [--status paid|pending|shipped] [--store i3x|webos] [--n 50]
       order  <NUMBER>
       ship   <NUMBER> --carrier USPS --tracking 9400... [--no-email]
-      stock  [SKU [N | +N | -N]]
+      stock  [SKU [N | +N | -N]] [--prune]
       check
       stripe
       close  [i3x|webos]      refuse new orders (all shops, or one)
