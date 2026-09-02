@@ -45,7 +45,7 @@
       </tfoot>
     </table>
 
-    <p class="fine">Shipping is chosen at checkout. <?= e($store['copy']['shipping_restriction']) ?></p>
+    <p class="fine">Shipping is chosen at checkout. Please allow 10-15 business days for handling. <?= e($store['copy']['shipping_restriction']) ?></p>
 
     <form method="post" action="/checkout">
       <button class="btn" type="submit"><?= e($store['copy']['checkout_title']) ?></button>
