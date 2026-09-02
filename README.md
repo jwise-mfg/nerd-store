@@ -53,6 +53,9 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
                                // set nothing use the store's rate.
   "description": ["Line one.", "", "A blank line starts a paragraph."],
   "images": [{ "file": "cover.png", "alt": "…" }],
+  "socialImage": "cover-social.jpg",   // optional: what a shared link shows.
+                               // Otherwise the first image. LinkedIn ignores
+                               // anything over 5 MB; 1200px JPEG is plenty.
   "variants": [
     { "sku": "I3X-BOOK-HC", "title": "Hardcover", "price": "24.00" }
   ]

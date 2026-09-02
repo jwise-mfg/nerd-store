@@ -56,7 +56,10 @@ if ($path === '/') {
         'store' => $store,
         'items' => $items,
         'stock' => stock_map($store['id']),
-    ]));
+    ]), 200, [
+        'title' => $store['name'] . ' — ' . ($store['title_tagline'] ?? $store['copy']['tagline']),
+        'url'   => $store['origin'] . '/',
+    ]);
 }
 
 // The catalogue is the home page -- at this size a separate /shop listed the
@@ -72,11 +75,22 @@ if (preg_match('#^/shop/([A-Za-z0-9._-]+)$#', $path, $m)) {
     if (!$p) {
         not_found($store);
     }
+    $img = first_image($p);
     respond($store, $p['title'], view('product', [
         'store' => $store,
         'p'     => $p,
         'stock' => stock_map($store['id']),
-    ]));
+    ]), 200, [
+        'type'        => 'product',
+        'title'       => $p['title'] . (!empty($p['subtitle']) ? ' — ' . $p['subtitle'] : ''),
+        'description' => description_text($p) ?: $store['copy']['hero_body'],
+        // A product's own social image beats its first photograph, which may
+        // be a print-resolution file too large for LinkedIn's 5 MB limit.
+        'image'       => !empty($p['socialImage'])
+            ? $store['origin'] . image_url($p['slug'], $p['socialImage'])
+            : ($img ? (str_starts_with($img['url'], 'http') ? $img['url'] : $store['origin'] . $img['url']) : null),
+        'url'         => $store['origin'] . '/shop/' . $p['slug'],
+    ]);
 }
 
 if ($path === '/cart') {

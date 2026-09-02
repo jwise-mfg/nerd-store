@@ -28,12 +28,18 @@ function view(string $name, array $vars = []): string
     return (string) ob_get_clean();
 }
 
-/** Render a page inside the layout and stop. */
-function respond(array $store, string $title, string $body, int $status = 200): never
+/**
+ * Render a page inside the layout and stop.
+ *
+ * $meta is what a link preview shows -- LinkedIn, Slack, iMessage all read
+ * the same Open Graph tags. Keys: description, image (absolute URL), url.
+ * Pages that pass nothing get the store's own description and image.
+ */
+function respond(array $store, string $title, string $body, int $status = 200, array $meta = []): never
 {
     http_response_code($status);
     header('Content-Type: text/html; charset=utf-8');
-    echo view('layout', ['store' => $store, 'title' => $title, 'body' => $body]);
+    echo view('layout', ['store' => $store, 'title' => $title, 'body' => $body, 'meta' => $meta]);
     exit;
 }
 

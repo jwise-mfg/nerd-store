@@ -4,6 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($store['name']) ?> · <?= e($title) ?></title>
+<?php
+  // Link previews. Every page gets these so a shared cart or policy link
+  // still shows the shop's name and picture rather than a bare URL.
+  $ogTitle = $meta['title'] ?? ($title . ' · ' . $store['name']);
+  $ogDesc  = $meta['description'] ?? $store['copy']['hero_body'];
+  $ogImage = $meta['image'] ?? (($s = $store['brand']['social_image'] ?? null) ? $store['origin'] . $s : null);
+  $ogUrl   = $meta['url'] ?? null;
+?>
+<meta property="og:site_name" content="<?= e($store['name']) ?>">
+<meta property="og:type" content="<?= e($meta['type'] ?? 'website') ?>">
+<meta property="og:title" content="<?= e($ogTitle) ?>">
+<meta property="og:description" content="<?= e($ogDesc) ?>">
+<meta name="description" content="<?= e($ogDesc) ?>">
+<?php if ($ogUrl): ?>
+<meta property="og:url" content="<?= e($ogUrl) ?>">
+<link rel="canonical" href="<?= e($ogUrl) ?>">
+<?php endif; ?>
+<?php if ($ogImage): ?>
+<meta property="og:image" content="<?= e($ogImage) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= e($ogImage) ?>">
+<?php else: ?>
+<meta name="twitter:card" content="summary">
+<?php endif; ?>
+<meta name="twitter:title" content="<?= e($ogTitle) ?>">
+<meta name="twitter:description" content="<?= e($ogDesc) ?>">
 <?php if ($f = $store['brand']['favicon'] ?? null): ?>
 <link rel="icon" href="<?= e($f) ?>">
 <?php endif; ?>

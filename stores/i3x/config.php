@@ -44,6 +44,9 @@ return [
         'wordmark_height'  => '30px',
         'favicon'          => '/brand/i3x-orb-32.png',
         'apple_touch_icon' => '/brand/i3x-orb-256.png',
+        // What a shared link to the shop shows. The book, at 1200px -- the
+        // print-resolution cover.png is over LinkedIn's 5 MB limit.
+        'social_image'     => '/img/the-standards-you-meet/cover-social.jpg',
     ],
 
     // Passed to Stripe Checkout, which collects the address and lets the

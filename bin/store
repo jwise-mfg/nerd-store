@@ -306,10 +306,17 @@ case 'check':
                 echo "  ✗ $where has no variants — it will never appear\n";
                 $bad++;
             }
-            foreach (($p['images'] ?? []) as $img) {
-                $f = $img['file'] ?? '';
-                if (!str_starts_with($f, 'http') && !is_file("{$store['dir']}/products/{$p['slug']}/$f")) {
+            $files = array_column($p['images'] ?? [], 'file');
+            if (!empty($p['socialImage'])) {
+                $files[] = $p['socialImage'];
+            }
+            foreach ($files as $f) {
+                $path = "{$store['dir']}/products/{$p['slug']}/$f";
+                if (!str_starts_with($f, 'http') && !is_file($path)) {
                     echo "  ✗ $where references a missing image: $f\n";
+                    $bad++;
+                } elseif ($f === ($p['socialImage'] ?? null) && filesize($path) > 5_000_000) {
+                    echo "  ✗ $where socialImage is over 5 MB; LinkedIn will not show it\n";
                     $bad++;
                 }
             }

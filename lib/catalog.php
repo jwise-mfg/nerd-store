@@ -106,6 +106,15 @@ function sku_title(array $product, array $variant): string
     return $product['title'] . ' — ' . $variant['title'];
 }
 
+/** The first paragraph of the description as plain text, for link previews. */
+function description_text(array $product): string
+{
+    $raw  = $product['description'] ?? '';
+    $text = is_array($raw) ? implode("\n", $raw) : (string) $raw;
+    $para = preg_split('/\n\s*\n/', trim($text))[0] ?? '';
+    return trim(preg_replace('/\s+/', ' ', $para) ?? '');
+}
+
 /**
  * Images are served by nginx straight out of the product folder, aliased to
  * /img/. An absolute URL (the placeholder photography) passes through.

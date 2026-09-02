@@ -43,6 +43,7 @@ return [
         'wordmark'         => null,
         'favicon'          => null,
         'apple_touch_icon' => null,
+        'social_image'     => null,
     ],
 
     'shipping' => [
