@@ -38,7 +38,7 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
 
 ```jsonc
 {
-  "title": "How Machines Talk",
+  "title": "My Book Product",
   "kind": "book",
   "status": "active",          // active | draft | archived
   "position": 1,               // sort order in the shop
