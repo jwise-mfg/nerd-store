@@ -15,101 +15,51 @@
     "variants": [
         {
             "sku": "I3X-TEE-NA-S",
-            "title": "Navy / S",
+            "title": "Black / S",
             "price": "21.00",
             "attributes": {
                 "size": "S",
-                "color": "Navy"
-            },
-            "weightGrams": 200
-        },
-        {
-            "sku": "I3X-TEE-WH-S",
-            "title": "White / S",
-            "price": "21.00",
-            "attributes": {
-                "size": "S",
-                "color": "White"
+                "color": "Black"
             },
             "weightGrams": 200
         },
         {
             "sku": "I3X-TEE-NA-M",
-            "title": "Navy / M",
+            "title": "Black / M",
             "price": "21.00",
             "attributes": {
                 "size": "M",
-                "color": "Navy"
-            },
-            "weightGrams": 200
-        },
-        {
-            "sku": "I3X-TEE-WH-M",
-            "title": "White / M",
-            "price": "21.00",
-            "attributes": {
-                "size": "M",
-                "color": "White"
+                "color": "Black"
             },
             "weightGrams": 200
         },
         {
             "sku": "I3X-TEE-NA-L",
-            "title": "Navy / L",
+            "title": "Black / L",
             "price": "21.00",
             "attributes": {
                 "size": "L",
-                "color": "Navy"
-            },
-            "weightGrams": 200
-        },
-        {
-            "sku": "I3X-TEE-WH-L",
-            "title": "White / L",
-            "price": "21.00",
-            "attributes": {
-                "size": "L",
-                "color": "White"
+                "color": "Black"
             },
             "weightGrams": 200
         },
         {
             "sku": "I3X-TEE-NA-XL",
-            "title": "Navy / XL",
+            "title": "Black / XL",
             "price": "21.00",
             "attributes": {
                 "size": "XL",
-                "color": "Navy"
-            },
-            "weightGrams": 200
-        },
-        {
-            "sku": "I3X-TEE-WH-XL",
-            "title": "White / XL",
-            "price": "21.00",
-            "attributes": {
-                "size": "XL",
-                "color": "White"
+                "color": "Black"
             },
             "weightGrams": 200
         },
         {
             "sku": "I3X-TEE-NA-2XL",
-            "title": "Navy / 2XL",
+            "title": "Black / 2XL",
             "price": "21.00",
             "attributes": {
                 "size": "2XL",
-                "color": "Navy"
-            },
-            "weightGrams": 200
-        },
-        {
-            "sku": "I3X-TEE-WH-2XL",
-            "title": "White / 2XL",
-            "price": "21.00",
-            "attributes": {
-                "size": "2XL",
-                "color": "White"
+                "color": "Black"
             },
             "weightGrams": 200
         }
