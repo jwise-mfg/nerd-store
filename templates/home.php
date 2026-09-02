@@ -2,8 +2,6 @@
   <p class="tagline"><?= e($store['copy']['tagline']) ?></p>
   <h1><?= e($store['copy']['hero_title']) ?></h1>
   <p class="lede"><?= e($store['copy']['hero_body']) ?></p>
-  <?php // The catalogue is right below, so this scrolls rather than navigates. ?>
-  <a class="btn" href="#catalogue"><?= e($store['copy']['hero_cta']) ?></a>
 </section>
 
 <section class="wrap" id="catalogue">

@@ -6,6 +6,20 @@ function e(?string $s): string
     return htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/**
+ * A ?v= stamp from the file's modification time.
+ *
+ * nginx serves stylesheets with `expires 30d`, which is right for a file that
+ * rarely changes and wrong for one that just did: without this, an edit is
+ * invisible to anyone who has already loaded the page until the cache expires.
+ * The stamp changes when the file does, so the browser refetches exactly then.
+ */
+function asset_version(string $path): string
+{
+    $t = @filemtime($path);
+    return $t ? '?v=' . $t : '';
+}
+
 function view(string $name, array $vars = []): string
 {
     extract($vars, EXTR_SKIP);

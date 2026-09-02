@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="<?= e($h) ?>">
 <?php endif; ?>
-<link rel="stylesheet" href="/base.css">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/base.css<?= asset_version(base_dir() . '/assets/base.css') ?>">
+<link rel="stylesheet" href="/style.css<?= asset_version($store['dir'] . '/public/style.css') ?>">
 <?php if ($d = $store['analytics_domain'] ?? null): ?>
 <script defer data-domain="<?= e($d) ?>" src="https://plausible.io/js/script.js"></script>
 <?php endif; ?>
