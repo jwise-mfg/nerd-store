@@ -23,6 +23,9 @@ return [
     'mail_from'        => 'webOS Archive Shop <shop@webosarchive.org>',
     'postal_address'   => 'JW LLC — 5387 Avion Park Dr., Highland Heights, OH 44143',
 
+    // The <title> tag on the home page — see the note in the i3x config.
+    'title_tagline'    => 'Keeping webOS alive.',
+
     'font_href'        => null,
     'analytics_domain' => 'shop.webosarchive.org',
 

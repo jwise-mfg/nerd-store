@@ -52,7 +52,7 @@ if ($path === '/') {
     if ($kind = $_GET['kind'] ?? null) {
         $items = array_values(array_filter($items, fn($p) => ($p['kind'] ?? '') === $kind));
     }
-    respond($store, $store['copy']['tagline'], view('home', [
+    respond($store, $store['title_tagline'] ?? $store['copy']['tagline'], view('home', [
         'store' => $store,
         'items' => $items,
         'stock' => stock_map($store['id']),

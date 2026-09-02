@@ -25,6 +25,11 @@ return [
     'mail_from'        => 'i3X Store <store@i3x.dev>',
     'postal_address'   => 'JW LLC',
 
+    // The <title> tag on the home page. Separate from copy.tagline, which is
+    // what the page itself shows: a browser tab and a search result want
+    // something that reads on its own, away from the logo above it.
+    'title_tagline'    => 'Open by design',
+
     'font_href'        => 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Work+Sans:wght@500;600;700&display=swap',
     'analytics_domain' => null,
 
