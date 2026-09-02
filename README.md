@@ -47,6 +47,10 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
   "status": "active",          // active | draft | archived
   "position": 1,               // sort order in the shop
   "orderMax": 5,               // optional: most one order may contain
+  "shippingCents": 400,        // optional: this product's shipping. A cart
+                               // charges the highest of the things in it,
+                               // since it all goes in one box. Products that
+                               // set nothing use the store's rate.
   "description": ["Line one.", "", "A blank line starts a paragraph."],
   "images": [{ "file": "cover.png", "alt": "…" }],
   "variants": [

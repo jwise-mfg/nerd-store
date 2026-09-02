@@ -228,6 +228,17 @@ case 'check':
                     $bad++;
                 }
             }
+            $ship = $p['shippingCents'] ?? null;
+            if (is_array($ship)) {
+                $codes = array_column($store['shipping'], 'code');
+                foreach (array_keys($ship) as $code) {
+                    if (!in_array($code, $codes, true)) {
+                        echo "  ✗ $where shippingCents names '$code', which is not a rate in this store"
+                           . ' (have: ' . implode(', ', $codes) . ")\n";
+                        $bad++;
+                    }
+                }
+            }
             foreach ($p['variants'] ?? [] as $v) {
                 if (isset($seen[$v['sku']])) {
                     echo "  ✗ duplicate SKU {$v['sku']} in $where and {$seen[$v['sku']]}\n";

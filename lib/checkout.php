@@ -34,11 +34,20 @@ function checkout_session(array $store, array $lines, string $number): \Stripe\C
         ];
     }
 
+    // Shipping is priced from what is in the cart. Each product may name its
+    // own price; one that does not contributes the store's rate, so a cart
+    // mixing both is priced by the dearest thing in it rather than by the
+    // cheapest. It all goes in one box, so the highest wins rather than a sum.
     $shipping = [];
     foreach ($store['shipping'] as $r) {
+        $cents = max(array_map(
+            fn($l) => product_shipping($l['product'], $r['code'], $store['shipping']) ?? (int) $r['cents'],
+            $lines
+        ) ?: [(int) $r['cents']]);
+
         $shipping[] = ['shipping_rate_data' => [
             'type'         => 'fixed_amount',
-            'fixed_amount' => ['amount' => $r['cents'], 'currency' => $store['currency']],
+            'fixed_amount' => ['amount' => $cents, 'currency' => $store['currency']],
             'display_name' => $r['label'] . ' — ' . $r['estimate'],
         ]];
     }

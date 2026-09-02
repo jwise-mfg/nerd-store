@@ -1,11 +1,11 @@
 {
     "title": "Open by Design T-Shirt",
-    "subtitle": "Heavyweight cotton, screen printed",
+    "subtitle": "100% cotton, screen printed",
     "kind": "apparel",
     "status": "active",
     "position": 2,
     "orderMax": 5,
-    "description": "Ringspun 6.1oz cotton. Runs true to size. Printed in small batches.",
+    "description": "100% quality cotton. Tagless and comfortable.",
     "images": [
         {
             "file": "shirt.png",

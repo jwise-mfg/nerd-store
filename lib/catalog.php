@@ -64,6 +64,42 @@ function order_max(array $product): int
     return max(1, (int) ($product['orderMax'] ?? 99));
 }
 
+/**
+ * What this product ships for at a given service level, or null to use the
+ * store's own price.
+ *
+ *   "shippingCents": 400                        the cheapest service; dearer
+ *                                               ones keep the store's premium
+ *   "shippingCents": {"us_standard": 400}       exact, per rate code
+ *
+ * A number is the common case. The map is there for when a product's faster
+ * option should not simply track the store's premium.
+ */
+function product_shipping(array $product, string $code, array $rates): ?int
+{
+    $v = $product['shippingCents'] ?? null;
+    if ($v === null) {
+        return null;
+    }
+    if (is_array($v)) {
+        return isset($v[$code]) ? max(0, (int) $v[$code]) : null;
+    }
+
+    // A single number prices the cheapest service. Dearer ones keep the
+    // premium the store charges for them -- otherwise overriding a product
+    // would quietly offer Priority Mail at the price of Standard, which is
+    // the faster service given away.
+    $prices  = array_map(fn($r) => (int) $r['cents'], $rates);
+    $base    = $prices ? min($prices) : 0;
+    $thisOne = 0;
+    foreach ($rates as $r) {
+        if ($r['code'] === $code) {
+            $thisOne = (int) $r['cents'];
+        }
+    }
+    return max(0, (int) $v) + ($thisOne - $base);
+}
+
 /** The display name that goes on the invoice and the order row. */
 function sku_title(array $product, array $variant): string
 {
