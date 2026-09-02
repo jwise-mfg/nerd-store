@@ -3,7 +3,7 @@
 Simple, multi-front-end ecommerce. No build step or app server, transactions through Stripe.
 
 ```
-stores/i3x/
+stores/shop1/
   config.php         name, copy, colours, shipping rates, store_open
   products/<slug>/   product.json and its images
   policies/          returns and privacy, as this shop words them
@@ -112,8 +112,8 @@ Nothing on that list requires a restart. PHP reads the files on each request.
 ```bash
 composer install
 cp config.example.php config.php     # Stripe test keys; mail transport 'log'
-php -S localhost:8000 -t stores/i3x/public
-php -S localhost:8001 -t stores/webos/public
+php -S localhost:8000 -t stores/shop1/public
+php -S localhost:8001 -t stores/shop2/public
 ```
 
 The built-in server is pointed at the same directory nginx uses, so local and
