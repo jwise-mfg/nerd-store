@@ -1,6 +1,6 @@
 <?php
 /**
- * Two plain-text emails, sent with curl.
+ * Two plain-text emails and one push notification, sent with curl.
  *
  * Stripe sends the payment receipt itself, so nothing here runs on the happy
  * path of a sale except the note to the operator. There is no HTML part: a
@@ -153,4 +153,55 @@ function mail_new_order(array $store, array $order, array $items, array $warning
         'subject'  => ($warnings ? '!! ' : '') . "{$store['name']} — order {$order['number']} — " . money((int) $order['total_cents']),
         'text'     => $text,
     ]);
+}
+
+/**
+ * To the operator's phone, on payment. Pushover's API is form-encoded, not
+ * JSON. Only what was configured is sent: Pushover applies its own defaults
+ * for anything omitted, and an empty string is not the same as absent.
+ */
+function pushover_new_order(array $store, array $order, array $items, array $warnings = []): bool
+{
+    $cfg = secrets()['notify_pushover'] ?? null;
+    if (!$cfg) {
+        return false;
+    }
+
+    $sound = $cfg['sound'] ?? null;
+    if (is_array($sound)) {
+        // Per-store map. An unmapped store gets Pushover's default rather than
+        // borrowing another store's sound, which would defeat setting them.
+        $sound = $sound[$store['id']] ?? null;
+    }
+
+    $summary = implode(', ', array_map(fn($i) => "{$i['qty']}x {$i['title']}", $items));
+    $body = array_filter([
+        'token'     => $cfg['token'] ?? '',
+        'user'      => $cfg['user'] ?? '',
+        'title'     => ($warnings ? '!! ' : '') . "{$store['name']} — new order",
+        'message'   => money((int) $order['total_cents']) . " — $summary"
+            . ($warnings ? "\n\n" . implode("\n", array_map(fn($w) => "!! $w", $warnings)) : ''),
+        'url'       => "{$store['origin']}/order/{$order['number']}",
+        'url_title' => "Order {$order['number']}",
+        'sound'     => $sound,
+        'priority'  => $cfg['priority'] ?? null,
+        'device'    => $cfg['device'] ?? null,
+    ], fn($v) => $v !== null && $v !== '');
+
+    $ch = curl_init('https://api.pushover.net/1/messages.json');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_POSTFIELDS     => http_build_query($body),
+    ]);
+    $res  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code < 200 || $code >= 300) {
+        error_log("[pushover] returned $code: " . substr((string) $res, 0, 300));
+        return false;
+    }
+    return true;
 }

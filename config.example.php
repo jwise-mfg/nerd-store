@@ -30,5 +30,21 @@ return [
     // Where the "you have an order" email goes. Null disables it.
     'notify_email' => null,
 
+    // Push notification on every paid order. Null disables it.
+    // https://pushover.net -- create an application to get a token; the user
+    // key is on your dashboard.
+    //
+    // 'sound' takes a built-in name or a custom sound uploaded to your
+    // application, either one name for every store or one per store, so you
+    // know which shop sold without looking. Omit it for Pushover's default.
+    // 'priority': -2 quiet, 0 normal, 1 high, 2 needs acknowledgement.
+    // 'device': limit to one device by name; omit to reach all of them.
+    'notify_pushover' => null,
+    // 'notify_pushover' => [
+    //     'token' => 'REPLACE_ME',
+    //     'user'  => 'REPLACE_ME',
+    //     'sound' => ['i3x' => 'cashregister', 'webos' => 'webos-notify'],
+    // ],
+
     'data_dir' => __DIR__ . '/data',
 ];

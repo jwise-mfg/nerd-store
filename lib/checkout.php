@@ -163,10 +163,16 @@ function webhook_handle(string $payload, string $signature): array
         error_log("[webhook] order {$order['number']}: $w");
     }
 
+    // Each channel on its own: Pushover being down must not cost the email.
     try {
         mail_new_order($store, $order, $items, $warnings);
     } catch (Throwable $e) {
-        error_log('[webhook] operator notice failed: ' . $e->getMessage());
+        error_log('[webhook] operator email failed: ' . $e->getMessage());
+    }
+    try {
+        pushover_new_order($store, $order, $items, $warnings);
+    } catch (Throwable $e) {
+        error_log('[webhook] pushover failed: ' . $e->getMessage());
     }
 
     return [200, "paid {$order['number']}"];
