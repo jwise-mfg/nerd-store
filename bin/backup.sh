@@ -10,7 +10,7 @@ set -euo pipefail
 
 APP_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DB="$APP_DIR/data/store.sqlite"
-DEST="${BACKUP_DIR:-$HOME/backups/nerd-store}"
+DEST="${BACKUP_DIR:-$HOME/backup/nerd-store}"
 KEEP=14
 
 command -v sqlite3 >/dev/null || { echo "backup: sqlite3 is not installed" >&2; exit 1; }
