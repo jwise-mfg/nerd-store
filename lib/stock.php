@@ -64,9 +64,19 @@ function stock_edit(callable $fn): mixed
     if (!is_dir($dir)) {
         mkdir($dir, 0o775, true);
     }
-    $lock = fopen($dir . '/stock.lock', 'c');
-    if ($lock === false || !flock($lock, LOCK_EX)) {
-        throw new RuntimeException('stock: could not take the lock');
+    // Two identities take this lock: php-fpm as www-data on a sale, you as
+    // yourself from bin/store. Whoever creates it must leave it group-writable
+    // or the other is shut out -- and a webhook that cannot take the lock
+    // records the order as paid without taking the stock.
+    $path = $dir . '/stock.lock';
+    $lock = @fopen($path, 'c');
+    if ($lock === false) {
+        throw new RuntimeException("stock: cannot open $path (is it group-writable? chmod 664 $path)");
+    }
+    @chmod($path, 0o664);
+    if (!flock($lock, LOCK_EX)) {
+        fclose($lock);
+        throw new RuntimeException("stock: could not lock $path");
     }
     try {
         $counts = stock_all();

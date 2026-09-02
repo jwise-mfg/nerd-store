@@ -29,6 +29,7 @@ sudo chown -R cesmii:www-data data
 sudo chmod 2775 data                 # setgid: everything created in here gets
                                      # group www-data, whoever makes it
 sudo chmod 664 data/store.sqlite     # if it exists already -- see below
+sudo chmod 664 data/stock.json data/stock.lock   # likewise, if they exist
 
 #    Two things that are not obvious:
 #      * SQLite creates the database asking for 0644, so a umask cannot make
@@ -40,8 +41,13 @@ sudo chmod 664 data/store.sqlite     # if it exists already -- see below
 #    chown above, it lands as cesmii:cesmii 0644 and the web server cannot
 #    write it. Re-run the two lines above and it is sorted.
 
+#    The same applies to data/stock.lock: bin/store and the webhook both take
+#    it, and whichever created it as 0644 locks the other out. The code now
+#    chmods it 664 on every use, but only the owner can, so fix it once by hand.
+#
 #    Check it:
-sudo -u www-data test -w data/store.sqlite && echo "www-data can write" || echo "IT CANNOT"
+sudo -u www-data test -w data/store.sqlite && echo "www-data can write the db" || echo "IT CANNOT"
+sudo -u www-data php -r 'require "lib/boot.php"; stock_edit(fn(&$c) => null); echo "www-data can lock stock\n";'
 
 # 5. TLS — SEPARATE certificates, one per zone. Never one cert covering both
 #    names: certificate transparency logs are public and permanent, and a

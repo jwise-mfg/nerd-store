@@ -17,7 +17,10 @@ return [
     'statement_suffix' => 'WEBOS SHOP',
     'cart_cookie'      => 'woa_cart',
 
-    'store_open'       => true,
+    // Shut until the listings carry photographs of the actual units and
+    // data/stock.json has counts for the current SKUs. Order pages and
+    // policies stay reachable; the catalogue, cart and checkout return 503.
+    'store_open'       => false,
 
     'support_email'    => 'shop@webosarchive.org',
     'mail_from'        => 'webOS Archive Shop <shop@webosarchive.org>',
@@ -70,6 +73,7 @@ return [
         'order_confirmed_body'  => 'Devices are packed with care and shipped with tracking. Every unit is tested before it goes out — if something arrives wrong, reply to the confirmation email and we’ll sort it.',
         'sold_out'              => 'Sold',
         'last_one'              => 'Last one',
+        'returns_link'          => 'Returns',
         'footer_blurb'          => 'The webOS Archive Shop funds hosting, preservation, and the app museum. Devices are used unless marked new old stock; every listing shows photographs of the actual unit you receive.',
     ],
 ];

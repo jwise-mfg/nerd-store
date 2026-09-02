@@ -128,13 +128,14 @@ function mail_shipped(array $store, array $order, array $items): bool
 }
 
 /** To the operator, on payment. Reply goes to the buyer. */
-function mail_new_order(array $store, array $order, array $items): bool
+function mail_new_order(array $store, array $order, array $items, array $warnings = []): bool
 {
     $to = secrets()['notify_email'] ?? null;
     if (!$to) {
         return false;
     }
-    $text = "Order {$order['number']} — " . money((int) $order['total_cents']) . "\n\n"
+    $text = ($warnings ? implode("\n", array_map(fn($w) => "!! $w", $warnings)) . "\n\n" : '')
+        . "Order {$order['number']} — " . money((int) $order['total_cents']) . "\n\n"
         . item_lines($items) . "\n"
         . str_pad('  Subtotal', 52) . money((int) $order['subtotal_cents']) . "\n"
         . str_pad('  Shipping', 52) . money((int) $order['shipping_cents']) . "\n"
@@ -149,7 +150,7 @@ function mail_new_order(array $store, array $order, array $items): bool
         'from'     => $store['mail_from'],
         'reply_to' => $order['email'] ?: null,
         'to'       => $to,
-        'subject'  => "{$store['name']} — order {$order['number']} — " . money((int) $order['total_cents']),
+        'subject'  => ($warnings ? '!! ' : '') . "{$store['name']} — order {$order['number']} — " . money((int) $order['total_cents']),
         'text'     => $text,
     ]);
 }

@@ -74,6 +74,7 @@ return [
         'order_confirmed_body'  => 'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within 10-15 business days.',
         'sold_out'              => 'Sold out',
         'last_one'              => 'Only one left',
-        'footer_blurb'          => 'The i3X Store is not affliated with CESMII. Items are sold at near-cost, and as-is. No returns or exchanges.',
+        'returns_link'          => 'All Sales Final',
+        'footer_blurb'          => 'The i3X Store is not affiliated with CESMII. Items are sold at near-cost, and as-is. No returns or exchanges.',
     ],
 ];

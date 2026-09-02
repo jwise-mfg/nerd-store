@@ -57,6 +57,12 @@ function checkout_session(array $store, array $lines, string $number): \Stripe\C
         'line_items'                  => $items,
         'shipping_options'            => $shipping,
         'shipping_address_collection' => ['allowed_countries' => ['US']],
+        // Cards only (Apple Pay and Google Pay are cards). The account's own
+        // payment-method list is left alone for invoicing; here, a delayed
+        // method such as ACH would complete the session unpaid and the order
+        // would sit pending after the money arrived, since only
+        // checkout.session.completed is handled.
+        'payment_method_types'        => ['card'],
         // Stripe works the tax out from the shipping address on its own page,
         // before any of this reaches us. Off unless config.php says otherwise.
         'automatic_tax'               => ['enabled' => (bool) (secrets()['stripe']['automatic_tax'] ?? false)],
@@ -136,17 +142,29 @@ function webhook_handle(string $payload, string $signature): array
     }
 
     // Only reached on the pending -> paid transition, so stock comes off once.
-    $items = order_items((int) $order['id']);
+    //
+    // Nothing from here on may fail the webhook: the event id is already
+    // recorded, so a 500 earns a retry that stops at "duplicate" -- the order
+    // would stay paid with the stock untaken and nobody told. Whatever goes
+    // wrong is logged and put in the operator's email instead.
+    $items    = order_items((int) $order['id']);
+    $warnings = [];
     foreach ($items as $i) {
-        if (!stock_take($i['sku'], (int) $i['qty'])) {
-            error_log("[webhook] oversold {$i['sku']} on order {$order['number']} — refund and restock");
+        try {
+            if (!stock_take($i['sku'], (int) $i['qty'])) {
+                $warnings[] = "oversold {$i['sku']} — refund and restock";
+            }
+        } catch (Throwable $e) {
+            $warnings[] = "stock NOT taken for {$i['sku']}: " . $e->getMessage()
+                . " — fix the permission, then: bin/store stock {$i['sku']} -{$i['qty']}";
         }
     }
+    foreach ($warnings as $w) {
+        error_log("[webhook] order {$order['number']}: $w");
+    }
 
-    // Neither of these may fail the webhook: a 500 would earn a retry that
-    // short-circuits on the event id, losing the mail and keeping the order.
     try {
-        mail_new_order($store, $order, $items);
+        mail_new_order($store, $order, $items, $warnings);
     } catch (Throwable $e) {
         error_log('[webhook] operator notice failed: ' . $e->getMessage());
     }

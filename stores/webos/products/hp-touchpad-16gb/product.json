@@ -1,5 +1,5 @@
 {
-    "title": "HP TouchPad 32GB",
+    "title": "HP TouchPad 16GB",
     "subtitle": "Tested, graded, and shipped with a fresh doctor",
     "kind": "device",
     "status": "draft",
@@ -26,7 +26,7 @@
             "attributes": {
                 "storage": "16GB",
                 "color": "Black",
-                "condition": "grade_b",
+                "condition": "grade_a",
                 "model": "TouchPad"
             },
             "weightGrams": 740,
