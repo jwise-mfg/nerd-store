@@ -5,7 +5,7 @@
     "status": "active",
     "position": 3,
     "orderMax": 5,
-    "description": "Weatherproof vinyl. Survives a laptop lid and a dishwasher, in that order.",
+    "description": "Weatherproof vinyl. Two 3-inch holographic, two 3-inch matte, two 2-inch matte",
     "images": [
         {
             "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Sticker%20Pack",
@@ -16,7 +16,7 @@
         {
             "sku": "I3X-STICK-6",
             "title": "Pack of six",
-            "price": "9.00",
+            "price": "1.00",
             "weightGrams": 30
         }
     ]
