@@ -43,7 +43,11 @@ img { max-width: 100%; height: auto; display: block; }
 /* --- hero ---------------------------------------------------------------- */
 .hero { max-width: 1040px; margin: 0 auto; padding: 4rem 1.25rem 2rem; }
 .hero .tagline { color: var(--c-accent); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; margin: 0 0 .75rem; }
-.hero .lede { font-size: 1.15rem; color: var(--c-ink-muted); max-width: 46ch; }
+/* 46ch is the bottom of the readable range and made a 77-character line
+   wrap twice on a wide screen. 62ch is still a comfortable measure and lets
+   a short hero sit on one or two lines. It is a max, so narrow screens are
+   governed by the padding as before. */
+.hero .lede { font-size: 1.15rem; color: var(--c-ink-muted); max-width: 62ch; }
 
 /* --- buttons ------------------------------------------------------------- */
 .btn {
