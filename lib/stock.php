@@ -167,7 +167,17 @@ function stock_bootstrap(): void
     stock_write($counts);
 
     if ($had) {
-        db()->exec('DROP TABLE stock');
         error_log('[stock] migrated ' . count($counts) . ' counts from SQLite into ' . stock_path());
+        // Tidying up, and nothing depends on it: the counts are already safely
+        // in the file, and schema.sql no longer creates this table. Whoever
+        // triggers the migration may not have write access to the database --
+        // the shop runs as www-data, the CLI as you -- and a failure to drop a
+        // table nobody reads must not take the shop down with it.
+        try {
+            db()->exec('DROP TABLE stock');
+        } catch (Throwable $e) {
+            error_log('[stock] the old stock table is still there, unused and harmless: '
+                . $e->getMessage() . ' — drop it with: sqlite3 data/store.sqlite "DROP TABLE stock"');
+        }
     }
 }
