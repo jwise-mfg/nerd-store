@@ -5,7 +5,7 @@
 
   <?php if (!$lines): ?>
     <p class="empty"><?= e($store['copy']['cart_empty']) ?></p>
-    <p><a class="btn" href="/shop"><?= e($store['copy']['hero_cta']) ?></a></p>
+    <p><a class="btn" href="/"><?= e($store['copy']['hero_cta']) ?></a></p>
   <?php else: ?>
     <table class="cart">
       <tbody>

@@ -48,24 +48,23 @@ if (!$store['store_open'] && !$exempt) {
 /* --- routes --------------------------------------------------------------- */
 
 if ($path === '/') {
-    $all = products($store);
-    respond($store, $store['copy']['tagline'], view('home', [
-        'store'    => $store,
-        'featured' => array_slice($all, 0, 3),
-        'stock'    => stock_map($store['id']),
-    ]));
-}
-
-if ($path === '/shop') {
     $items = products($store);
     if ($kind = $_GET['kind'] ?? null) {
         $items = array_values(array_filter($items, fn($p) => ($p['kind'] ?? '') === $kind));
     }
-    respond($store, $store['copy']['catalog_title'], view('shop', [
+    respond($store, $store['copy']['tagline'], view('home', [
         'store' => $store,
         'items' => $items,
         'stock' => stock_map($store['id']),
     ]));
+}
+
+// The catalogue is the home page -- at this size a separate /shop listed the
+// same handful of products under a different heading. Kept as a redirect
+// because the old storefront had this URL and things link to it.
+if ($path === '/shop') {
+    $q = $_SERVER['QUERY_STRING'] ?? '';
+    redirect('/' . ($q !== '' ? '?' . $q : ''), 301);
 }
 
 if (preg_match('#^/shop/([A-Za-z0-9._-]+)$#', $path, $m)) {

@@ -45,9 +45,9 @@ return [
     ],
 
     'nav' => [
-        ['label' => 'Shop',             'href' => '/shop'],
-        ['label' => 'Devices',          'href' => '/shop?kind=device'],
-        ['label' => 'Accessories',      'href' => '/shop?kind=accessory'],
+        ['label' => 'Shop',             'href' => '/'],
+        ['label' => 'Devices',          'href' => '/?kind=device'],
+        ['label' => 'Accessories',      'href' => '/?kind=accessory'],
         ['label' => 'webosarchive.org', 'href' => 'https://www.webosarchive.org'],
     ],
 

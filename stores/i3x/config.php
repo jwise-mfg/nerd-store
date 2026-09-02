@@ -50,7 +50,7 @@ return [
 
     'nav' => [
         ['label' => 'i3x.dev', 'href' => 'https://www.i3x.dev'],
-        ['label' => 'Shop',    'href' => '/shop'],
+        
     ],
 
     'copy' => [
