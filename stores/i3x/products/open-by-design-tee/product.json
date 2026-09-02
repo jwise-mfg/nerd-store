@@ -16,7 +16,7 @@
         {
             "sku": "I3X-TEE-NA-S",
             "title": "Navy / S",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "S",
                 "color": "Navy"
@@ -26,7 +26,7 @@
         {
             "sku": "I3X-TEE-WH-S",
             "title": "White / S",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "S",
                 "color": "White"
@@ -36,7 +36,7 @@
         {
             "sku": "I3X-TEE-NA-M",
             "title": "Navy / M",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "M",
                 "color": "Navy"
@@ -46,7 +46,7 @@
         {
             "sku": "I3X-TEE-WH-M",
             "title": "White / M",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "M",
                 "color": "White"
@@ -56,7 +56,7 @@
         {
             "sku": "I3X-TEE-NA-L",
             "title": "Navy / L",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "L",
                 "color": "Navy"
@@ -66,7 +66,7 @@
         {
             "sku": "I3X-TEE-WH-L",
             "title": "White / L",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "L",
                 "color": "White"
@@ -76,7 +76,7 @@
         {
             "sku": "I3X-TEE-NA-XL",
             "title": "Navy / XL",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "XL",
                 "color": "Navy"
@@ -86,7 +86,7 @@
         {
             "sku": "I3X-TEE-WH-XL",
             "title": "White / XL",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "XL",
                 "color": "White"
@@ -96,7 +96,7 @@
         {
             "sku": "I3X-TEE-NA-2XL",
             "title": "Navy / 2XL",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "2XL",
                 "color": "Navy"
@@ -106,7 +106,7 @@
         {
             "sku": "I3X-TEE-WH-2XL",
             "title": "White / 2XL",
-            "price": "28.00",
+            "price": "21.00",
             "attributes": {
                 "size": "2XL",
                 "color": "White"
