@@ -72,46 +72,6 @@ crontab -e
 only once per context, so keeping it in both site files makes `nginx -t` fail
 with "directive is duplicate" as soon as the second shop is enabled.
 
-## Cutting over from the Astro deployment
-
-Only once, on a box already running the old version. Nothing here is
-reversible by accident, but the order matters: the old nginx files and the new
-ones cannot both be enabled, because each declares `real_ip_header`.
-
-```bash
-# 1. Everything in "Provision once" above, through step 4. The old site keeps
-#    serving throughout — it runs from dist-*/ which is not in git.
-
-# 2. Prove the new one runs before touching nginx.
-bin/store check
-php -S 127.0.0.1:8080 -t stores/i3x/public &
-curl -sI http://127.0.0.1:8080/ | head -1        # expect 200
-kill %1
-
-# 3. Stop the old application.
-sudo systemctl disable --now shop-i3x shop-webos
-sudo systemctl disable --now nerd-store-sweep.timer nerd-store-backup.timer
-
-# 4. Swap nginx in one go, then test BEFORE reloading. A failed test leaves
-#    the running config alone, so the other sites on this box are never at
-#    risk from a reload that was never issued.
-sudo rm -f /etc/nginx/sites-enabled/shop.i3x.dev* \
-           /etc/nginx/sites-enabled/shop.webosarchive.org*
-sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/cloudflare-real-ip.conf /etc/nginx/conf.d/
-sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/shop.i3x.dev.conf          /etc/nginx/sites-enabled/
-sudo ln -sf /home/cesmii/repos/nerd-store/deploy/nginx/shop.webosarchive.org.conf /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-**Rolling back.** The old builds are still on disk in
-`apps/storefront/dist-*/`, untouched by the pull because they were never in
-git. Put the old nginx files back in `sites-enabled`, remove
-`conf.d/cloudflare-real-ip.conf`, `nginx -t`, reload, and
-`sudo systemctl enable --now shop-i3x shop-webos`.
-
-The old `data/i3x.db` and `data/webos.db` are not touched by any of this — the
-new code uses `data/store.sqlite` — so the two test orders survive either way.
-
 ## Deploy a change
 
 ```bash
