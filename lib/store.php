@@ -29,6 +29,30 @@ function store_load(string $id): array
     return ['id' => $id, 'dir' => $dir] + require $dir . '/config.php';
 }
 
+/**
+ * Is this shop refusing orders?
+ *
+ * Two ways, for two different jobs.
+ *
+ * `store_open => false` in the store's config is the declarative one: it is
+ * in git, so it is reviewed and deployed like any other change. Right for
+ * "we are shut until the new stock lands".
+ *
+ * A file in the data directory is the operational one, and the right answer
+ * for the ten minutes you are moving a database around. data/closed shuts
+ * both shops, data/closed-<id> shuts one. It is untracked, so flipping it on
+ * the server leaves the working tree clean and the next `git pull` alone --
+ * which editing a tracked config file does not.
+ */
+function store_closed(array $store): bool
+{
+    if (!($store['store_open'] ?? true)) {
+        return true;
+    }
+    return is_file(data_dir() . '/closed')
+        || is_file(data_dir() . '/closed-' . $store['id']);
+}
+
 /** The shipping rate with this code, or null. */
 function shipping_rate(array $store, string $code): ?array
 {

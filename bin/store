@@ -211,6 +211,45 @@ case 'stripe':
     echo "Stripe is ready.\n";
     break;
 
+case 'close':
+case 'open':
+    // No argument closes every shop; naming one closes only that shop.
+    $which = $pos[0] ?? null;
+    if ($which !== null && !in_array($which, store_ids(), true)) {
+        fail("unknown store: $which");
+    }
+    $file = data_dir() . '/closed' . ($which !== null ? '-' . $which : '');
+
+    if ($cmd === 'close') {
+        file_put_contents($file, "closed by bin/store at " . date('c') . "\n");
+        @chmod($file, 0o664);
+    } elseif ($which !== null) {
+        @unlink($file);
+    } else {
+        // No argument means every shop, so clear the per-shop files too --
+        // otherwise `open` after `close i3x` would leave i3x shut.
+        @unlink($file);
+        foreach (store_ids() as $sid) {
+            @unlink(data_dir() . '/closed-' . $sid);
+        }
+    }
+
+    foreach (store_ids() as $sid) {
+        $store = store_load($sid);
+        printf("  %-6s %s\n", $sid, store_closed($store)
+            ? 'CLOSED — new orders refused, existing order pages still work'
+            : 'open');
+    }
+    if ($cmd === 'open') {
+        foreach (store_ids() as $sid) {
+            if (!(store_load($sid)['store_open'] ?? true)) {
+                echo "\n  Note: $sid is still shut by 'store_open' => false in"
+                   . " stores/$sid/config.php, which this does not touch.\n";
+            }
+        }
+    }
+    break;
+
 case 'check':
     $bad = 0;
     foreach (store_ids() as $sid) {
@@ -276,6 +315,8 @@ default:
       stock  [SKU [N | +N | -N]]
       check
       stripe
+      close  [i3x|webos]      refuse new orders (all shops, or one)
+      open   [i3x|webos]      resume
 
     TXT;
     exit($cmd === 'help' ? 0 : 1);

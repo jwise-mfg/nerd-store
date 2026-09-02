@@ -40,7 +40,7 @@ cart_start($store);
 // A closed shop still shows order status and policies -- someone who has
 // already paid should not hit a maintenance notice looking for their order.
 $exempt = str_starts_with($path, '/order/') || str_starts_with($path, '/policies/');
-if (!$store['store_open'] && !$exempt) {
+if (store_closed($store) && !$exempt) {
     header('Retry-After: 3600');
     respond($store, 'Closed for maintenance', view('closed', ['store' => $store]), 503);
 }

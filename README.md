@@ -88,7 +88,8 @@ bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
 |---|---|
 | Stock | `bin/store stock` — takes effect immediately |
 | Title, price, description, images, status | edit `product.json` — immediately |
-| Colours, copy, `title_tagline`, shipping rates, `store_open` | edit `stores/<id>/config.php` — immediately |
+| Colours, copy, `title_tagline`, shipping rates | edit `stores/<id>/config.php` — immediately |
+| Close a shop for maintenance | `bin/store close` — immediately |
 | Stripe or mail keys in `config.php` | edit — immediately |
 | Code | `git pull` |
 

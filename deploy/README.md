@@ -168,6 +168,22 @@ gunzip -c ~/backups/nerd-store/store-<stamp>.db.gz > ~/repos/nerd-store/data/sto
 
 ## Closing a shop
 
-Set `'store_open' => false` in `stores/<id>/config.php`. It takes effect on the
-next request, applies to that shop alone, and leaves order pages and policies
-reachable so anyone who has already paid can still find their order.
+```bash
+bin/store close            # both shops
+bin/store close i3x        # one
+bin/store open             # resume
+```
+
+Immediate, no restart. Order pages and policies stay reachable, so anyone who
+has already paid can still find their order; the catalogue, cart and checkout
+return 503.
+
+This writes a file in `data/`, which is not in git, so it leaves the working
+tree clean and the next `git pull` alone. Use it for operational closures --
+moving the database, taking a backup, anything where an order arriving
+mid-operation would be awkward.
+
+For a closure that should be reviewed and deployed like any other change --
+shut for the season, say -- set `'store_open' => false` in
+`stores/<id>/config.php` instead. `bin/store open` deliberately does not
+override that, and says so if it finds one.
