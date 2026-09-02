@@ -55,8 +55,8 @@ return [
 
     'copy' => [
         'tagline'               => 'Open by design.',
-        'hero_title'            => 'Wear the standard.',
-        'hero_body'             => 'Swag for Industrial Information Interoperability eXchange. Show off the standard - i3X is for everyone!',
+        'hero_title'            => 'Is your swag conformant?',
+        'hero_body'             => 'Swag for Industrial Information Interoperability eXchange - i3X is for everyone!',
         'hero_cta'              => 'Browse the shop',
         'catalog_title'         => 'Everything in the shop',
         'catalog_empty'         => 'Nothing here just yet — new items are on the way.',
@@ -66,7 +66,7 @@ return [
         'shipping_restriction'  => 'We ship within the United States only.',
         'checkout_reassurance'  => 'Payment is processed securely. Your card statement will show "I3X STORE".',
         'order_confirmed_title' => 'Order confirmed — thank you.',
-        'order_confirmed_body'  => 'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within 7-10 business days.',
+        'order_confirmed_body'  => 'We’ll email tracking as soon as your order ships. Orders are packed by hand, usually within 10-15 business days.',
         'sold_out'              => 'Sold out',
         'last_one'              => 'Only one left',
         'footer_blurb'          => 'The i3X Store is not affliated with CESMII, UCLA or the Department of Energy. Items are sold near-cost, and as-is.',
