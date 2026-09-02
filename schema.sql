@@ -45,15 +45,6 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id);
 
--- Stock is the one mutable thing about a product, so it lives here rather
--- than in the tracked product.json files -- the server writing to a tracked
--- file is what makes the next `git pull` refuse to fast-forward.
-CREATE TABLE IF NOT EXISTS stock (
-  sku     TEXT PRIMARY KEY,
-  store   TEXT    NOT NULL,
-  on_hand INTEGER NOT NULL DEFAULT 0
-);
-
 -- Stripe delivers at least once. This makes it exactly once.
 CREATE TABLE IF NOT EXISTS webhook_events (
   id          TEXT PRIMARY KEY,

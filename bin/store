@@ -137,22 +137,20 @@ case 'stock':
         break;
     }
     $sku = $pos[0];
-    $owner = null;
+    $known = false;
     foreach (store_ids() as $sid) {
-        if (isset(sku_index(store_load($sid), true)[$sku])) {
-            $owner = $sid;
-        }
+        $known = $known || isset(sku_index(store_load($sid), true)[$sku]);
     }
-    $owner ?? fail("no product file declares SKU $sku");
+    $known || fail("no product file declares SKU $sku");
     if (!isset($pos[1])) {
         echo stock_of($sku) . "\n";
         break;
     }
     $arg = $pos[1];
     if (str_starts_with($arg, '+') || str_starts_with($arg, '-')) {
-        stock_adjust($sku, $owner, (int) $arg);
+        stock_adjust($sku, (int) $arg);
     } else {
-        stock_set($sku, $owner, (int) $arg);
+        stock_set($sku, (int) $arg);
     }
     echo "$sku now " . stock_of($sku) . "\n";
     break;
@@ -252,9 +250,9 @@ case 'open':
 
 case 'check':
     $bad = 0;
+    $seen = [];   // across every shop: one flat stock file, one SKU namespace
     foreach (store_ids() as $sid) {
         $store = store_load($sid);
-        $seen = [];
         foreach (products($store, true) as $p) {
             $where = "$sid/{$p['slug']}";
             if (($p['status'] ?? 'active') !== 'active') {

@@ -159,12 +159,24 @@ tail -f /var/log/nginx/shop.i3x.dev.error.log   # nginx's, e.g. a bad try_files
 sqlite3 data/store.sqlite 'select * from orders order by id desc limit 5'
 ```
 
-**Restore:** stop nothing. Copy the backup over the file and the next request
-picks it up.
+**Restore:** stop nothing. Copy the backup over and the next request picks it
+up. There are two files -- orders in the database, inventory in the JSON --
+and they are backed up as a matching pair each night.
 
 ```bash
-gunzip -c ~/backups/nerd-store/store-<stamp>.db.gz > ~/repos/nerd-store/data/store.sqlite
+cd ~/repos/nerd-store
+bin/store close                 # so nothing lands mid-restore
+rm -f data/store.sqlite-wal data/store.sqlite-shm
+gunzip -c ~/backups/nerd-store/store-<stamp>.db.gz  > data/store.sqlite
+gunzip -c ~/backups/nerd-store/stock-<stamp>.json.gz > data/stock.json
+sudo chown cesmii:www-data data/store.sqlite data/stock.json
+chmod 664 data/store.sqlite data/stock.json
+bin/store open
 ```
+
+Restoring only one of the pair is legitimate -- inventory without touching
+orders is `data/stock.json` alone -- but they will disagree about what has
+been sold until you reconcile.
 
 ## Closing a shop
 

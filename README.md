@@ -59,8 +59,10 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
 }
 ```
 
-**Stock is not in this file** — it is in the database, because the server
-writes it on every sale and this file is in git. Use `bin/store stock`.
+**Stock is not in this file** — it is in `data/stock.json`, a flat
+`{"SKU": count}` map, because the server writes it on every sale and this file
+is in git. Use `bin/store stock`, or edit it directly; it is sorted one SKU to
+a line so two copies diff and merge as text.
 
 A product with no variants never appears. The first image is what the shop
 grid shows.
@@ -71,7 +73,7 @@ grid shows.
 bin/store check                     # validate every product file
 bin/store stripe                    # keys work and a checkout session builds
 bin/store stock                     # every SKU and its count
-bin/store stock I3X-BOOK-HC 250     # set
+bin/store stock I3X-BOOK-HC 250     # set (or edit data/stock.json)
 bin/store stock I3X-BOOK-HC +50     # or adjust: +50 / -10
 
 bin/store orders                    # recent
