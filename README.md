@@ -75,14 +75,22 @@ bin/store stripe                    # keys work and a checkout session builds
 bin/store stock                     # every SKU and its count
 bin/store stock I3X-BOOK-HC 250     # set (or edit data/stock.json)
 bin/store stock I3X-BOOK-HC +50     # or adjust: +50 / -10
+bin/store stock --prune             # drop counts no product file declares
 
 bin/store orders                    # recent
 bin/store orders --status paid      # awaiting shipment
 bin/store order I3X-4KHTP4          # full detail including address
 bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
+
+bin/store close                     # refuse new orders, both shops
+bin/store close webos               # one shop
+bin/store open                      # resume
 ```
 
 `ship` emails the buyer their tracking link. `--no-email` suppresses it.
+
+Day-to-day commands, server permissions, logs, backup and restore are all in
+[`cheatsheet.md`](cheatsheet.md).
 
 ## What needs what
 
@@ -120,7 +128,9 @@ stripe listen --forward-to localhost:8000/webhook/stripe
 1. `POST /checkout` builds a Stripe Checkout Session from the cart and writes
    the order as `pending`.
 2. The buyer is redirected to Stripe, which takes the card, the email and the
-   shipping address, and sends the receipt.
+   shipping address, and sends the receipt. Checkout accepts cards only
+   (including Apple Pay and Google Pay), set per session, so the Stripe
+   account's own payment-method list is untouched.
 3. `checkout.session.completed` arrives at `/webhook/stripe`. The order becomes
    `paid`, stock comes off, and you get an email.
 4. `bin/store ship` marks it `shipped` and sends the tracking link.
