@@ -1,6 +1,6 @@
 # nerd-store
 
-Simple, multi-front-end ecommerce. No build step, or app server, transactions through Stripe.
+Simple, multi-front-end ecommerce. No build step or app server, transactions through Stripe.
 
 ```
 stores/i3x/
@@ -29,7 +29,7 @@ in step with the vhosts.
 ## Products are files
 
 ```
-stores/i3x/products/how-machines-talk/
+stores/shop1/products/my-first-product/
   product.json     title, description, variants, prices
   cover.png        images live beside it, referenced by filename
 ```
@@ -53,7 +53,7 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
                                // Otherwise the first image. LinkedIn ignores
                                // anything over 5 MB; 1200px JPEG is plenty.
   "variants": [
-    { "sku": "I3X-BOOK-HC", "title": "Hardcover", "price": "24.00" }
+    { "sku": "MY-BOOK-SKU", "title": "Hardcover", "price": "24.00" }
   ]
 }
 ```
@@ -72,14 +72,14 @@ grid shows.
 bin/store check                     # validate every product file
 bin/store stripe                    # keys work and a checkout session builds
 bin/store stock                     # every SKU and its count
-bin/store stock I3X-BOOK-HC 250     # set (or edit data/stock.json)
-bin/store stock I3X-BOOK-HC +50     # or adjust: +50 / -10
+bin/store stock MY-BOOK-SKU 250     # set (or edit data/stock.json)
+bin/store stock MY-BOOK-SKU +50     # or adjust: +50 / -10
 bin/store stock --prune             # drop counts no product file declares
 
 bin/store orders                    # recent
 bin/store orders --status paid      # awaiting shipment
-bin/store order I3X-4KHTP4          # full detail including address
-bin/store ship I3X-4KHTP4 --carrier USPS --tracking 9400...
+bin/store order MS1-4KHTP4          # full detail including address
+bin/store ship MS1-4KHTP4 --carrier USPS --tracking 9400...
 
 bin/store close                     # refuse new orders, both shops
 bin/store close webos               # one shop
