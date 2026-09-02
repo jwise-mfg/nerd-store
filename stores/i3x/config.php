@@ -61,7 +61,7 @@ return [
     'copy' => [
         'tagline'               => 'Open by design',
         'hero_title'            => 'Is your swag conformant?',
-        'hero_body'             => 'Swag for Industrial Information Interoperability eXchange - i3X is for everyone!',
+        'hero_body'             => 'Industrial Information Interoperability eXchange - i3X merch is for everyone!',
         'hero_cta'              => 'Browse the shop',
         'catalog_title'         => 'Everything in the shop',
         'catalog_empty'         => 'Nothing here just yet — new items are on the way.',
