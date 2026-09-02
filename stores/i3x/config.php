@@ -54,7 +54,7 @@ return [
     ],
 
     'copy' => [
-        'tagline'               => 'Open by design.',
+        'tagline'               => 'Open by design',
         'hero_title'            => 'Is your swag conformant?',
         'hero_body'             => 'Swag for Industrial Information Interoperability eXchange - i3X is for everyone!',
         'hero_cta'              => 'Browse the shop',

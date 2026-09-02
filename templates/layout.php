@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($title) ?> · <?= e($store['name']) ?></title>
+<title><?= e($store['name']) ?> · <?= e($title) ?></title>
 <?php if ($f = $store['brand']['favicon'] ?? null): ?>
 <link rel="icon" href="<?= e($f) ?>">
 <?php endif; ?>
