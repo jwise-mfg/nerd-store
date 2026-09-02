@@ -37,7 +37,9 @@ fi
 # been edited on the server since the last push. One tarball, paths relative
 # to the repo root, so it unpacks straight back into place.
 CONF="$DEST/config-$stamp.tar.gz"
-tar -czf "$CONF" -C "$APP_DIR" config.php stores/*/config.php
+files=(config.php)
+for f in "$APP_DIR"/stores/*/config.php; do files+=("${f#"$APP_DIR"/}"); done
+tar -czf "$CONF" -C "$APP_DIR" "${files[@]}"
 chmod 600 "$CONF"
 
 # Keep the most recent $KEEP of each, drop the rest.
