@@ -26,6 +26,29 @@ no aliases and PHP never sees a request for one. Which shop a request belongs
 to is decided by which root it arrived in, so there is no hostname map to keep
 in step with the vhosts.
 
+## The front end runs on a 2011 TouchPad
+
+The webOS shop's customers shop from the device it sells. Its browser is
+WebKit 534 (webOS 3.0, 2011): no CSS custom properties, no grid, no flexbox
+`gap`, no `clamp()`, no `aspect-ratio`, no `object-fit`, no `@supports`,
+and a DOM without `classList`, `dataset`, `element.hidden` or `KeyboardEvent.key`.
+Both shops are built to that baseline, on purpose:
+
+- `assets/base.css` is structure only -- floats, a table for the masthead,
+  media queries -- and carries no colour. Every colour, font and radius is
+  a plain value in the shop's own `style.css`, with the palette listed in a
+  comment at the top. There are no `--tokens` to reach for; search and replace.
+- Prefix `transition`, `transform` and `box-shadow` with `-webkit-` as well.
+- JavaScript is ES5 against the 2010 DOM: `var`, `function`, `getAttribute`,
+  `className` string handling, `e.keyCode`. The only script is the product
+  gallery in `templates/product.php`; keep it that way.
+- Anything newer must degrade to nothing rather than to a broken page -- a
+  second declaration after the fallback is fine, a feature the layout depends
+  on is not.
+
+Check a change at 1024x768 and 768x1024. Nothing here can run that WebKit, so
+the real test is the device.
+
 ## Products are files
 
 ```
