@@ -40,9 +40,11 @@ return [
     // Used hardware: grade, serial and condition notes belong on the page.
     'show_condition_detail' => true,
 
-    // No brand assets exist yet; the layout falls back to the store name.
+    // The main site's logo, copied into brand/ so the shop serves it itself.
     'brand' => [
-        'wordmark'         => null,
+        'wordmark'         => '/brand/webOSLogo.png',
+        'wordmark_alt'     => 'webOS Archive',
+        'wordmark_height'  => '32px',
         'favicon'          => null,
         'apple_touch_icon' => null,
         'social_image'     => null,
@@ -54,16 +56,16 @@ return [
     ],
 
     'nav' => [
-        ['label' => 'Shop',             'href' => '/'],
-        ['label' => 'Devices',          'href' => '/?kind=device'],
-        ['label' => 'Accessories',      'href' => '/?kind=accessory'],
-        ['label' => 'webosarchive.org', 'href' => 'https://www.webosarchive.org'],
+        ['label' => 'Home',        'href' => 'https://www.webosarchive.org'],
+        ['label' => 'Shop',        'href' => '/'],
+        ['label' => 'Devices',     'href' => '/?kind=device'],
+        ['label' => 'Accessories', 'href' => '/?kind=accessory'],
     ],
 
     'copy' => [
         'tagline'               => 'Keeping webOS alive.',
         'hero_title'            => 'New old stock, still sealed.',
-        'hero_body'             => 'webOS chargers, cases and cables that never left the warehouse — plus tested, graded TouchPads, phones for people still running the best mobile OS nobody bought.',
+        'hero_body'             => 'webOS chargers, cases and cables that never left the warehouse — plus tested, graded TouchPads and Phones for people still running the mobile OS everyone copied...',
         'hero_cta'              => 'See what’s in stock',
         'catalog_title'         => 'In stock now',
         'catalog_empty'         => 'Everything’s spoken for right now. Check back — stock moves in batches.',

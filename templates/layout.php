@@ -57,8 +57,14 @@
     <?php endif; ?>
   </a>
   <nav>
+    <?php
+      // The item whose href is exactly this request -- "/" or "/?kind=device" --
+      // is marked current so the stylesheet can colour it. External links
+      // never match.
+      $here = $_SERVER['REQUEST_URI'] ?? '/';
+    ?>
     <?php foreach ($store['nav'] as $item): ?>
-      <a href="<?= e($item['href']) ?>"><?= e($item['label']) ?></a>
+      <a href="<?= e($item['href']) ?>"<?= $item['href'] === $here ? ' aria-current="page"' : '' ?>><?= e($item['label']) ?></a>
     <?php endforeach; ?>
     <a class="cart-link" href="/cart">Cart<?php if ($n = cart_count()): ?> <span class="pill"><?= $n ?></span><?php endif; ?></a>
   </nav>

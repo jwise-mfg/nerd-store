@@ -36,6 +36,7 @@ img { max-width: 100%; height: auto; display: block; }
 .masthead nav { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; }
 .masthead nav a { text-decoration: none; font-size: .95rem; }
 .masthead nav a:hover { color: var(--c-accent); }
+.masthead nav a[aria-current="page"] { color: var(--c-accent); }
 .pill {
   background: var(--c-accent); color: var(--c-accent-ink);
   border-radius: var(--r-pill); padding: .05em .5em; font-size: .8rem;
@@ -65,6 +66,9 @@ button.link {
 }
 
 /* --- catalogue ----------------------------------------------------------- */
+#catalogue h2 .all { font-weight: 400; margin-left: .75em; text-decoration: none; }
+#catalogue h2 .all::before { content: "← "; }
+#catalogue h2 .all:hover { color: var(--c-accent); }
 .grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .product-card {
   display: block; text-decoration: none;

@@ -49,13 +49,24 @@ if (store_closed($store) && !$exempt) {
 
 if ($path === '/') {
     $items = products($store);
+    $category = null;
     if ($kind = $_GET['kind'] ?? null) {
         $items = array_values(array_filter($items, fn($p) => ($p['kind'] ?? '') === $kind));
+        // Heading for the filtered page: the nav item that links here, so the
+        // menu and the page say the same word. A kind with no nav entry falls
+        // back to the kind itself, capitalised.
+        $category = ucfirst($kind);
+        foreach ($store['nav'] as $item) {
+            if ($item['href'] === ($_SERVER['REQUEST_URI'] ?? '')) {
+                $category = $item['label'];
+            }
+        }
     }
-    respond($store, $store['title_tagline'] ?? $store['copy']['tagline'], view('home', [
-        'store' => $store,
-        'items' => $items,
-        'stock' => stock_map($store['id']),
+    respond($store, $category ?? $store['title_tagline'] ?? $store['copy']['tagline'], view('home', [
+        'store'    => $store,
+        'items'    => $items,
+        'stock'    => stock_map($store['id']),
+        'category' => $category,
     ]), 200, [
         'title' => $store['name'] . ' — ' . ($store['title_tagline'] ?? $store['copy']['tagline']),
         'url'   => $store['origin'] . '/',

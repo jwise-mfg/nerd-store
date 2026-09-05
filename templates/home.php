@@ -5,7 +5,11 @@
 </section>
 
 <section class="wrap" id="catalogue">
-  <h2><?= e($store['copy']['catalog_title']) ?></h2>
+  <?php if ($category): ?>
+    <h2><?= e($category) ?> <a class="fine all" href="/">All products</a></h2>
+  <?php else: ?>
+    <h2><?= e($store['copy']['catalog_title']) ?></h2>
+  <?php endif; ?>
   <?php if (!$items): ?>
     <p class="empty"><?= e($store['copy']['catalog_empty']) ?></p>
   <?php else: ?>
