@@ -14,8 +14,12 @@
     ],
     "images": [
         {
-            "file": "../images/TP-16A-Front.jpg",
-            "alt": "HP TouchPad"
+            "file": "../images/TP-Box-Front.jpg",
+            "alt": "HP TouchPad Box"
+        },
+        {
+            "file": "../images/TP-Box-Back.jpg",
+            "alt": "TouchPad A-Condition Box Back"
         }
     ],
     "variants": [
@@ -34,14 +38,6 @@
                 {
                     "file": "../images/TP-16A-Back.jpg",
                     "alt": "TouchPad 16GB A-Condition Back"
-                },
-                {
-                    "file": "../images/TP-Box-Front.jpg",
-                    "alt": "TouchPad A-Condition Box Front"
-                },
-                {
-                    "file": "../images/TP-Box-Back.jpg",
-                    "alt": "TouchPad A-Condition Box Back"
                 }
             ]
         },
