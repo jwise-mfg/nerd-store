@@ -20,7 +20,7 @@ return [
     // Shut until the listings carry photographs of the actual units and
     // data/stock.json has counts for the current SKUs. Order pages and
     // policies stay reachable; the catalogue, cart and checkout return 503.
-    'store_open'       => false,
+    'store_open'       => true,
 
     'support_email'    => 'shop@webosarchive.org',
     'mail_from'        => 'webOS Archive Shop <shop@webosarchive.org>',
