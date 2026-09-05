@@ -60,11 +60,12 @@
     <?php
       // The item whose href is exactly this request -- "/" or "/?kind=device" --
       // is marked current so the stylesheet can colour it. External links
-      // never match.
+      // never match. Links into this shop are .section, so a narrow screen
+      // can drop them and keep only the logo, the parent site and the cart.
       $here = $_SERVER['REQUEST_URI'] ?? '/';
     ?>
     <?php foreach ($store['nav'] as $item): ?>
-      <a href="<?= e($item['href']) ?>"<?= $item['href'] === $here ? ' aria-current="page"' : '' ?>><?= e($item['label']) ?></a>
+      <a href="<?= e($item['href']) ?>"<?= $item['href'][0] === '/' ? ' class="section"' : '' ?><?= $item['href'] === $here ? ' aria-current="page"' : '' ?>><?= e($item['label']) ?></a>
     <?php endforeach; ?>
     <a class="cart-link" href="/cart">Cart<?php if ($n = cart_count()): ?> <span class="pill"><?= $n ?></span><?php endif; ?></a>
   </nav>

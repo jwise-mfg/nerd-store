@@ -29,11 +29,15 @@ img { max-width: 100%; height: auto; display: block; }
 .masthead { display: table; width: 100%; padding: 1rem 1.25rem; }
 .masthead .brand, .masthead nav { display: table-cell; vertical-align: middle; }
 .masthead .brand { text-decoration: none; white-space: nowrap; }
-.masthead .brand img { display: inline-block; vertical-align: middle; }
+.masthead .brand img { display: inline-block; vertical-align: middle; max-width: none; }  /* keep its shape when the cell is squeezed */
 .masthead .wordmark { font-weight: 700; font-size: 1.25rem; }
 .masthead nav { text-align: right; }
 .masthead nav a { display: inline-block; text-decoration: none; font-size: .95rem; margin-left: 1.25rem; }
 .pill { display: inline-block; padding: .05em .5em; font-size: .8rem; line-height: 1.4; }
+/* Portrait phone: just the logo, the parent site and the cart. */
+@media (max-width: 700px) {
+  .masthead nav .section { display: none; }
+}
 
 /* --- hero ---------------------------------------------------------------- */
 .hero { max-width: 1040px; margin: 0 auto; padding: 4rem 1.25rem 2rem; }
