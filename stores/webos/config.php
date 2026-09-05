@@ -42,7 +42,7 @@ return [
 
     // The main site's logo, copied into brand/ so the shop serves it itself.
     'brand' => [
-        'wordmark'         => '/brand/webOSLogo.png',
+        'wordmark'         => '/brand/wosa-wide.png',
         'wordmark_alt'     => 'webOS Archive',
         'wordmark_height'  => '32px',
         'favicon'          => null,
