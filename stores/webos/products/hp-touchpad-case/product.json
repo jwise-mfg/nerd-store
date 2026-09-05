@@ -8,11 +8,11 @@
     "description": "The original HP folio, which doubles as a stand at two angles. Unused, still bagged.",
     "images": [
         {
-            "file": "images/Case-Front.jpg",
+            "file": "../images/Case-Front.jpg",
             "alt": "TouchPad Folio Front"
         },
         {
-            "file": "images/Case-Back.jpg",
+            "file": "../images/Case-Back.jpg",
             "alt": "TouchPad Folio Back"
         }
     ],

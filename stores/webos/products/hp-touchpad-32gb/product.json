@@ -14,7 +14,7 @@
     ],
     "images": [
         {
-            "file": "images/TP-32A-Front.jpg",
+            "file": "../images/TP-32A-Front.jpg",
             "alt": "HP TouchPad"
         }
     ],
@@ -28,19 +28,19 @@
             "conditionNotes": "No significant cosmetic defects: screen free of noticeable scratches, may have hairlines cracks near speakers. Healthy battery, fully functional",
             "images": [
                 {
-                    "file": "images/TP-32A-Front.jpg",
+                    "file": "../images/TP-32A-Front.jpg",
                     "alt": "TouchPad 32GB A-Condition Front"
                 },
                 {
-                    "file": "images/TP-32A-Back.jpg",
+                    "file": "../images/TP-32A-Back.jpg",
                     "alt": "TouchPad 32GB A-Condition Back"
                 },
                 {
-                    "file": "images/TP-Box-Front.jpg",
+                    "file": "../images/TP-Box-Front.jpg",
                     "alt": "TouchPad A-Condition Box Front"
                 },
                 {
-                    "file": "images/TP-Box-Back.jpg",
+                    "file": "../images/TP-Box-Back.jpg",
                     "alt": "TouchPad A-Condition Box Back"
                 }
             ]

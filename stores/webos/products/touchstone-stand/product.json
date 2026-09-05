@@ -13,11 +13,11 @@
     ],
     "images": [
         {
-            "file": "images/Touchstone-Front.jpg",
+            "file": "../images/Touchstone-Front.jpg",
             "alt": "Touchstone Charging Stand - Front"
         },
         {
-            "file": "images/Touchstone-Back.jpg",
+            "file": "../images/Touchstone-Back.jpg",
             "alt": "Touchstone Charging Stand - Back"
         }
     ],

@@ -9,7 +9,7 @@
     ],
     "images": [
         {
-            "file": "images/Stickers.jpg",
+            "file": "../images/Stickers.jpg",
             "alt": "Palm webOS Stickers"
         }
     ],
