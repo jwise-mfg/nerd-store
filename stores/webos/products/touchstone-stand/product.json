@@ -1,0 +1,29 @@
+{
+    "title": "Touchstone Charging Stand",
+    "subtitle": "Sealed new old stock — HP original",
+    "kind": "accessory",
+    "status": "active",
+    "position": 1,
+    "description": [
+        "The inductive stand that made every other phone charger feel like work.",
+        "Still sealed in HP retail packaging. Includes the dock and the original",
+        "microUSB power supply.",
+        "",
+        "Fits TouchPad WiFi, TouchPad 4G and TouchPad Go."
+    ],
+    "images": [
+        {
+            "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Touchstone%20Dock",
+            "alt": "Touchstone Dock"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "WOA-TS-TP-NOS",
+            "title": "New old stock, sealed",
+            "price": "25.00",
+            "condition": "new_old_stock",
+            "conditionNotes": "Factory sealed. Outer carton shows shelf wear consistent with storage since 2011."
+        }
+    ]
+}

@@ -22,28 +22,36 @@
         {
             "sku": "WOA-TP16-A",
             "title": "Grade A — 16GB",
-            "price": "185.00",
+            "price": "65.00",
             "condition": "grade_a",
             "serial": "TP16-A",
-            "conditionNotes": "Screen free of scratches. Battery holds 91% of design capacity.",
+            "conditionNotes": "No significant cosmetic defects: screen free of noticeable scratches, may have hairlines cracks near speakers. Healthy battery, fully functional",
             "images": [
                 {
-                    "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%200417%20front",
-                    "alt": "TouchPad 0417 front"
+                    "file": "images/TP-16A-Front.jpg",
+                    "alt": "TouchPad 16GB A-Condition Front"
                 },
                 {
-                    "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%200417%20back",
-                    "alt": "TouchPad 0417 back"
+                    "file": "images/TP-16A-Back.jpg",
+                    "alt": "TouchPad 16GB A-Condition Back"
+                },
+                {
+                    "file": "images/TP-Box-Front.jpg",
+                    "alt": "TouchPad A-Condition Box Front"
+                },
+                {
+                    "file": "images/TP-Box-Back.jpg",
+                    "alt": "TouchPad A-Condition Box Back"
                 }
             ]
         },
         {
             "sku": "WOA-TP16-B",
             "title": "Grade B — 16GB",
-            "price": "135.00",
+            "price": "50.00",
             "condition": "grade_b",
             "serial": "TP16-B",
-            "conditionNotes": "Two hairline scratches on the bezel, none on the display. Battery at 78%.",
+            "conditionNotes": "May have scuffs on back or light scratches on screen, will have cracks near speakers. Safe and usable battery, fully functional",
             "images": [
                 {
                     "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%200912%20front",
