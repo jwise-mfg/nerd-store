@@ -20,7 +20,7 @@
         }
     ],
     "shippingCents": {
-        "us_standard": 400,
-        "us_priority": 800
+        "us_standard": 300,
+        "us_priority": 500
     }
 }
