@@ -307,6 +307,9 @@ case 'check':
                 $bad++;
             }
             $files = array_column($p['images'] ?? [], 'file');
+            foreach ($p['variants'] ?? [] as $v) {
+                array_push($files, ...array_column($v['images'] ?? [], 'file'));
+            }
             if (!empty($p['socialImage'])) {
                 $files[] = $p['socialImage'];
             }

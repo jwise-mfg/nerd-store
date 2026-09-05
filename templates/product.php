@@ -1,8 +1,18 @@
 <section class="wrap product">
   <div class="gallery">
+    <?php
+      // The product's own images are the gallery. A variant that carries its
+      // own `images` shows those INSTEAD when it is selected -- a Grade B unit
+      // photographed as a Grade B unit. They all render, so a page without
+      // JavaScript shows everything; the script below hides what is not
+      // relevant to the chosen option.
+    ?>
     <?php foreach (($p['images'] ?? []) as $img): ?>
       <img src="<?= e(image_url($p['slug'], $img['file'])) ?>" alt="<?= e($img['alt'] ?? '') ?>">
     <?php endforeach; ?>
+    <?php foreach ($p['variants'] as $v): foreach ($v['images'] ?? [] as $img): ?>
+      <img src="<?= e(image_url($p['slug'], $img['file'])) ?>" alt="<?= e($img['alt'] ?? '') ?>" data-sku="<?= e($v['sku']) ?>" loading="lazy">
+    <?php endforeach; endforeach; ?>
   </div>
 
   <div class="detail">
@@ -60,6 +70,27 @@
     <?php endforeach; ?>
 
     <p class="fine"><?= e($store['copy']['shipping_restriction']) ?></p>
+
+    <script>
+      (function () {
+        var gallery = document.querySelector('.gallery');
+        var own = gallery.querySelectorAll('img[data-sku]');
+        if (!own.length) return;
+        var shared = gallery.querySelectorAll('img:not([data-sku])');
+        var pick = document.querySelector('.buy [name=sku]');
+        function show(sku) {
+          var has = gallery.querySelector('img[data-sku="' + sku + '"]');
+          shared.forEach(function (i) { i.hidden = !!has; });
+          own.forEach(function (i) { i.hidden = i.dataset.sku !== sku; });
+        }
+        if (pick) {
+          show(pick.value);
+          pick.addEventListener('change', function () { show(pick.value); });
+        } else {
+          own.forEach(function (i) { i.hidden = true; });
+        }
+      })();
+    </script>
 
     <?php if ($show_stock): ?>
       <table class="cart stock">

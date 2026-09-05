@@ -6,16 +6,20 @@
     "position": 2,
     "orderMax": 1,
     "description": [
-        "A 9.7\" TouchPad running webOS 3.0.5, restored with webOS Doctor and",
-        "tested for 48 hours before shipping. Battery health is measured and listed per unit.",
+        "A 9.7\" TouchPad running webOS 3.1.0 Community Edition, restored with webOS Doctor and",
+        "tested for 48 hours before shipping. Battery is tested and charges.",
         "",
-        "Ships with a USB cable and a 30-day functional warranty. Photographs on each",
-        "listing show the actual unit."
+        "Ships with a USB cable and a 15-day functional warranty. Photographs on each",
+        "listing are representative of actual condition."
     ],
     "images": [
         {
-            "file": "../images/TP-32A-Front.jpg",
-            "alt": "HP TouchPad"
+            "file": "../images/TP-Box-Front.jpg",
+            "alt": "HP TouchPad Box"
+        },
+        {
+            "file": "../images/TP-Box-Back.jpg",
+            "alt": "TouchPad A-Condition Box Back"
         }
     ],
     "variants": [
@@ -25,7 +29,7 @@
             "price": "80.00",
             "condition": "grade_a",
             "serial": "TP32",
-            "conditionNotes": "No significant cosmetic defects: screen free of noticeable scratches, may have hairlines cracks near speakers. Healthy battery, fully functional",
+            "conditionNotes": "No significant cosmetic defects: screen free of noticeable scratches, may have hairlines cracks near speakers. Healthy battery, fully functional.",
             "images": [
                 {
                     "file": "../images/TP-32A-Front.jpg",
@@ -38,10 +42,6 @@
                 {
                     "file": "../images/TP-Box-Front.jpg",
                     "alt": "TouchPad A-Condition Box Front"
-                },
-                {
-                    "file": "../images/TP-Box-Back.jpg",
-                    "alt": "TouchPad A-Condition Box Back"
                 }
             ]
         },
@@ -51,7 +51,7 @@
             "price": "65.00",
             "condition": "grade_b",
             "serial": "TP32",
-            "conditionNotes": "May have scuffs on back or light scratches on screen, will have cracks near speakers. Safe and usable battery, fully functional",
+            "conditionNotes": "May have scuffs on back or light scratches on screen, will have cracks near speakers. Safe and usable battery, fully functional.",
             "images": [
                 {
                     "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%200912%20front",
