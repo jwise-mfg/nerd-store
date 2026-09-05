@@ -1,127 +1,117 @@
-/* Structure, shared by both stores. Colour and type come from the store's
-   own style.css, which loads after this and defines the custom properties. */
+/* Structure, shared by both stores. Colour, type and corner radii come from
+   the store's own style.css, which loads after this.
 
-*, *::before, *::after { box-sizing: border-box; }
+   Written for the browsers our customers actually own: a 2011 TouchPad runs
+   WebKit 534, which has no custom properties, no grid, no flexbox gap and no
+   clamp(). So: floats, tables and media queries, all of which it renders
+   identically to a browser from this year. Nothing here needs a prefix
+   except box-sizing, and nothing here is a colour. */
 
-body {
-  margin: 0;
-  background: var(--c-bg);
-  color: var(--c-ink);
-  font: 16px/1.6 var(--f-sans);
-  -webkit-text-size-adjust: 100%;
-}
+*, *:before, *:after { -webkit-box-sizing: border-box; box-sizing: border-box; }
 
-h1, h2, h3 { font-family: var(--f-display); line-height: 1.2; margin: 0 0 .5em; }
-h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
-a { color: inherit; }
+body { margin: 0; font-size: 16px; line-height: 1.6; -webkit-text-size-adjust: 100%; }
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; }
+h1 { font-size: 1.8rem; }
+@media (min-width: 700px) { h1 { font-size: 2.4rem; } }
 img { max-width: 100%; height: auto; display: block; }
 [hidden] { display: none !important; }  /* display:block above would otherwise defeat the hidden attribute */
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.25rem; }
 .narrow { max-width: 640px; }
-.fine { color: var(--c-ink-muted); font-size: .875rem; }
-.warn { color: var(--c-danger); }
-.empty { color: var(--c-ink-muted); }
+.fine { font-size: .875rem; }
 .num { text-align: right; white-space: nowrap; }
+.clearfix:after, .masthead:after, .grid:after, .product:after, .gallery:after, .buy:after {
+  content: ""; display: table; clear: both;
+}
 
-/* --- masthead ------------------------------------------------------------ */
-.masthead {
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: var(--c-bg);
-}
-.masthead .brand { text-decoration: none; }
-.masthead .wordmark { font-family: var(--f-display); font-weight: 700; font-size: 1.25rem; }
-.masthead nav { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; }
-.masthead nav a { text-decoration: none; font-size: .95rem; }
-.masthead nav a:hover { color: var(--c-accent); }
-.masthead nav a[aria-current="page"] { color: var(--c-accent); }
-.pill {
-  background: var(--c-accent); color: var(--c-accent-ink);
-  border-radius: var(--r-pill); padding: .05em .5em; font-size: .8rem;
-}
+/* --- masthead: a two-cell table, so the logo and menu centre on each other - */
+.masthead { display: table; width: 100%; padding: 1rem 1.25rem; }
+.masthead .brand, .masthead nav { display: table-cell; vertical-align: middle; }
+.masthead .brand { text-decoration: none; white-space: nowrap; }
+.masthead .brand img { display: inline-block; vertical-align: middle; }
+.masthead .wordmark { font-weight: 700; font-size: 1.25rem; }
+.masthead nav { text-align: right; }
+.masthead nav a { display: inline-block; text-decoration: none; font-size: .95rem; margin-left: 1.25rem; }
+.pill { display: inline-block; padding: .05em .5em; font-size: .8rem; line-height: 1.4; }
 
 /* --- hero ---------------------------------------------------------------- */
 .hero { max-width: 1040px; margin: 0 auto; padding: 4rem 1.25rem 2rem; }
-.hero .tagline { color: var(--c-accent); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; margin: 0 0 .75rem; }
-/* 46ch is the bottom of the readable range and made a 77-character line
-   wrap twice on a wide screen. 62ch is still a comfortable measure and lets
-   a short hero sit on one or two lines. It is a max, so narrow screens are
-   governed by the padding as before. */
-.hero .lede { font-size: 1.15rem; color: var(--c-ink-muted); max-width: 62ch; }
+.hero .tagline { text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; margin: 0 0 .75rem; }
+/* 62ch is a comfortable measure and lets a short hero sit on one or two
+   lines. The rem value before it is for browsers that predate ch. */
+.hero .lede { font-size: 1.15rem; max-width: 40rem; max-width: 62ch; }
 
 /* --- buttons ------------------------------------------------------------- */
 .btn {
   display: inline-block; cursor: pointer;
-  background: var(--c-accent); color: var(--c-accent-ink);
-  border: 0; border-radius: var(--r-md);
-  padding: .7em 1.4em; font: inherit; font-weight: 600; text-decoration: none;
+  border: 0; padding: .7em 1.4em; font: inherit; font-weight: 600; text-decoration: none;
 }
-.btn:hover:not(:disabled) { background: var(--c-accent-hover); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
-button.link {
-  background: none; border: 0; padding: 0; cursor: pointer;
-  color: var(--c-ink-muted); font: inherit; text-decoration: underline;
-}
+button.link { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; text-decoration: underline; }
 
-/* --- catalogue ----------------------------------------------------------- */
+/* --- catalogue: floated cards, four across, fewer as the screen narrows ---- */
 #catalogue h2 .all { font-weight: 400; margin-left: .75em; text-decoration: none; }
-#catalogue h2 .all::before { content: "← "; }
-#catalogue h2 .all:hover { color: var(--c-accent); }
-.grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
-.product-card {
-  display: block; text-decoration: none;
-  background: var(--c-bg-elevated);
-  border: 1px solid var(--c-line); border-radius: var(--r-lg);
-  overflow: hidden;
+#catalogue h2 .all:before { content: "\2190  "; }
+.grid .product-card { float: left; width: 23.5%; margin: 0 2% 1.5rem 0; }
+.grid .product-card:nth-child(4n) { margin-right: 0; }
+.grid .product-card:nth-child(4n+1) { clear: left; }
+@media (max-width: 1000px) {
+  .grid .product-card { width: 32%; }
+  .grid .product-card:nth-child(4n) { margin-right: 2%; }
+  .grid .product-card:nth-child(4n+1) { clear: none; }
+  .grid .product-card:nth-child(3n) { margin-right: 0; }
+  .grid .product-card:nth-child(3n+1) { clear: left; }
 }
-.product-card img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+@media (max-width: 700px) {
+  .grid .product-card { width: 48%; margin-right: 4%; }
+  .grid .product-card:nth-child(3n) { margin-right: 4%; }
+  .grid .product-card:nth-child(3n+1) { clear: none; }
+  .grid .product-card:nth-child(2n) { margin-right: 0; }
+  .grid .product-card:nth-child(2n+1) { clear: left; }
+}
+@media (max-width: 460px) {
+  .grid .product-card { float: none; width: auto; margin-right: 0; }
+}
+.product-card { display: block; text-decoration: none; overflow: hidden; }
+.product-card img { width: 100%; }
 .product-card .card-body { padding: 1rem; }
 .product-card h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
-.product-card .sub { margin: 0 0 .5rem; color: var(--c-ink-muted); font-size: .875rem; }
+.product-card .sub { margin: 0 0 .5rem; font-size: .875rem; }
 .price { font-weight: 700; margin: 0; }
-.sold { color: var(--c-ink-muted); font-weight: 600; }
-.scarce { color: var(--c-danger); font-weight: 400; font-size: .85rem; margin-left: .5em; }
+.sold { font-weight: 600; }
+.scarce { font-weight: 400; font-size: .85rem; margin-left: .5em; }
 
-/* --- product ------------------------------------------------------------- */
-.product { display: grid; gap: 2.5rem; grid-template-columns: 1fr; }
-@media (min-width: 800px) { .product { grid-template-columns: 1fr 1fr; } }
-.gallery { display: grid; gap: 1rem; align-content: start; }
-.gallery img { border: 1px solid var(--c-line); border-radius: var(--r-lg); }
-/* Three or more photos: the first one large, the rest a strip of thumbnails
-   beneath it. The template's script adds .strip and moves .current; without
-   JavaScript every photo simply stacks at full size. */
-.gallery.strip { grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: .5rem; }
-.gallery.strip img { aspect-ratio: 1; object-fit: cover; width: 100%; cursor: pointer; opacity: .65; }
-.gallery.strip img:hover, .gallery.strip img:focus-visible { opacity: 1; }
-.gallery.strip img.current { grid-column: 1 / -1; order: -1; aspect-ratio: auto; object-fit: contain; cursor: default; opacity: 1; margin-bottom: .5rem; }
-.detail .sub { color: var(--c-ink-muted); margin-top: -.25rem; }
-.prose p { margin: 0 0 1em; }
-.buy { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin: 1.5rem 0; }
-.buy label { display: grid; gap: .35rem; font-size: .875rem; color: var(--c-ink-muted); }
-.buy input, .buy select {
-  background: var(--c-bg); color: var(--c-ink);
-  border: 1px solid var(--c-line); border-radius: var(--r-sm);
-  padding: .6em .7em; font: inherit;
+/* --- product: photos left, details right, one column on a narrow screen -- */
+@media (min-width: 800px) {
+  .gallery { float: left; width: 47%; }
+  .detail  { float: left; width: 47%; margin-left: 6%; }
 }
+.gallery img { margin-bottom: 1rem; }
+/* Three or more photos: the first one large, the rest a strip of thumbnails
+   beneath it. The template's script adds .strip, moves the chosen photo to
+   the front and marks it .current. Without JavaScript every photo simply
+   stacks at full size. */
+.gallery.strip img { float: left; width: 4.5rem; height: 4.5rem; margin: 0 .5rem .5rem 0; cursor: pointer; opacity: .65; }
+.gallery.strip img:hover, .gallery.strip img:focus { opacity: 1; }
+.gallery.strip img.current { float: none; width: 100%; height: auto; margin: 0 0 .75rem; cursor: default; opacity: 1; }
+.detail .sub { margin-top: -.25rem; }
+.prose p { margin: 0 0 1em; }
+.buy { margin: 1.5rem 0; }
+.buy > * { display: inline-block; vertical-align: bottom; margin: 0 1rem .5rem 0; }
+.buy label { font-size: .875rem; }
+.buy label input, .buy label select { display: block; margin-top: .35rem; }
+.buy input, .buy select { padding: .6em .7em; font: inherit; }
 .buy input[type=number] { width: 5rem; }
-.condition { border-top: 1px solid var(--c-line); padding: .9rem 0; }
+.condition { padding: .9rem 0; }
 .condition .fine { margin: .35rem 0 0; }
 
 /* --- cart and orders ----------------------------------------------------- */
 table.cart { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
-table.cart td, table.cart th { border-bottom: 1px solid var(--c-line); padding: .85rem .5rem; text-align: left; vertical-align: top; }
-table.cart tfoot th { font-family: var(--f-display); }
-table.cart .qty input { width: 4.5rem; background: var(--c-bg); color: var(--c-ink); border: 1px solid var(--c-line); border-radius: var(--r-sm); padding: .4em; font: inherit; }
-.notice { background: var(--c-bg-elevated); border-left: 3px solid var(--c-danger); padding: .8rem 1rem; border-radius: var(--r-sm); }
+table.cart td, table.cart th { padding: .85rem .5rem; text-align: left; vertical-align: top; }
+table.cart .qty input { width: 4.5rem; padding: .4em; font: inherit; }
+.notice { padding: .8rem 1rem; }
 .address { white-space: normal; line-height: 1.5; }
 
 /* --- footer -------------------------------------------------------------- */
-footer {
-  border-top: 1px solid var(--c-line);
-  margin-top: 4rem; padding: 2rem 1.25rem 3rem;
-  max-width: 1040px; margin-inline: auto;
-  color: var(--c-ink-muted); font-size: .9rem;
-}
-footer a { color: var(--c-ink-muted); }
+footer { margin: 4rem auto 0; padding: 2rem 1.25rem 3rem; max-width: 1040px; font-size: .9rem; }

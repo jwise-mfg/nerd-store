@@ -1,84 +1,102 @@
 /* shop.webosarchive.org -- the look of www.webosarchive.org: near-black,
    Verdana at a modest size and weight, and the site's purple throughout --
-   deep on buttons, lighter where it is text on black. No webfont request. */
-:root {
-  --c-bg: #101110;
-  --c-bg-elevated: #1b1d1c;
-  --c-ink: #ffffff;
-  --c-ink-muted: #9a9e9c;
-  --c-purple: #4b15a6;           /* the menu highlight on webosarchive.org */
-  --c-purple-soft: #7b4fd6;      /* the same, lifted enough to read at 13px */
-  --c-accent: #a98bff;           /* purple as text on black: prices, eyebrow */
-  --c-accent-hover: #c4afff;
-  --c-accent-ink: #101110;
-  --c-line: #2c2f2e;
-  --c-danger: #f47a20;           /* Palm orange, kept for the one thing that warns: low stock */
+   deep on buttons, lighter where it is text on black. No webfont request.
 
-  --f-sans: Verdana, Geneva, 'DejaVu Sans', sans-serif;
-  --f-display: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+   Palette, so a change is a search-and-replace:
+     ground #101110   raised #1b1d1c   rule #2c2f2e
+     ink    #ffffff   muted  #9a9e9c
+     purple #4b15a6 (the menu highlight on the main site)   lifted #7b4fd6
+     lavender #a98bff (purple as text on black)             hover  #c4afff
+     orange #f47a20 (Palm's; kept for the one thing that warns: low stock)
 
-  --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-pill: 999px;
-}
+   Plain values throughout, no custom properties: this has to render on the
+   TouchPad's 2011 WebKit, which is also why the glow is declared twice. */
+
+body { background: #101110; color: #ffffff; font-family: Verdana, Geneva, 'DejaVu Sans', sans-serif; }
+h1, h2, h3, table.cart tfoot th { font-family: Verdana, Geneva, 'DejaVu Sans', sans-serif; }
+a { color: inherit; }
+.fine, .empty, .sub, .detail .sub, .product-card .sub, .buy label, button.link, footer, footer a { color: #9a9e9c; }
+.warn, .scarce { color: #f47a20; }
+
+.masthead { background: #101110; }
+.masthead .wordmark { font-family: Verdana, Geneva, 'DejaVu Sans', sans-serif; }
+.masthead nav a:hover, .masthead nav a[aria-current="page"] { color: #a98bff; }
+.pill { background: #a98bff; color: #101110; border-radius: 999px; }
+
+.hero .tagline { color: #a98bff; }
+.hero .lede { color: #9a9e9c; }
+#catalogue h2 .all:hover { color: #a98bff; }
+
+.btn { background: #a98bff; color: #101110; border-radius: 6px; }
+.btn:hover:not(:disabled) { background: #c4afff; }
+
+.product-card { background: #1b1d1c; border: 1px solid #2c2f2e; border-radius: 10px; }
+.sold { color: #9a9e9c; }
+
+.gallery img { border: 1px solid #2c2f2e; border-radius: 10px; }
+.buy input, .buy select, table.cart .qty input { background: #101110; color: #ffffff; border: 1px solid #2c2f2e; border-radius: 4px; }
+.condition { border-top: 1px solid #2c2f2e; }
+table.cart td, table.cart th { border-bottom: 1px solid #2c2f2e; }
+.notice { background: #1b1d1c; border-left: 3px solid #f47a20; border-radius: 4px; }
+footer { border-top: 1px solid #2c2f2e; }
 
 /* --- type: Verdana is wide, so it runs a step smaller and never bold ------ */
 body { font-size: 15px; line-height: 1.65; }
 h1, h2, h3 { font-weight: 400; letter-spacing: -.01em; }
-h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+h1 { font-size: 1.6rem; }
+@media (min-width: 700px) { h1 { font-size: 2.1rem; } }
 h2 { font-size: 1.3rem; }
 .product-card h3 { font-size: 1rem; }
 .hero .lede { font-size: 1.05rem; }
-.price { font-weight: 600; color: var(--c-accent); }
+.price { font-weight: 600; color: #a98bff; }
 .sold { font-weight: 400; }
-.btn { font-weight: 400; background: var(--c-purple); color: #fff; }
+.btn { font-weight: 400; background: #4b15a6; color: #fff; }
 .btn:hover:not(:disabled) { background: #5d22c4; color: #fff; }
 
 /* --- masthead: the black menu bar from the main site, purple on hover ---- */
 .masthead {
-  background:
-    radial-gradient(ellipse 900px 300px at 50% -80px, rgba(75, 21, 166, .45), transparent 70%),
-    #000;
+  background: #000;
+  background: -webkit-radial-gradient(50% -80px, 900px 300px, rgba(75, 21, 166, .45), transparent 70%) #000;
+  background: radial-gradient(ellipse 900px 300px at 50% -80px, rgba(75, 21, 166, .45), transparent 70%) #000;
   padding: 0 1.25rem;
   border-bottom: 1px solid #000;
 }
 .masthead .wordmark { font-weight: 400; font-size: 1.15rem; letter-spacing: .01em; }
-.masthead nav { gap: 0; }
-.masthead nav a { font-size: .8rem; padding: .95rem .9rem; color: #fff; transition: background .15s ease; }
-.masthead nav a:hover { color: #fff; background: var(--c-purple); }
-.masthead nav a[aria-current="page"] { color: var(--c-purple-soft); }
+.masthead nav a { font-size: .8rem; padding: .95rem .9rem; margin-left: 0; color: #fff; -webkit-transition: background .15s ease; transition: background .15s ease; }
+.masthead nav a:hover { color: #fff; background: #4b15a6; }
+.masthead nav a[aria-current="page"] { color: #7b4fd6; }
 .masthead nav a[aria-current="page"]:hover { color: #fff; }
-.masthead .pill { background: var(--c-purple); color: #fff; font-weight: 600; margin-left: .35em; }
+.masthead .pill { background: #4b15a6; color: #fff; font-weight: 600; margin-left: .35em; }
 
 /* --- hero ------------------------------------------------------------------ */
 .hero { padding-top: 3rem; }
-.hero .tagline { color: var(--c-accent); font-size: .75rem; }
+.hero .tagline { font-size: .75rem; }
 
 /* --- cards sit above the surface rather than being outlined on it -------- */
 .product-card {
-  background: var(--c-bg-elevated);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .35);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .35);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .35);
+  -webkit-transition: -webkit-transform .15s ease, -webkit-box-shadow .15s ease, border-color .15s ease;
+          transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 .product-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--c-purple-soft);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(75, 21, 166, .25);
+  -webkit-transform: translateY(-3px); transform: translateY(-3px);
+  border-color: #7b4fd6;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(75, 21, 166, .25);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(75, 21, 166, .25);
 }
 
 /* --- links and controls ------------------------------------------------- */
 .prose a, .fine a, footer a { color: #e6e6fa; }
-.prose a:hover, .fine a:hover, footer a:hover { color: var(--c-accent); }
-.buy input:focus, .buy select:focus, table.cart .qty input:focus {
-  outline: 2px solid var(--c-purple-soft); outline-offset: 1px;
-}
-.gallery img { border-color: var(--c-line); }
+.prose a:hover, .fine a:hover, footer a:hover { color: #a98bff; }
+.buy input:focus, .buy select:focus, table.cart .qty input:focus { outline: 2px solid #7b4fd6; outline-offset: 1px; }
 .gallery.strip img.current { border-color: #3a3d3c; }
 
 .grade {
   display: inline-block;
   font-family: 'Courier New', ui-monospace, monospace;
   text-transform: uppercase; letter-spacing: .06em; font-size: .7rem;
-  color: var(--c-accent);
-  background: var(--c-bg-elevated); border: 1px solid var(--c-line);
-  border-radius: var(--r-pill); padding: .15em .7em; margin-right: .5em;
+  color: #a98bff;
+  background: #1b1d1c; border: 1px solid #2c2f2e;
+  border-radius: 999px; padding: .15em .7em; margin-right: .5em;
 }

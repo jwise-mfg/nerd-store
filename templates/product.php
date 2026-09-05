@@ -72,45 +72,64 @@
     <p class="fine"><?= e($store['copy']['shipping_restriction']) ?></p>
 
     <script>
+      // ES5 and the 2010 DOM on purpose: this runs on a TouchPad's WebKit 534,
+      // which has no classList, no dataset, no element.hidden and no e.key.
       (function () {
         var gallery = document.querySelector('.gallery');
-        var all  = Array.prototype.slice.call(gallery.querySelectorAll('img'));
+        var all  = Array.prototype.slice.call(gallery.getElementsByTagName('img'));
         var pick = document.querySelector('.buy [name=sku]');
+
+        function skuOf(img) { return img.getAttribute('data-sku'); }
+        function setClass(el, name, on) {
+          var list = el.className.split(/\s+/).filter(function (c) { return c && c !== name; });
+          if (on) list.push(name);
+          el.className = list.join(' ');
+        }
 
         // Which photos belong to the chosen option: the product's shared
         // ones, then the variant's own. Other variants' photos are left out.
         function visible(sku) {
-          return all.filter(function (i) { return !i.dataset.sku || i.dataset.sku === sku; });
+          return all.filter(function (i) { return !skuOf(i) || skuOf(i) === sku; });
         }
 
         // More than two photos becomes one large and a strip of thumbnails;
         // clicking a thumbnail makes it the large one. Two or fewer just stack.
         function layout(set) {
           var strip = set.length > 2;
-          gallery.classList.toggle('strip', strip);
+          setClass(gallery, 'strip', strip);
           all.forEach(function (i) {
-            i.hidden = set.indexOf(i) < 0;
-            i.classList.remove('current');
-            i.tabIndex = strip && !i.hidden ? 0 : -1;
+            var shown = set.indexOf(i) >= 0;
+            if (shown) i.removeAttribute('hidden'); else i.setAttribute('hidden', 'hidden');
+            setClass(i, 'current', false);
+            i.tabIndex = strip && shown ? 0 : -1;
           });
-          if (strip) set[0].classList.add('current');
+          // Put them back in source order, then lead with the first.
+          set.forEach(function (i) { gallery.appendChild(i); });
+          all.forEach(function (i) { if (set.indexOf(i) < 0) gallery.appendChild(i); });
+          if (strip) select(set[0]);
+        }
+
+        // The large photo is simply the first in the DOM, so no CSS ordering
+        // is needed and the float layout works everywhere.
+        function select(img) {
+          all.forEach(function (i) { setClass(i, 'current', false); });
+          setClass(img, 'current', true);
+          gallery.insertBefore(img, gallery.firstChild);
         }
 
         gallery.addEventListener('click', function (e) {
-          if (e.target.tagName === 'IMG' && gallery.classList.contains('strip')) select(e.target);
-        });
+          var t = e.target || e.srcElement;
+          if (t.tagName === 'IMG' && /\bstrip\b/.test(gallery.className)) select(t);
+        }, false);
         gallery.addEventListener('keydown', function (e) {
-          if ((e.key === 'Enter' || e.key === ' ') && e.target.tagName === 'IMG') { e.preventDefault(); select(e.target); }
-        });
-        function select(img) {
-          all.forEach(function (i) { i.classList.remove('current'); });
-          img.classList.add('current');
-        }
+          var t = e.target || e.srcElement, k = e.keyCode || e.which;
+          if ((k === 13 || k === 32) && t.tagName === 'IMG') { e.preventDefault(); select(t); }
+        }, false);
 
         // `pick` is the <select>, or the hidden input of a single-variant
         // product. Sold out has neither, and shows the product's own photos.
         layout(visible(pick ? pick.value : ''));
-        if (pick) pick.addEventListener('change', function () { layout(visible(pick.value)); });
+        if (pick) pick.addEventListener('change', function () { layout(visible(pick.value)); }, false);
       })();
     </script>
 
