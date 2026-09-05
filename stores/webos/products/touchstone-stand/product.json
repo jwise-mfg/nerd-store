@@ -5,7 +5,7 @@
     "status": "active",
     "position": 1,
     "description": [
-        "The inductive stand that made every other phone charger feel like work.",
+        "The inductive stand that made every other charger feel like work.",
         "Still sealed in HP retail packaging. Includes the dock and the original",
         "microUSB power supply.",
         "",
@@ -13,8 +13,12 @@
     ],
     "images": [
         {
-            "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=Touchstone%20Dock",
-            "alt": "Touchstone Dock"
+            "file": "images/Touchstone-Front.jpg",
+            "alt": "Touchstone Charging Stand - Front"
+        },
+        {
+            "file": "images/Touchstone-Back.jpg",
+            "alt": "Touchstone Charging Stand - Back"
         }
     ],
     "variants": [
