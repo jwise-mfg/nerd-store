@@ -22,8 +22,5 @@
             "conditionNotes": "3 inch x 1 inch vinyl, 4-Pack"
         }
     ],
-    "shippingCents": {
-        "us_standard": 300,
-        "us_priority": 500
-    }
+    "shippingCents": { "us_ground": 400, "us_expedited": 800 }
 }
