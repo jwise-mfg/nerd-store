@@ -6,10 +6,9 @@
     "position": 7,
     "description": [
         "The inductive dock that made every other phone charger feel like work.",
-        "Still sealed in Palm retail packaging. Includes the dock and the original",
-        "microUSB power supply.",
+        "Includes the dock and the original microUSB power supply.",
         "",
-        "Fits Pre, Pre Plus, Pre 2, and Pre 3 with a Touchstone-compatible back cover."
+        "Fits Pre, Pre 2, Veer and Pre 3 - requires a Touchstone-compatible back cover."
     ],
     "images": [
         {
@@ -20,10 +19,10 @@
     "variants": [
         {
             "sku": "WOA-TS-NOS",
-            "title": "New old stock, sealed",
+            "title": "Used in original box",
             "price": "45.00",
-            "condition": "new_old_stock",
-            "conditionNotes": "Factory sealed. Outer carton shows shelf wear consistent with storage since 2011."
+            "condition": "Used",
+            "conditionNotes": "Used item, it OEM packaging."
         }
     ]
 }
