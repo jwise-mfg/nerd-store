@@ -84,6 +84,13 @@ button.link {
 @media (min-width: 800px) { .product { grid-template-columns: 1fr 1fr; } }
 .gallery { display: grid; gap: 1rem; align-content: start; }
 .gallery img { border: 1px solid var(--c-line); border-radius: var(--r-lg); }
+/* Three or more photos: the first one large, the rest a strip of thumbnails
+   beneath it. The template's script adds .strip and moves .current; without
+   JavaScript every photo simply stacks at full size. */
+.gallery.strip { grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: .5rem; }
+.gallery.strip img { aspect-ratio: 1; object-fit: cover; width: 100%; cursor: pointer; opacity: .65; }
+.gallery.strip img:hover, .gallery.strip img:focus-visible { opacity: 1; }
+.gallery.strip img.current { grid-column: 1 / -1; order: -1; aspect-ratio: auto; object-fit: contain; cursor: default; opacity: 1; margin-bottom: .5rem; }
 .detail .sub { color: var(--c-ink-muted); margin-top: -.25rem; }
 .prose p { margin: 0 0 1em; }
 .buy { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin: 1.5rem 0; }

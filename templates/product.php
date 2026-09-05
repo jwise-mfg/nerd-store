@@ -74,21 +74,44 @@
     <script>
       (function () {
         var gallery = document.querySelector('.gallery');
-        var own = gallery.querySelectorAll('img[data-sku]');
-        if (!own.length) return;
-        var shared = gallery.querySelectorAll('img:not([data-sku])');
+        var all  = Array.prototype.slice.call(gallery.querySelectorAll('img'));
         var pick = document.querySelector('.buy [name=sku]');
-        function show(sku) {
-          var has = gallery.querySelector('img[data-sku="' + sku + '"]');
-          shared.forEach(function (i) { i.hidden = !!has; });
-          own.forEach(function (i) { i.hidden = i.dataset.sku !== sku; });
+
+        // Which photos belong to the chosen option: a variant with its own
+        // images replaces the product's; otherwise the product's stand.
+        function visible(sku) {
+          var own = all.filter(function (i) { return i.dataset.sku === sku; });
+          return own.length ? own : all.filter(function (i) { return !i.dataset.sku; });
         }
-        if (pick) {
-          show(pick.value);
-          pick.addEventListener('change', function () { show(pick.value); });
-        } else {
-          own.forEach(function (i) { i.hidden = true; });
+
+        // More than two photos becomes one large and a strip of thumbnails;
+        // clicking a thumbnail makes it the large one. Two or fewer just stack.
+        function layout(set) {
+          var strip = set.length > 2;
+          gallery.classList.toggle('strip', strip);
+          all.forEach(function (i) {
+            i.hidden = set.indexOf(i) < 0;
+            i.classList.remove('current');
+            i.tabIndex = strip && !i.hidden ? 0 : -1;
+          });
+          if (strip) set[0].classList.add('current');
         }
+
+        gallery.addEventListener('click', function (e) {
+          if (e.target.tagName === 'IMG' && gallery.classList.contains('strip')) select(e.target);
+        });
+        gallery.addEventListener('keydown', function (e) {
+          if ((e.key === 'Enter' || e.key === ' ') && e.target.tagName === 'IMG') { e.preventDefault(); select(e.target); }
+        });
+        function select(img) {
+          all.forEach(function (i) { i.classList.remove('current'); });
+          img.classList.add('current');
+        }
+
+        // `pick` is the <select>, or the hidden input of a single-variant
+        // product. Sold out has neither, and shows the product's own photos.
+        layout(visible(pick ? pick.value : ''));
+        if (pick) pick.addEventListener('change', function () { layout(visible(pick.value)); });
       })();
     </script>
 
