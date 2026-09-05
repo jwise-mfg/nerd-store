@@ -1,16 +1,16 @@
 /* shop.webosarchive.org -- the look of www.webosarchive.org: near-black,
-   Verdana at a modest size and weight, the site's purple for the chrome and
-   Palm's orange for the things you act on. No webfont request. */
+   Verdana at a modest size and weight, and the site's purple throughout --
+   deep on buttons, lighter where it is text on black. No webfont request. */
 :root {
   --c-bg: #101110;
   --c-bg-elevated: #1b1d1c;
   --c-ink: #ffffff;
   --c-ink-muted: #9a9e9c;
-  --c-accent: #f47a20;           /* Palm orange: buttons, prices, eyebrow */
-  --c-accent-hover: #ff9440;
-  --c-accent-ink: #101110;
   --c-purple: #4b15a6;           /* the menu highlight on webosarchive.org */
-  --c-purple-soft: #7b4fd6;
+  --c-purple-soft: #7b4fd6;      /* the same, lifted enough to read at 13px */
+  --c-accent: #a98bff;           /* purple as text on black: prices, eyebrow */
+  --c-accent-hover: #c4afff;
+  --c-accent-ink: #101110;
   --c-line: #2c2f2e;
   --c-danger: #ff6b5e;
 
@@ -29,7 +29,8 @@ h2 { font-size: 1.3rem; }
 .hero .lede { font-size: 1.05rem; }
 .price { font-weight: 600; color: var(--c-accent); }
 .sold { font-weight: 400; }
-.btn { font-weight: 400; }
+.btn { font-weight: 400; background: var(--c-purple); color: #fff; }
+.btn:hover:not(:disabled) { background: #5d22c4; color: #fff; }
 
 /* --- masthead: the black menu bar from the main site, purple on hover ---- */
 .masthead {
@@ -45,7 +46,7 @@ h2 { font-size: 1.3rem; }
 .masthead nav a:hover { color: #fff; background: var(--c-purple); }
 .masthead nav a[aria-current="page"] { color: var(--c-purple-soft); }
 .masthead nav a[aria-current="page"]:hover { color: #fff; }
-.masthead .pill { background: var(--c-accent); color: var(--c-accent-ink); font-weight: 600; margin-left: .35em; }
+.masthead .pill { background: var(--c-purple); color: #fff; font-weight: 600; margin-left: .35em; }
 
 /* --- hero ------------------------------------------------------------------ */
 .hero { padding-top: 3rem; }
