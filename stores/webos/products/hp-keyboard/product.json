@@ -1,0 +1,35 @@
+{
+    "title": "HP Bluetooth Keyboard",
+    "subtitle": "New old stock",
+    "kind": "accessory",
+    "status": "active",
+    "position": 3,
+    "orderMax": 1,
+    "description": "The original HP Bluetooth keyboard. Unused, sealed in box.",
+    "images": [
+        {
+            "file": "../images/Keyboard-Front.jpg",
+            "alt": "Keyboard Box Front"
+        },
+        {
+            "file": "../images/Keyboard-Back.jpg",
+            "alt": "Keyboard Box Back"
+        },
+        {
+            "file": "../images/Keyboard-Front.jpg",
+            "alt": "Keyboard Front"
+        },
+        {
+            "file": "../images/Keyboard-Back.jpg",
+            "alt": "Keyboard Back"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "WOA-BT-KEY",
+            "title": "New old stock",
+            "price": "26.00",
+            "condition": "new_old_stock"
+        }
+    ]
+}

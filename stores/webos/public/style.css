@@ -1,44 +1,81 @@
-/* shop.webosarchive.org -- the card-and-glow look of the OS, in Verdana.
-   No webfont request: these faces are local or substituted. */
+/* shop.webosarchive.org -- the look of www.webosarchive.org: near-black,
+   Verdana at a modest size and weight, the site's purple for the chrome and
+   Palm's orange for the things you act on. No webfont request. */
 :root {
   --c-bg: #101110;
   --c-bg-elevated: #1b1d1c;
   --c-ink: #ffffff;
-  --c-ink-muted: #8a8f8c;
-  --c-accent: #e6e6fa;
-  --c-accent-hover: #ffffff;
+  --c-ink-muted: #9a9e9c;
+  --c-accent: #f47a20;           /* Palm orange: buttons, prices, eyebrow */
+  --c-accent-hover: #ff9440;
   --c-accent-ink: #101110;
+  --c-purple: #4b15a6;           /* the menu highlight on webosarchive.org */
+  --c-purple-soft: #7b4fd6;
   --c-line: #2c2f2e;
   --c-danger: #ff6b5e;
 
   --f-sans: Verdana, Geneva, 'DejaVu Sans', sans-serif;
-  --f-display: 'Prelude', 'Futura', 'Century Gothic', Verdana, sans-serif;
+  --f-display: Verdana, Geneva, 'DejaVu Sans', sans-serif;
 
-  --r-sm: 6px; --r-md: 12px; --r-lg: 20px; --r-pill: 999px;
+  --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-pill: 999px;
 }
 
-/* The glow behind the masthead, as webOS drew it. */
+/* --- type: Verdana is wide, so it runs a step smaller and never bold ------ */
+body { font-size: 15px; line-height: 1.65; }
+h1, h2, h3 { font-weight: 400; letter-spacing: -.01em; }
+h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+h2 { font-size: 1.3rem; }
+.product-card h3 { font-size: 1rem; }
+.hero .lede { font-size: 1.05rem; }
+.price { font-weight: 600; color: var(--c-accent); }
+.sold { font-weight: 400; }
+.btn { font-weight: 400; }
+
+/* --- masthead: the black menu bar from the main site, purple on hover ---- */
 .masthead {
   background:
-    radial-gradient(ellipse 900px 380px at 50% -60px, rgba(120, 140, 220, .20), transparent 70%),
-    var(--c-bg);
+    radial-gradient(ellipse 900px 300px at 50% -80px, rgba(75, 21, 166, .45), transparent 70%),
+    #000;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid #000;
 }
+.masthead .wordmark { font-weight: 400; font-size: 1.15rem; letter-spacing: .01em; }
+.masthead nav { gap: 0; }
+.masthead nav a { font-size: .8rem; padding: .95rem .9rem; color: #fff; transition: background .15s ease; }
+.masthead nav a:hover { color: #fff; background: var(--c-purple); }
+.masthead .pill { background: var(--c-accent); color: var(--c-accent-ink); font-weight: 600; margin-left: .35em; }
 
-/* Cards sit above the surface rather than being outlined on it. */
+/* --- hero ------------------------------------------------------------------ */
+.hero { padding-top: 3rem; }
+.hero .tagline { color: var(--c-accent); font-size: .75rem; }
+
+/* --- cards sit above the surface rather than being outlined on it -------- */
 .product-card {
   background: var(--c-bg-elevated);
+  border: 1px solid var(--c-line);
   box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .35);
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(0, 0, 0, .45);
+  transform: translateY(-3px);
+  border-color: var(--c-purple-soft);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(75, 21, 166, .25);
 }
+
+/* --- links and controls ------------------------------------------------- */
+.prose a, .fine a, footer a { color: #e6e6fa; }
+.prose a:hover, .fine a:hover, footer a:hover { color: var(--c-accent); }
+.buy input:focus, .buy select:focus, table.cart .qty input:focus {
+  outline: 2px solid var(--c-purple-soft); outline-offset: 1px;
+}
+.gallery img { border-color: var(--c-line); }
+.gallery.strip img.current { border-color: #3a3d3c; }
 
 .grade {
   display: inline-block;
   font-family: 'Courier New', ui-monospace, monospace;
-  text-transform: uppercase; letter-spacing: .06em; font-size: .75rem;
+  text-transform: uppercase; letter-spacing: .06em; font-size: .7rem;
+  color: var(--c-accent);
   background: var(--c-bg-elevated); border: 1px solid var(--c-line);
   border-radius: var(--r-pill); padding: .15em .7em; margin-right: .5em;
 }
