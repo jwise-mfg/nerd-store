@@ -22,9 +22,9 @@ return [
     // policies stay reachable; the catalogue, cart and checkout return 503.
     'store_open'       => true,
 
-    'support_email'    => 'shop@webosarchive.org',
-    'mail_from'        => 'webOS Archive Shop <shop@webosarchive.org>',
-    'postal_address'   => 'JW LLC — 5387 Avion Park Dr., Highland Heights, OH 44143',
+    'support_email'    => 'curator@webosarchive.org',
+    'mail_from'        => 'webOS Archive Store <curator@webosarchive.org>',
+    'postal_address'   => 'JW LLC',
 
     // The <title> tag on the home page — see the note in the i3x config.
     'title_tagline'    => 'Keeping webOS alive.',
@@ -45,14 +45,14 @@ return [
         'wordmark'         => '/brand/wosa-wide.png',
         'wordmark_alt'     => 'webOS Archive',
         'wordmark_height'  => '32px',
-        'favicon'          => null,
+        'favicon'          => '/favicon.ico',
         'apple_touch_icon' => null,
-        'social_image'     => null,
+        'social_image'     => '/brand/social.jpg',
     ],
 
     'shipping' => [
-        ['code' => 'us_ground',    'label' => 'Ground (tracked)', 'cents' => 1100, 'estimate' => '7-10 business days'],
-        ['code' => 'us_expedited', 'label' => 'Expedited',        'cents' => 2200, 'estimate' => '5-7 business days'],
+        ['code' => 'us_standard', 'label' => 'Ground (tracked)', 'cents' => 1100, 'estimate' => '7-10 business days'],
+        ['code' => 'us_priority',  'label' => 'Expedited',        'cents' => 2200, 'estimate' => '5-7 business days'],
     ],
 
     'nav' => [
