@@ -1,18 +1,18 @@
 <section class="wrap product">
   <div class="gallery">
     <?php
-      // The product's own images are the gallery. A variant that carries its
-      // own `images` shows those INSTEAD when it is selected -- a Grade B unit
-      // photographed as a Grade B unit. They all render, so a page without
-      // JavaScript shows everything; the script below hides what is not
-      // relevant to the chosen option.
+      // The product's own images are the gallery, shared by every option. A
+      // variant that carries its own `images` -- a Grade B unit photographed
+      // as a Grade B unit -- shows them IN FRONT of the shared ones while it
+      // is selected. They all render, so a page without JavaScript shows
+      // everything; the script below hides the other options' photos.
     ?>
-    <?php foreach (($p['images'] ?? []) as $img): ?>
-      <img src="<?= e(image_url($p['slug'], $img['file'])) ?>" alt="<?= e($img['alt'] ?? '') ?>">
-    <?php endforeach; ?>
     <?php foreach ($p['variants'] as $v): foreach ($v['images'] ?? [] as $img): ?>
       <img src="<?= e(image_url($p['slug'], $img['file'])) ?>" alt="<?= e($img['alt'] ?? '') ?>" data-sku="<?= e($v['sku']) ?>" loading="lazy">
     <?php endforeach; endforeach; ?>
+    <?php foreach (($p['images'] ?? []) as $img): ?>
+      <img src="<?= e(image_url($p['slug'], $img['file'])) ?>" alt="<?= e($img['alt'] ?? '') ?>">
+    <?php endforeach; ?>
   </div>
 
   <div class="detail">
@@ -77,11 +77,10 @@
         var all  = Array.prototype.slice.call(gallery.querySelectorAll('img'));
         var pick = document.querySelector('.buy [name=sku]');
 
-        // Which photos belong to the chosen option: a variant with its own
-        // images replaces the product's; otherwise the product's stand.
+        // Which photos belong to the chosen option: the variant's own, then
+        // the product's shared ones. Other variants' photos are left out.
         function visible(sku) {
-          var own = all.filter(function (i) { return i.dataset.sku === sku; });
-          return own.length ? own : all.filter(function (i) { return !i.dataset.sku; });
+          return all.filter(function (i) { return !i.dataset.sku || i.dataset.sku === sku; });
         }
 
         // More than two photos becomes one large and a strip of thumbnails;

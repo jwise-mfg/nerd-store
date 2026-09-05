@@ -56,9 +56,10 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
     { "sku": "MY-BOOK-SKU", "title": "Hardcover", "price": "24.00" },
     { "sku": "MY-BOOK-USED", "title": "Used", "price": "12.00",
       "images": [{ "file": "used-1.jpg", "alt": "…" }] }   // optional: shown
-                               // INSTEAD of the product's images while this
+                               // AHEAD of the product's images while this
                                // option is selected. Photograph the actual
-                               // unit; the product's images stay the default.
+                               // unit; the product's images are what every
+                               // option shares -- the box, say.
   ]
 }
 ```

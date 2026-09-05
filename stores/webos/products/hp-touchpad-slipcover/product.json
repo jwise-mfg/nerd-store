@@ -1,0 +1,31 @@
+{
+    "title": "HP TouchPad Slip Cover",
+    "subtitle": "New old stock",
+    "kind": "accessory",
+    "status": "active",
+    "position": 4,
+    "orderMax": 1,
+    "description": "The original HP Slip Cover. Unused, still bagged.",
+    "images": [
+        {
+            "file": "../images/Slipcover-Front.jpg",
+            "alt": "Slipcover Box Front"
+        },
+        {
+            "file": "../images/Slipcover-Back.jpg",
+            "alt": "Slipcover Box Back"
+        },
+        {
+            "file": "../images/Slipcover.jpg",
+            "alt": "Slipcover"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "WOA-FOLIO-NOS",
+            "title": "New old stock",
+            "price": "14.00",
+            "condition": "new_old_stock"
+        }
+    ]
+}
