@@ -15,6 +15,7 @@ h1, h2, h3 { font-family: var(--f-display); line-height: 1.2; margin: 0 0 .5em; 
 h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
 a { color: inherit; }
 img { max-width: 100%; height: auto; display: block; }
+[hidden] { display: none !important; }  /* display:block above would otherwise defeat the hidden attribute */
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.25rem; }
 .narrow { max-width: 640px; }
