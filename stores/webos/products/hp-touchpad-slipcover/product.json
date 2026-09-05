@@ -22,7 +22,7 @@
     ],
     "variants": [
         {
-            "sku": "WOA-FOLIO-NOS",
+            "sku": "WOA-SLIP-NOS",
             "title": "New old stock",
             "price": "14.00",
             "condition": "new_old_stock"
