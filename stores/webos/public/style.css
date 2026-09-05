@@ -12,7 +12,7 @@
   --c-accent-hover: #c4afff;
   --c-accent-ink: #101110;
   --c-line: #2c2f2e;
-  --c-danger: #ff6b5e;
+  --c-danger: #f47a20;           /* Palm orange, kept for the one thing that warns: low stock */
 
   --f-sans: Verdana, Geneva, 'DejaVu Sans', sans-serif;
   --f-display: Verdana, Geneva, 'DejaVu Sans', sans-serif;

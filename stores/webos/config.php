@@ -64,7 +64,7 @@ return [
 
     'copy' => [
         'tagline'               => 'Keeping webOS alive.',
-        'hero_title'            => 'New old stock, still sealed.',
+        'hero_title'            => 'New or gently used webOS Gear in guaranteed condition.',
         'hero_body'             => 'webOS chargers, cases and cables that never left the warehouse — plus tested, graded TouchPads and Phones for people still running the mobile OS everyone copied...',
         'hero_cta'              => 'See what’s in stock',
         'catalog_title'         => 'In stock now',
