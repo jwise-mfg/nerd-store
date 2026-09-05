@@ -1,0 +1,25 @@
+{
+    "title": "Palm webOS Stickers",
+    "subtitle": "3 inch by 1 inch vinyl",
+    "kind": "accessory",
+    "status": "active",
+    "position": 1,
+    "description": [
+        "Put webOS everywhere with these high-quality matte finish vinyl stickers."
+    ],
+    "images": [
+        {
+            "file": "images/Stickers.jpg",
+            "alt": "Palm webOS Stickers"
+        }
+    ],
+    "variants": [
+        {
+            "sku": "PW-3X1-ST",
+            "title": "Pack of 4",
+            "price": "3.00",
+            "condition": "new",
+            "conditionNotes": "3 inch x 1 inch vinyl, 4-Pack"
+        }
+    ]
+}
