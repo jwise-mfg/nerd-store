@@ -19,5 +19,8 @@
             "price": "3.00"
         }
     ],
-    "shippingCents": { "us_ground": 400, "us_expedited": 800 }
+    "shippingCents": {
+        "us_standard": 300,
+        "us_priority": 500
+    }
 }
