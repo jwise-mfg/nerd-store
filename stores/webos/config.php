@@ -63,7 +63,7 @@ return [
     'copy' => [
         'tagline'               => 'Keeping webOS alive.',
         'hero_title'            => 'New old stock, still sealed.',
-        'hero_body'             => 'Touchstone chargers, cases, styluses, and cables that never left the warehouse — plus tested, graded TouchPads, Pres, and Pixis for people still running the best mobile OS nobody bought.',
+        'hero_body'             => 'webOS chargers, cases and cables that never left the warehouse — plus tested, graded TouchPads, phones for people still running the best mobile OS nobody bought.',
         'hero_cta'              => 'See what’s in stock',
         'catalog_title'         => 'In stock now',
         'catalog_empty'         => 'Everything’s spoken for right now. Check back — stock moves in batches.',
@@ -77,6 +77,6 @@ return [
         'sold_out'              => 'Sold',
         'last_one'              => 'Last one',
         'returns_link'          => 'Returns',
-        'footer_blurb'          => 'The webOS Archive Shop funds hosting, preservation, and the app museum. Devices are used unless marked new old stock; every listing shows photographs of the actual unit you receive.',
+        'footer_blurb'          => 'The webOS Archive Shop funds hosting, preservation, and the app museum. Devices are used unless marked new old stock; every listing shows photographs represenative of the item you actully receive.',
     ],
 ];
