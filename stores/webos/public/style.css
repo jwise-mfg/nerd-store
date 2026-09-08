@@ -67,6 +67,11 @@ h2 { font-size: 1.3rem; }
 .masthead nav a[aria-current="page"] { color: #7b4fd6; }
 .masthead nav a[aria-current="page"]:hover { color: #fff; }
 .masthead .pill { background: #4b15a6; color: #fff; font-weight: 600; margin-left: .35em; }
+/* Portrait phone: tighter, so all four links stay on one line. */
+@media (max-width: 700px) {
+  .masthead { padding: 0 .5rem; }
+  .masthead nav a { padding: .95rem .5rem; }
+}
 
 /* --- hero ------------------------------------------------------------------ */
 .hero { padding-top: 3rem; }
