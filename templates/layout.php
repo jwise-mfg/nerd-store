@@ -47,7 +47,18 @@
 <?php endif; ?>
 </head>
 <body>
-<header class="masthead">
+<?php
+  // A store that sits under its parent site's menu bar (config: site_menu)
+  // gets that bar first, and its own masthead then carries no logo -- the bar
+  // above already says whose shop this is, so the masthead is only the shop's
+  // links, right-aligned. See site_menu() in lib/render.php.
+  $underSiteMenu = !empty($store['site_menu']);
+?>
+<?php if ($underSiteMenu && ($menu = site_menu($store))): ?>
+<div id="site-menu"><?= $menu ?></div>
+<?php endif; ?>
+<header class="masthead<?= $underSiteMenu ? ' no-brand' : '' ?>">
+  <?php if (!$underSiteMenu): ?>
   <a class="brand" href="/">
     <?php if ($w = $store['brand']['wordmark'] ?? null): ?>
       <img src="<?= e($w) ?>" alt="<?= e($store['brand']['wordmark_alt'] ?? $store['name']) ?>"
@@ -56,6 +67,7 @@
       <span class="wordmark"><?= e($store['name']) ?></span>
     <?php endif; ?>
   </a>
+  <?php endif; ?>
   <nav>
     <?php
       // The item whose href is exactly this request -- "/" or "/?kind=device" --

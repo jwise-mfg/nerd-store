@@ -26,6 +26,15 @@ no aliases and PHP never sees a request for one. Which shop a request belongs
 to is decided by which root it arrived in, so there is no hostname map to keep
 in step with the vhosts.
 
+**A shop can sit under its parent site's menu.** `site_menu` in a store's
+config names a `menu.php` (protocol-relative, e.g.
+`//www.webosarchive.org/menu.php?content=shop`) that PHP fetches on every page
+and inlines above the shop's own links, the way docs.webosarchive.org joins
+the site. Server-side because the parent sends no CORS headers, and because
+an iframe is not integration. That shop's masthead then has no logo: the bar
+names the site, and the masthead is just its links. Three-second timeout; if
+the parent is down the page renders without the bar.
+
 ## The front end runs on a 2011 TouchPad
 
 The webOS shop's customers shop from the device it sells. Its browser is

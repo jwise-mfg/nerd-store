@@ -34,9 +34,12 @@ img { max-width: 100%; height: auto; display: block; }
 .masthead nav { text-align: right; }
 .masthead nav a { display: inline-block; text-decoration: none; font-size: .95rem; margin-left: 1.25rem; }
 .pill { display: inline-block; padding: .05em .5em; font-size: .8rem; line-height: 1.4; }
-/* Portrait phone: just the logo, the parent site and the cart. */
+/* Portrait phone: just the logo, the parent site and the cart. A masthead
+   with no logo (.no-brand: the store sits under its parent site's menu bar)
+   is nothing but its links, so those wrap instead of disappearing. */
 @media (max-width: 700px) {
   .masthead nav .section { display: none; }
+  .masthead.no-brand nav .section { display: inline-block; }
 }
 
 /* --- hero ---------------------------------------------------------------- */

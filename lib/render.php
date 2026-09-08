@@ -20,6 +20,34 @@ function asset_version(string $path): string
     return $t ? '?v=' . $t : '';
 }
 
+/**
+ * The parent site's menu bar, fetched server-side and inlined into the page.
+ *
+ * www.webosarchive.org sends no CORS headers, so a browser cannot fetch
+ * menu.php across origins, and an iframe is not integration. PHP fetches it
+ * instead and the markup lands in the page as if it were ours -- the same
+ * way docs.webosarchive.org does it. Fetched over the protocol this request
+ * arrived on, so the stylesheet and script links menu.php writes match the
+ * page they land in.
+ *
+ * The URL in the store's config is protocol-relative ("//www...") for that
+ * reason. Empty string on a store with no parent menu, or when the fetch
+ * fails: the shop still renders, only without the bar. The timeout is what
+ * keeps a slow parent site from making every shop page slow.
+ */
+function site_menu(array $store): string
+{
+    $url = $store['site_menu'] ?? null;
+    if (!$url) {
+        return '';
+    }
+    $https = ($_SERVER['HTTPS'] ?? '') === 'on'
+        || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+    $ctx  = stream_context_create(['http' => ['timeout' => 3]]);
+    $html = @file_get_contents(($https ? 'https:' : 'http:') . $url, false, $ctx);
+    return $html === false ? '' : trim($html);
+}
+
 function view(string $name, array $vars = []): string
 {
     extract($vars, EXTR_SKIP);

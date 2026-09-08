@@ -40,8 +40,15 @@ return [
     // Used hardware: grade, serial and condition notes belong on the page.
     'show_condition_detail' => true,
 
-    // The main site's logo, copied into brand/ so the shop serves it itself.
+    // The main site's menu bar, fetched server-side on every page and inlined
+    // above the shop's own links -- the same way docs.webosarchive.org joins
+    // the site. Protocol-relative: it is fetched over whichever protocol the
+    // request arrived on. Null to stand alone. The shop then has no logo of
+    // its own; the bar names the site.
+    'site_menu'        => '//www.webosarchive.org/menu.php?content=shop',
+
     'brand' => [
+        // Not shown while site_menu is set. The file stays in brand/ in case.
         'wordmark'         => '/brand/wosa-wide.png',
         'wordmark_alt'     => 'webOS Archive',
         'wordmark_height'  => '32px',
@@ -55,11 +62,11 @@ return [
         ['code' => 'us_priority',  'label' => 'Expedited',        'cents' => 2200, 'estimate' => '5-7 business days'],
     ],
 
+    // Home is on the site menu above, so it is not repeated here.
     'nav' => [
-        ['label' => 'Home',        'href' => 'https://www.webosarchive.org'],
-        ['label' => 'Shop',        'href' => '/'],
-        ['label' => 'Devices',     'href' => '/?kind=device'],
-        ['label' => 'Accessories', 'href' => '/?kind=accessory'],
+        ['label' => 'All Products', 'href' => '/'],
+        ['label' => 'Devices',      'href' => '/?kind=device'],
+        ['label' => 'Accessories',  'href' => '/?kind=accessory'],
     ],
 
     'copy' => [
