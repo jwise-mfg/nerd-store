@@ -16,6 +16,11 @@ h1 { font-size: 1.8rem; }
 @media (min-width: 700px) { h1 { font-size: 2.4rem; } }
 img { max-width: 100%; height: auto; display: block; }
 [hidden] { display: none !important; }  /* display:block above would otherwise defeat the hidden attribute */
+/* The parent site's menu bar (layout.php, site_menu) brings its own
+   stylesheet and expects a browser default: its logo and "new" badges are
+   inline images inside links, and block above would drop each one onto its
+   own line. */
+#site-menu img { display: inline; max-width: none; }
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.25rem; }
 .narrow { max-width: 640px; }
