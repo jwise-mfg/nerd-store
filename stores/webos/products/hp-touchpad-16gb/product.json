@@ -45,11 +45,19 @@
             "price": "50.00",
             "condition": "grade_b",
             "serial": "TP16-B",
-            "conditionNotes": "May have scuffs on back or light scratches on screen, will have cracks near speakers. Safe and usable battery, fully functional",
+            "conditionNotes": "Scuffs on back, scratches on corner. Light scratches on screen, cracks near speakers. Safe and usable battery, fully functional",
             "images": [
                 {
-                    "file": "https://placehold.co/800x800/1b1d1c/e6e6fa?text=TouchPad%200912%20front",
-                    "alt": "TouchPad 0912 front"
+                    "file": "../images/TP-16B-Front.jpg",
+                    "alt": "TouchPad 16GB B-Condition Front"
+                },
+                {
+                    "file": "../images/TP-16B-Back.jpg",
+                    "alt": "TouchPad 16GB B-Condition Back"
+                },
+                {
+                    "file": "../images/TP-16B-Corner.jpg",
+                    "alt": "TouchPad 16GB B-Condition Corner"
                 }
             ]
         }
