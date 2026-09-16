@@ -89,13 +89,23 @@ function stock_edit(callable $fn): mixed
     }
 }
 
-/** Counts for one store's declared SKUs, or everything when $store is null. */
+/**
+ * Counts for one store's declared SKUs, or everything when $store is null.
+ *
+ * Keyed by the selling SKU, so the templates look up what they sell and a
+ * variant that counts another's stock (stockSku) reads that count.
+ */
 function stock_map(?string $store = null): array
 {
     $all = stock_all();
-    return $store === null
-        ? $all
-        : array_intersect_key($all, sku_index(store_load($store), true));
+    if ($store === null) {
+        return $all;
+    }
+    $map = [];
+    foreach (sku_index(store_load($store), true) as $sku => $e) {
+        $map[$sku] = (int) ($all[stock_sku($e['variant'])] ?? 0);
+    }
+    return $map;
 }
 
 function stock_of(string $sku): int
@@ -135,7 +145,8 @@ function stock_take(string $sku, int $qty): bool
 /**
  * Give every SKU in the product files a count. New ones land at zero --
  * invisible in the shop until you set a number, which is the safe direction
- * for a file you just created.
+ * for a file you just created. A variant that counts another SKU's stock
+ * gets no line of its own.
  *
  * @return string[] the SKUs that were added
  */
@@ -143,7 +154,10 @@ function stock_sync(array $store): array
 {
     return stock_edit(function (array &$c) use ($store) {
         $added = [];
-        foreach (array_keys(sku_index($store, true)) as $sku) {
+        foreach (sku_index($store, true) as $sku => $e) {
+            if (stock_sku($e['variant']) !== $sku) {
+                continue;
+            }
             if (!array_key_exists($sku, $c)) {
                 $c[$sku] = 0;
                 $added[] = $sku;

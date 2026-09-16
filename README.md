@@ -76,8 +76,7 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
                                // hidden: for sale, but listed nowhere and
                                // marked noindex. Reached only by its URL,
                                // e.g. the event copy of a book with
-                               // "shippingCents": 0. Give it its own SKU;
-                               // stock is counted per SKU.
+                               // "shippingCents": 0.
   "position": 1,               // sort order in the shop
   "orderMax": 5,               // optional: most one order may contain
   "shippingCents": 400,        // optional: this product's shipping. A cart
@@ -91,6 +90,10 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
                                // anything over 5 MB; 1200px JPEG is plenty.
   "variants": [
     { "sku": "MY-BOOK-SKU", "title": "Hardcover", "price": "24.00" },
+    { "sku": "MY-BOOK-EVENT", "title": "Hardcover", "price": "24.00",
+      "stockSku": "MY-BOOK-SKU" },   // optional: sells from that SKU's count.
+                               // The same book sold two ways is one pile;
+                               // this SKU has no count of its own.
     { "sku": "MY-BOOK-USED", "title": "Used", "price": "12.00",
       "images": [{ "file": "used-1.jpg", "alt": "…" }] }   // optional: shown
                                // AFTER the product's images while this

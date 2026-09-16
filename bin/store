@@ -127,7 +127,9 @@ case 'stock':
     if (!empty($flag['prune'])) {
         $declared = [];
         foreach (store_ids() as $sid) {
-            $declared += sku_index(store_load($sid), true);
+            foreach (sku_index(store_load($sid), true) as $e) {
+                $declared[stock_sku($e['variant'])] = true;
+            }
         }
         $gone = stock_edit(function (array &$c) use ($declared) {
             $drop = array_diff_key($c, $declared);
@@ -159,8 +161,10 @@ case 'stock':
                     ? ' (' . $p['status'] . ')' : '');
                 foreach ($p['variants'] as $v) {
                     $declared[$v['sku']] = true;
+                    $counted = stock_sku($v);
                     printf("  %-22s %-34s %5d   %s\n",
-                        $v['sku'], sku_title($p, $v), stock_of($v['sku']), $where);
+                        $v['sku'], sku_title($p, $v), stock_of($counted),
+                        $where . ($counted !== $v['sku'] ? " (counts as $counted)" : ''));
                 }
             }
         }
@@ -182,7 +186,13 @@ case 'stock':
     $sku = $pos[0];
     $known = false;
     foreach (store_ids() as $sid) {
-        $known = $known || isset(sku_index(store_load($sid), true)[$sku]);
+        $e = sku_index(store_load($sid), true)[$sku] ?? null;
+        if ($e && stock_sku($e['variant']) !== $sku) {
+            // Reads answer with the count it sells from; writes go there.
+            isset($pos[1]) && fail("$sku sells from the count of " . stock_sku($e['variant']) . " — set that one");
+            $sku = stock_sku($e['variant']);
+        }
+        $known = $known || $e !== null;
     }
     $known || fail("no product file declares SKU $sku");
     if (!isset($pos[1])) {
@@ -335,6 +345,16 @@ case 'check':
                 }
             }
             foreach ($p['variants'] ?? [] as $v) {
+                if (($target = $v['stockSku'] ?? null) !== null) {
+                    $t = sku_index($store, true)[$target] ?? null;
+                    if (!$t) {
+                        echo "  ✗ $where/{$v['sku']} counts stock as $target, which no product in this store declares\n";
+                        $bad++;
+                    } elseif (stock_sku($t['variant']) !== $target) {
+                        echo "  ✗ $where/{$v['sku']} counts stock as $target, which itself counts as another SKU\n";
+                        $bad++;
+                    }
+                }
                 if (isset($seen[$v['sku']])) {
                     echo "  ✗ duplicate SKU {$v['sku']} in $where and {$seen[$v['sku']]}\n";
                     $bad++;

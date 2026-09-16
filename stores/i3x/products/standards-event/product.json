@@ -25,6 +25,7 @@
     "variants": [
         {
             "sku": "I3X-BOOK-HC-EVENT",
+            "stockSku": "I3X-BOOK-HC",
             "title": "Hardcover",
             "price": "32.00"
         }

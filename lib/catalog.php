@@ -117,6 +117,16 @@ function product_shipping(array $product, string $code, array $rates): ?int
     return max(0, (int) $v) + ($thisOne - $base);
 }
 
+/**
+ * The SKU whose count this variant sells from. Its own, unless it names
+ * another with "stockSku": the same book sold two ways is one pile of books,
+ * and a sale either way comes off the one count.
+ */
+function stock_sku(array $variant): string
+{
+    return (string) ($variant['stockSku'] ?? $variant['sku']);
+}
+
 /** The display name that goes on the invoice and the order row. */
 function sku_title(array $product, array $variant): string
 {

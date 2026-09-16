@@ -148,15 +148,20 @@ function webhook_handle(string $payload, string $signature): array
     // would stay paid with the stock untaken and nobody told. Whatever goes
     // wrong is logged and put in the operator's email instead.
     $items    = order_items((int) $order['id']);
+    $ix       = sku_index($store, true);
     $warnings = [];
     foreach ($items as $i) {
+        // The order row carries the selling SKU; the count may live under
+        // another (stockSku). A SKU whose file has gone since the sale is
+        // taken by its own name, which just reports oversold.
+        $counted = isset($ix[$i['sku']]) ? stock_sku($ix[$i['sku']]['variant']) : $i['sku'];
         try {
-            if (!stock_take($i['sku'], (int) $i['qty'])) {
-                $warnings[] = "oversold {$i['sku']} — refund and restock";
+            if (!stock_take($counted, (int) $i['qty'])) {
+                $warnings[] = "oversold $counted — refund and restock";
             }
         } catch (Throwable $e) {
-            $warnings[] = "stock NOT taken for {$i['sku']}: " . $e->getMessage()
-                . " — fix the permission, then: bin/store stock {$i['sku']} -{$i['qty']}";
+            $warnings[] = "stock NOT taken for $counted: " . $e->getMessage()
+                . " — fix the permission, then: bin/store stock $counted -{$i['qty']}";
         }
     }
     foreach ($warnings as $w) {

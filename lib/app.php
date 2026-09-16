@@ -116,7 +116,7 @@ if ($path === '/cart') {
         $qty = max(0, min(99, (int) ($_POST['qty'] ?? 0)));
         $ix  = sku_index($store);
         if (isset($ix[$sku])) {
-            $have    = stock_of($sku);
+            $have    = stock_of(stock_sku($ix[$sku]['variant']));
             $limit   = order_max($ix[$sku]['product']);
             $allowed = min($have, $limit);
             if (($_POST['action'] ?? '') === 'add') {
