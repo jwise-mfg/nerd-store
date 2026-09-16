@@ -7,7 +7,10 @@
 declare(strict_types=1);
 
 /**
- * @param bool $all include draft and archived products (the CLI wants them,
+ * What the shop lists: active products. Hidden ones are for sale but only
+ * by their URL -- see for_sale(). Drafts and archived ones are neither.
+ *
+ * @param bool $all every file regardless of status (the CLI wants them,
  *                  the shop does not)
  */
 function products(array $store, bool $all = false): array
@@ -30,23 +33,37 @@ function products(array $store, bool $all = false): array
     return $out;
 }
 
+/**
+ * Can this be bought? Active, or hidden: a hidden product is not listed
+ * anywhere and tells search engines not to index it, but its page works and
+ * so does its SKU, for a price you only give to people you send the link.
+ */
+function for_sale(array $product): bool
+{
+    return in_array($product['status'] ?? 'active', ['active', 'hidden'], true);
+}
+
+/** By slug, whether or not it is listed. */
 function product(array $store, string $slug, bool $all = false): ?array
 {
     // basename() so a slug out of the URL cannot walk up out of products/.
     $slug = basename($slug);
-    foreach (products($store, $all) as $p) {
-        if ($p['slug'] === $slug) {
+    foreach (products($store, true) as $p) {
+        if ($p['slug'] === $slug && ($all || for_sale($p))) {
             return $p;
         }
     }
     return null;
 }
 
-/** sku => ['product' => ..., 'variant' => ...] across the whole store. */
+/** sku => ['product' => ..., 'variant' => ...] across the whole store, hidden included. */
 function sku_index(array $store, bool $all = false): array
 {
     $ix = [];
-    foreach (products($store, $all) as $p) {
+    foreach (products($store, true) as $p) {
+        if (!$all && !for_sale($p)) {
+            continue;
+        }
         foreach ($p['variants'] ?? [] as $v) {
             $ix[$v['sku']] = ['product' => $p, 'variant' => $v];
         }

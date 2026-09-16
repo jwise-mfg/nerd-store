@@ -72,7 +72,12 @@ Edit it, reload the page. There is nothing to publish and no cache to clear.
 {
   "title": "My Book Product",
   "kind": "book",
-  "status": "active",          // active | draft | archived
+  "status": "active",          // active | draft | archived | hidden
+                               // hidden: for sale, but listed nowhere and
+                               // marked noindex. Reached only by its URL,
+                               // e.g. the event copy of a book with
+                               // "shippingCents": 0. Give it its own SKU;
+                               // stock is counted per SKU.
   "position": 1,               // sort order in the shop
   "orderMax": 5,               // optional: most one order may contain
   "shippingCents": 400,        // optional: this product's shipping. A cart

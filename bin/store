@@ -298,7 +298,7 @@ case 'check':
         $store = store_load($sid);
         foreach (products($store, true) as $p) {
             $where = "$sid/{$p['slug']}";
-            if (($p['status'] ?? 'active') !== 'active') {
+            if (!for_sale($p)) {
                 echo "  · $where is {$p['status']} — not for sale, not checked for SKU collisions\n";
                 continue;
             }

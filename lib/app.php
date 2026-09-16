@@ -104,6 +104,8 @@ if (preg_match('#^/shop/([A-Za-z0-9._-]+)$#', $path, $m)) {
             ? $store['origin'] . image_url($p['slug'], $p['socialImage'])
             : ($img ? (str_starts_with($img['url'], 'http') ? $img['url'] : $store['origin'] . $img['url']) : null),
         'url'         => $store['origin'] . '/shop/' . $p['slug'],
+        // A hidden product is reached by its link alone; keep it out of search.
+        'robots'      => $p['status'] === 'hidden' ? 'noindex' : null,
     ]);
 }
 

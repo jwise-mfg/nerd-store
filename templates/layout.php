@@ -17,6 +17,9 @@
 <meta property="og:title" content="<?= e($ogTitle) ?>">
 <meta property="og:description" content="<?= e($ogDesc) ?>">
 <meta name="description" content="<?= e($ogDesc) ?>">
+<?php if (!empty($meta['robots'])): ?>
+<meta name="robots" content="<?= e($meta['robots']) ?>">
+<?php endif; ?>
 <?php if ($ogUrl): ?>
 <meta property="og:url" content="<?= e($ogUrl) ?>">
 <link rel="canonical" href="<?= e($ogUrl) ?>">
