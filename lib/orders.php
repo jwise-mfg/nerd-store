@@ -101,7 +101,7 @@ function orders_list(?string $status = null, ?string $store = null, int $limit =
 function order_mark_paid(string $session_id, array $f): ?array
 {
     $st = db()->prepare(
-        'UPDATE orders SET status = \'paid\', paid_at = unixepoch(),
+        'UPDATE orders SET status = \'paid\', paid_at = CAST(strftime(\'%s\',\'now\') AS INTEGER),
                 email = ?, stripe_payment_intent = ?,
                 ship_name = ?, ship_line1 = ?, ship_line2 = ?, ship_city = ?,
                 ship_state = ?, ship_postal = ?, ship_country = ?,
@@ -126,7 +126,7 @@ function order_mark_paid(string $session_id, array $f): ?array
 function order_mark_shipped(string $number, string $carrier, ?string $tracking): bool
 {
     $st = db()->prepare(
-        'UPDATE orders SET status = \'shipped\', shipped_at = unixepoch(), carrier = ?, tracking = ?
+        'UPDATE orders SET status = \'shipped\', shipped_at = CAST(strftime(\'%s\',\'now\') AS INTEGER), carrier = ?, tracking = ?
          WHERE number = ? AND status = \'paid\''
     );
     $st->execute([$carrier, $tracking, strtoupper(trim($number))]);

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS orders (
   stripe_payment_intent TEXT,
   carrier               TEXT,
   tracking              TEXT,
-  created_at            INTEGER NOT NULL DEFAULT (unixepoch()),
+  created_at            INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER)),
   paid_at               INTEGER,
   shipped_at            INTEGER
 );
@@ -49,5 +49,5 @@ CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id);
 CREATE TABLE IF NOT EXISTS webhook_events (
   id          TEXT PRIMARY KEY,
   type        TEXT NOT NULL,
-  received_at INTEGER NOT NULL DEFAULT (unixepoch())
+  received_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER))
 );
